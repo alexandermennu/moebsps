@@ -8,6 +8,7 @@ use App\Http\Controllers\WeeklyPlanController;
 use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\MessageController;
+use App\Http\Controllers\LivePollController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\DivisionController;
 use App\Http\Controllers\Admin\SettingsController;
@@ -33,6 +34,9 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 */
 
 Route::middleware(['auth', 'active'])->group(function () {
+
+    // Live Polling
+    Route::get('/live/poll', [LivePollController::class, 'poll'])->name('live.poll');
 
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');

@@ -53,9 +53,7 @@
                    class="flex items-center gap-3 px-3 py-2 rounded-md text-sm {{ request()->routeIs('messages.*') ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white' }}">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
                     Messages
-                    @if($unreadMsgCount > 0)
-                        <span class="ml-auto bg-blue-500 text-white text-xs rounded-full px-2 py-0.5">{{ $unreadMsgCount }}</span>
-                    @endif
+                    <span data-sidebar-badge="messages" class="ml-auto bg-blue-500 text-white text-xs rounded-full px-2 py-0.5 {{ $unreadMsgCount > 0 ? '' : 'hidden' }}">{{ $unreadMsgCount }}</span>
                 </a>
             </li>
 
@@ -65,9 +63,7 @@
                    class="flex items-center gap-3 px-3 py-2 rounded-md text-sm {{ request()->routeIs('notifications.*') ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white' }}">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
                     Notifications
-                    @if($user->unreadNotificationCount() > 0)
-                        <span class="ml-auto bg-red-500 text-white text-xs rounded-full px-2 py-0.5">{{ $user->unreadNotificationCount() }}</span>
-                    @endif
+                    <span data-sidebar-badge="notifications" class="ml-auto bg-red-500 text-white text-xs rounded-full px-2 py-0.5 {{ $user->unreadNotificationCount() > 0 ? '' : 'hidden' }}">{{ $user->unreadNotificationCount() }}</span>
                 </a>
             </li>
 

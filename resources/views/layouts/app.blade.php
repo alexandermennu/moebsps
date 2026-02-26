@@ -4,6 +4,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    @auth
+    <meta name="poll-url" content="{{ route('live.poll') }}">
+    @endauth
     <title>@yield('title', 'Bureau Activity Tracker') - MOEBSPS</title>
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700" rel="stylesheet" />
@@ -26,22 +29,19 @@
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                         </svg>
-                        @if($unreadMsgCount > 0)
-                            <span class="absolute -top-1 -right-1 bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                                {{ $unreadMsgCount }}
-                            </span>
-                        @endif
+                        <span data-badge="messages" class="absolute -top-1 -right-1 bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center {{ $unreadMsgCount > 0 ? '' : 'hidden' }}">
+                            {{ $unreadMsgCount }}
+                        </span>
                     </a>
                     {{-- Notifications --}}
                     <a href="{{ route('notifications.index') }}" class="relative text-gray-500 hover:text-gray-700">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                         </svg>
-                        @if(auth()->user()->unreadNotificationCount() > 0)
-                            <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                                {{ auth()->user()->unreadNotificationCount() }}
-                            </span>
-                        @endif
+                        @php $unreadNotifCount = auth()->user()->unreadNotificationCount(); @endphp
+                        <span data-badge="notifications" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center {{ $unreadNotifCount > 0 ? '' : 'hidden' }}">
+                            {{ $unreadNotifCount }}
+                        </span>
                     </a>
                     {{-- User Menu --}}
                     <div class="flex items-center gap-2">
