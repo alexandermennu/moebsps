@@ -12,6 +12,16 @@ class BureauTrackerSeeder extends Seeder
 {
     public function run(): void
     {
+        // Remove old placeholder divisions
+        Division::whereIn('code', ['FIN', 'HR', 'IT', 'OPS', 'LEG', 'PND'])->delete();
+
+        // Remove old placeholder director accounts
+        User::whereIn('email', [
+            'director.finance@moebsps.com',
+            'director.hr@moebsps.com',
+            'director.it@moebsps.com',
+        ])->delete();
+
         // Create Divisions
         $divisions = [
             ['name' => 'Division of School Health', 'code' => 'DSH', 'description' => 'School health programs and student wellness initiatives'],
