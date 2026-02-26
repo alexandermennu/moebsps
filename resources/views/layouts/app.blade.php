@@ -20,6 +20,18 @@
             <div class="flex items-center justify-between px-6 py-3">
                 <h1 class="text-lg font-semibold text-gray-800">@yield('page-title', 'Dashboard')</h1>
                 <div class="flex items-center gap-4">
+                    {{-- Messages --}}
+                    @php $unreadMsgCount = \App\Models\Message::where('receiver_id', auth()->id())->where('is_read', false)->where('receiver_deleted', false)->whereNull('parent_id')->count(); @endphp
+                    <a href="{{ route('messages.index') }}" class="relative text-gray-500 hover:text-gray-700" title="Messages">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
+                        @if($unreadMsgCount > 0)
+                            <span class="absolute -top-1 -right-1 bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                                {{ $unreadMsgCount }}
+                            </span>
+                        @endif
+                    </a>
                     {{-- Notifications --}}
                     <a href="{{ route('notifications.index') }}" class="relative text-gray-500 hover:text-gray-700">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

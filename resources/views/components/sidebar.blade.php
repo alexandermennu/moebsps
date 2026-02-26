@@ -46,6 +46,19 @@
                 </a>
             </li>
 
+            {{-- Messages --}}
+            <li>
+                @php $unreadMsgCount = \App\Models\Message::where('receiver_id', auth()->id())->where('is_read', false)->where('receiver_deleted', false)->whereNull('parent_id')->count(); @endphp
+                <a href="{{ route('messages.index') }}"
+                   class="flex items-center gap-3 px-3 py-2 rounded-md text-sm {{ request()->routeIs('messages.*') ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white' }}">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                    Messages
+                    @if($unreadMsgCount > 0)
+                        <span class="ml-auto bg-blue-500 text-white text-xs rounded-full px-2 py-0.5">{{ $unreadMsgCount }}</span>
+                    @endif
+                </a>
+            </li>
+
             {{-- Notifications --}}
             <li>
                 <a href="{{ route('notifications.index') }}"
