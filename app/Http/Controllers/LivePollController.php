@@ -14,9 +14,10 @@ class LivePollController extends Controller
         $userId = Auth::id();
         $since = $request->get('since');
 
-        // Unread counts
+        // Unread counts (notifications = system only, exclude message type)
         $unreadNotifications = BureauNotification::where('user_id', $userId)
             ->where('is_read', false)
+            ->where('type', '!=', 'message')
             ->count();
 
         $unreadMessages = Message::where('receiver_id', $userId)
@@ -31,6 +32,7 @@ class LivePollController extends Controller
         if ($since) {
             $newNotifications = BureauNotification::where('user_id', $userId)
                 ->where('created_at', '>', $since)
+                ->where('type', '!=', 'message')
                 ->latest()
                 ->limit(5)
                 ->get()

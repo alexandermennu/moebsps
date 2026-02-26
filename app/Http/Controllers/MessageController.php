@@ -72,15 +72,6 @@ class MessageController extends Controller
 
         $message = Message::create($validated);
 
-        // Send in-app notification to receiver
-        \App\Models\BureauNotification::send(
-            $validated['receiver_id'],
-            'message',
-            'New Message from ' . Auth::user()->name,
-            \Illuminate\Support\Str::limit($validated['body'], 80),
-            route('messages.show', $message->parent_id ?? $message->id)
-        );
-
         return redirect()->route('messages.index')
             ->with('success', 'Message sent successfully.');
     }
@@ -145,14 +136,6 @@ class MessageController extends Controller
             'body' => $validated['body'],
             'parent_id' => $message->id,
         ]);
-
-        \App\Models\BureauNotification::send(
-            $receiverId,
-            'message',
-            'Reply from ' . Auth::user()->name,
-            \Illuminate\Support\Str::limit($validated['body'], 80),
-            route('messages.show', $message->id)
-        );
 
         return redirect()->route('messages.show', $message)
             ->with('success', 'Reply sent.');

@@ -107,6 +107,6 @@ class User extends Authenticatable
 
     public function unreadNotificationCount(): int
     {
-        return $this->bureauNotifications()->unread()->count();
+        return $this->bureauNotifications()->unread()->where('type', '!=', 'message')->count();
     }
 }
