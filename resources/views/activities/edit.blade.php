@@ -1,0 +1,113 @@
+@extends('layouts.app')
+
+@section('title', 'Edit Activity')
+@section('page-title', 'Edit Activity')
+
+@section('content')
+<div class="max-w-3xl">
+    <div class="mb-6">
+        <a href="{{ route('activities.show', $activity) }}" class="text-sm text-gray-500 hover:text-gray-700">← Back to Activity</a>
+    </div>
+
+    <div class="bg-white rounded-lg border border-gray-200 p-6">
+        <h2 class="text-lg font-semibold text-gray-800 mb-6">Edit Activity</h2>
+
+        <form method="POST" action="{{ route('activities.update', $activity) }}">
+            @csrf
+            @method('PUT')
+
+            <div class="mb-4">
+                <label for="title" class="block text-sm font-medium text-gray-700 mb-1">Title *</label>
+                <input type="text" name="title" id="title" value="{{ old('title', $activity->title) }}" required
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-slate-500">
+            </div>
+
+            <div class="mb-4">
+                <label for="description" class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                <textarea name="description" id="description" rows="3"
+                          class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-slate-500">{{ old('description', $activity->description) }}</textarea>
+            </div>
+
+            @if(!$user->isDirector())
+                <div class="mb-4">
+                    <label for="division_id" class="block text-sm font-medium text-gray-700 mb-1">Division *</label>
+                    <select name="division_id" id="division_id" required
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-slate-500">
+                        @foreach($divisions as $division)
+                            <option value="{{ $division->id }}" {{ old('division_id', $activity->division_id) == $division->id ? 'selected' : '' }}>{{ $division->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+            @else
+                <input type="hidden" name="division_id" value="{{ $user->division_id }}">
+            @endif
+
+            <div class="mb-4">
+                <label for="assigned_to" class="block text-sm font-medium text-gray-700 mb-1">Assign To</label>
+                <select name="assigned_to" id="assigned_to"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-slate-500">
+                    <option value="">Unassigned</option>
+                    @foreach($users as $u)
+                        <option value="{{ $u->id }}" {{ old('assigned_to', $activity->assigned_to) == $u->id ? 'selected' : '' }}>{{ $u->name }} ({{ $u->role_label }})</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label for="status" class="block text-sm font-medium text-gray-700 mb-1">Status *</label>
+                    <select name="status" id="status" required
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-slate-500">
+                        <option value="not_started" {{ old('status', $activity->status) === 'not_started' ? 'selected' : '' }}>Not Started</option>
+                        <option value="in_progress" {{ old('status', $activity->status) === 'in_progress' ? 'selected' : '' }}>In Progress</option>
+                        <option value="completed" {{ old('status', $activity->status) === 'completed' ? 'selected' : '' }}>Completed</option>
+                        <option value="overdue" {{ old('status', $activity->status) === 'overdue' ? 'selected' : '' }}>Overdue</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="priority" class="block text-sm font-medium text-gray-700 mb-1">Priority *</label>
+                    <select name="priority" id="priority" required
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-slate-500">
+                        <option value="low" {{ old('priority', $activity->priority) === 'low' ? 'selected' : '' }}>Low</option>
+                        <option value="medium" {{ old('priority', $activity->priority) === 'medium' ? 'selected' : '' }}>Medium</option>
+                        <option value="high" {{ old('priority', $activity->priority) === 'high' ? 'selected' : '' }}>High</option>
+                        <option value="critical" {{ old('priority', $activity->priority) === 'critical' ? 'selected' : '' }}>Critical</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label for="start_date" class="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+                    <input type="date" name="start_date" id="start_date" value="{{ old('start_date', $activity->start_date?->format('Y-m-d')) }}"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-slate-500">
+                </div>
+                <div>
+                    <label for="due_date" class="block text-sm font-medium text-gray-700 mb-1">Due Date *</label>
+                    <input type="date" name="due_date" id="due_date" value="{{ old('due_date', $activity->due_date->format('Y-m-d')) }}" required
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-slate-500">
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label for="progress_percentage" class="block text-sm font-medium text-gray-700 mb-1">Progress ({{ old('progress_percentage', $activity->progress_percentage) }}%)</label>
+                <input type="range" name="progress_percentage" id="progress_percentage" min="0" max="100" step="5"
+                       value="{{ old('progress_percentage', $activity->progress_percentage) }}"
+                       class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                       oninput="this.previousElementSibling.textContent = 'Progress (' + this.value + '%)'">
+            </div>
+
+            <div class="mb-6">
+                <label for="remarks" class="block text-sm font-medium text-gray-700 mb-1">Remarks</label>
+                <textarea name="remarks" id="remarks" rows="2"
+                          class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-slate-500">{{ old('remarks', $activity->remarks) }}</textarea>
+            </div>
+
+            <div class="flex gap-3">
+                <button type="submit" class="px-4 py-2 bg-slate-800 text-white text-sm font-medium rounded-md hover:bg-slate-700">Update Activity</button>
+                <a href="{{ route('activities.show', $activity) }}" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-50">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+@endsection
