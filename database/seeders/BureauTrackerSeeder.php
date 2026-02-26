@@ -14,12 +14,11 @@ class BureauTrackerSeeder extends Seeder
     {
         // Create Divisions
         $divisions = [
-            ['name' => 'Finance & Budget', 'code' => 'FIN', 'description' => 'Financial planning, budgeting, and accounting division'],
-            ['name' => 'Human Resources', 'code' => 'HR', 'description' => 'Personnel management and employee services'],
-            ['name' => 'Information Technology', 'code' => 'IT', 'description' => 'Technology infrastructure and digital services'],
-            ['name' => 'Operations & Logistics', 'code' => 'OPS', 'description' => 'Operational management and logistics coordination'],
-            ['name' => 'Legal & Compliance', 'code' => 'LEG', 'description' => 'Legal affairs and regulatory compliance'],
-            ['name' => 'Planning & Development', 'code' => 'PND', 'description' => 'Strategic planning and organizational development'],
+            ['name' => 'Division of School Health', 'code' => 'DSH', 'description' => 'School health programs and student wellness initiatives'],
+            ['name' => 'Division of Career Guidance & Psychosocial Counseling', 'code' => 'CGPC', 'description' => 'Career guidance services and psychosocial counseling support'],
+            ['name' => 'Division of School Feeding', 'code' => 'DSF', 'description' => 'School feeding programs and nutrition services'],
+            ['name' => 'Division of Community Engagement & Dropout Prevention', 'code' => 'CEDP', 'description' => 'Community engagement initiatives and dropout prevention programs'],
+            ['name' => 'Division of National Service Program', 'code' => 'DNSP', 'description' => 'National service program coordination and management'],
         ];
 
         foreach ($divisions as $division) {
@@ -63,41 +62,67 @@ class BureauTrackerSeeder extends Seeder
         );
 
         // Create Division Directors
-        $finDiv = Division::where('code', 'FIN')->first();
-        $hrDiv = Division::where('code', 'HR')->first();
-        $itDiv = Division::where('code', 'IT')->first();
+        $dshDiv = Division::where('code', 'DSH')->first();
+        $cgpcDiv = Division::where('code', 'CGPC')->first();
+        $dsfDiv = Division::where('code', 'DSF')->first();
+        $cedpDiv = Division::where('code', 'CEDP')->first();
+        $dnspDiv = Division::where('code', 'DNSP')->first();
 
         User::updateOrCreate(
-            ['email' => 'director.finance@moebsps.com'],
+            ['email' => 'director.schoolhealth@moebsps.com'],
             [
-                'name' => 'Finance Director',
+                'name' => 'School Health Director',
                 'password' => Hash::make('password'),
                 'role' => User::ROLE_DIRECTOR,
-                'division_id' => $finDiv->id,
+                'division_id' => $dshDiv->id,
                 'position' => 'Division Director',
                 'is_active' => true,
             ]
         );
 
         User::updateOrCreate(
-            ['email' => 'director.hr@moebsps.com'],
+            ['email' => 'director.counseling@moebsps.com'],
             [
-                'name' => 'HR Director',
+                'name' => 'Career Guidance & Counseling Director',
                 'password' => Hash::make('password'),
                 'role' => User::ROLE_DIRECTOR,
-                'division_id' => $hrDiv->id,
+                'division_id' => $cgpcDiv->id,
                 'position' => 'Division Director',
                 'is_active' => true,
             ]
         );
 
         User::updateOrCreate(
-            ['email' => 'director.it@moebsps.com'],
+            ['email' => 'director.schoolfeeding@moebsps.com'],
             [
-                'name' => 'IT Director',
+                'name' => 'School Feeding Director',
                 'password' => Hash::make('password'),
                 'role' => User::ROLE_DIRECTOR,
-                'division_id' => $itDiv->id,
+                'division_id' => $dsfDiv->id,
+                'position' => 'Division Director',
+                'is_active' => true,
+            ]
+        );
+
+        User::updateOrCreate(
+            ['email' => 'director.community@moebsps.com'],
+            [
+                'name' => 'Community Engagement Director',
+                'password' => Hash::make('password'),
+                'role' => User::ROLE_DIRECTOR,
+                'division_id' => $cedpDiv->id,
+                'position' => 'Division Director',
+                'is_active' => true,
+            ]
+        );
+
+        User::updateOrCreate(
+            ['email' => 'director.nationalservice@moebsps.com'],
+            [
+                'name' => 'National Service Program Director',
+                'password' => Hash::make('password'),
+                'role' => User::ROLE_DIRECTOR,
+                'division_id' => $dnspDiv->id,
                 'position' => 'Division Director',
                 'is_active' => true,
             ]
