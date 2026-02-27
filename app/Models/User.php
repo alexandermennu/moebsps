@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'email', 'password', 'role', 'division_id', 'position', 'phone', 'is_active', 'approval_status', 'created_by_user_id', 'approved_at', 'approved_by', 'rejection_reason'])]
+#[Fillable(['name', 'email', 'password', 'role', 'division_id', 'position', 'phone', 'is_active', 'approval_status', 'created_by_user_id', 'approved_at', 'approved_by', 'rejection_reason', 'counselor_school', 'counselor_county', 'counselor_status'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -60,6 +60,16 @@ class User extends Authenticatable
     const APPROVAL_APPROVED = 'approved';
     const APPROVAL_PENDING  = 'pending';
     const APPROVAL_REJECTED = 'rejected';
+
+    // ── Counselor Status Constants ──────────────────────────
+    const COUNSELOR_STATUSES = [
+        'active' => 'Active',
+        'abandoned_resigned' => 'Abandoned/Resigned',
+        'transferred' => 'Transferred',
+        'on_study_leave' => 'On Study Leave',
+        'on_sick_leave' => 'On Sick Leave',
+        'returned_from_study' => 'Returned from Study',
+    ];
 
     // ── Relationships ──────────────────────────────────────
 
@@ -301,6 +311,11 @@ class User extends Authenticatable
     public function getRoleLabelAttribute(): string
     {
         return self::ROLES[$this->role] ?? ucfirst($this->role);
+    }
+
+    public function getCounselorStatusLabelAttribute(): string
+    {
+        return self::COUNSELOR_STATUSES[$this->counselor_status] ?? ucfirst($this->counselor_status ?? 'Active');
     }
 
     public function unreadNotificationCount(): int

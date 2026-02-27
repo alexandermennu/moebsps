@@ -75,6 +75,32 @@
                 </div>
             </div>
 
+            {{-- Counselor-specific Fields --}}
+            <div id="counselor-fields" class="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-md" style="display: none;">
+                <h3 class="text-sm font-semibold text-blue-800 mb-3">📋 Counselor Details</h3>
+                <div class="grid grid-cols-2 gap-4 mb-3">
+                    <div>
+                        <label for="counselor_school" class="block text-sm font-medium text-gray-700 mb-1">School of Assignment *</label>
+                        <input type="text" name="counselor_school" id="counselor_school" value="{{ old('counselor_school') }}"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-slate-500">
+                    </div>
+                    <div>
+                        <label for="counselor_county" class="block text-sm font-medium text-gray-700 mb-1">County *</label>
+                        <input type="text" name="counselor_county" id="counselor_county" value="{{ old('counselor_county') }}"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-slate-500">
+                    </div>
+                </div>
+                <div>
+                    <label for="counselor_status" class="block text-sm font-medium text-gray-700 mb-1">Current Status *</label>
+                    <select name="counselor_status" id="counselor_status"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-slate-500">
+                        @foreach(\App\Models\User::COUNSELOR_STATUSES as $key => $label)
+                            <option value="{{ $key }}" {{ old('counselor_status', 'active') === $key ? 'selected' : '' }}>{{ $label }}</option>
+                        @endforeach
+                    </select>
+                </div>
+            </div>
+
             <div class="mb-6">
                 <label class="flex items-center gap-2">
                     <input type="checkbox" name="is_active" value="1" {{ old('is_active', true) ? 'checked' : '' }}
@@ -90,4 +116,18 @@
         </form>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const roleSelect = document.getElementById('role');
+        const counselorFields = document.getElementById('counselor-fields');
+
+        function toggleCounselorFields() {
+            counselorFields.style.display = roleSelect.value === 'counselor' ? 'block' : 'none';
+        }
+
+        roleSelect.addEventListener('change', toggleCounselorFields);
+        toggleCounselorFields();
+    });
+</script>
 @endsection

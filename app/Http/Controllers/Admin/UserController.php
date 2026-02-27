@@ -27,10 +27,27 @@ class UserController extends Controller
             });
         }
 
-        $users = $query->latest()->paginate(15);
+        // Get non-counselor users for the main table
+        $usersQuery = clone $query;
+        $users = $usersQuery->where('role', '!=', User::ROLE_COUNSELOR)->latest()->paginate(15);
+
+        // Get counselors separately (only when not filtering by a non-counselor role)
+        $counselors = collect();
+        if (!$request->filled('role') || $request->role === User::ROLE_COUNSELOR) {
+            $counselorQuery = User::with('division');
+            if ($request->filled('search')) {
+                $search = $request->search;
+                $counselorQuery->where(function ($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                      ->orWhere('email', 'like', "%{$search}%");
+                });
+            }
+            $counselors = $counselorQuery->where('role', User::ROLE_COUNSELOR)->latest()->get();
+        }
+
         $divisions = Division::where('is_active', true)->get();
 
-        return view('admin.users.index', compact('users', 'divisions'));
+        return view('admin.users.index', compact('users', 'counselors', 'divisions'));
     }
 
     public function create()
@@ -52,10 +69,20 @@ class UserController extends Controller
             'position' => 'nullable|string|max:255',
             'phone' => 'nullable|string|max:20',
             'is_active' => 'boolean',
+            'counselor_school' => 'required_if:role,counselor|nullable|string|max:255',
+            'counselor_county' => 'required_if:role,counselor|nullable|string|max:255',
+            'counselor_status' => 'required_if:role,counselor|nullable|in:' . implode(',', array_keys(User::COUNSELOR_STATUSES)),
         ]);
 
         $validated['password'] = Hash::make($validated['password']);
         $validated['is_active'] = $request->boolean('is_active', true);
+
+        // Clear counselor fields if role is not counselor
+        if ($validated['role'] !== User::ROLE_COUNSELOR) {
+            $validated['counselor_school'] = null;
+            $validated['counselor_county'] = null;
+            $validated['counselor_status'] = null;
+        }
 
         User::create($validated);
 
@@ -82,6 +109,9 @@ class UserController extends Controller
             'position' => 'nullable|string|max:255',
             'phone' => 'nullable|string|max:20',
             'is_active' => 'boolean',
+            'counselor_school' => 'required_if:role,counselor|nullable|string|max:255',
+            'counselor_county' => 'required_if:role,counselor|nullable|string|max:255',
+            'counselor_status' => 'required_if:role,counselor|nullable|in:' . implode(',', array_keys(User::COUNSELOR_STATUSES)),
         ]);
 
         if (!empty($validated['password'])) {
@@ -91,6 +121,13 @@ class UserController extends Controller
         }
 
         $validated['is_active'] = $request->boolean('is_active');
+
+        // Clear counselor fields if role is not counselor
+        if ($validated['role'] !== User::ROLE_COUNSELOR) {
+            $validated['counselor_school'] = null;
+            $validated['counselor_county'] = null;
+            $validated['counselor_status'] = null;
+        }
 
         $user->update($validated);
 

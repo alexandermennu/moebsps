@@ -84,6 +84,9 @@ class StaffController extends Controller
             'role' => ['required', Rule::in($allowedRoles)],
             'position' => 'nullable|string|max:255',
             'phone' => 'nullable|string|max:20',
+            'counselor_school' => 'required_if:role,counselor|nullable|string|max:255',
+            'counselor_county' => 'required_if:role,counselor|nullable|string|max:255',
+            'counselor_status' => 'required_if:role,counselor|nullable|in:' . implode(',', array_keys(User::COUNSELOR_STATUSES)),
         ]);
 
         $newStaff = User::create([
@@ -97,6 +100,9 @@ class StaffController extends Controller
             'is_active' => false,
             'approval_status' => User::APPROVAL_PENDING,
             'created_by_user_id' => $user->id,
+            'counselor_school' => $validated['role'] === User::ROLE_COUNSELOR ? ($validated['counselor_school'] ?? null) : null,
+            'counselor_county' => $validated['role'] === User::ROLE_COUNSELOR ? ($validated['counselor_county'] ?? null) : null,
+            'counselor_status' => $validated['role'] === User::ROLE_COUNSELOR ? ($validated['counselor_status'] ?? 'active') : null,
         ]);
 
         // Notify full-access users about the pending approval
@@ -166,6 +172,9 @@ class StaffController extends Controller
             'role' => ['required', Rule::in($allowedRoles)],
             'position' => 'nullable|string|max:255',
             'phone' => 'nullable|string|max:20',
+            'counselor_school' => 'required_if:role,counselor|nullable|string|max:255',
+            'counselor_county' => 'required_if:role,counselor|nullable|string|max:255',
+            'counselor_status' => 'required_if:role,counselor|nullable|in:' . implode(',', array_keys(User::COUNSELOR_STATUSES)),
         ]);
 
         $data = [
@@ -174,6 +183,9 @@ class StaffController extends Controller
             'role' => $validated['role'],
             'position' => $validated['position'] ?? null,
             'phone' => $validated['phone'] ?? null,
+            'counselor_school' => $validated['role'] === User::ROLE_COUNSELOR ? ($validated['counselor_school'] ?? null) : null,
+            'counselor_county' => $validated['role'] === User::ROLE_COUNSELOR ? ($validated['counselor_county'] ?? null) : null,
+            'counselor_status' => $validated['role'] === User::ROLE_COUNSELOR ? ($validated['counselor_status'] ?? 'active') : null,
         ];
 
         if (!empty($validated['password'])) {
