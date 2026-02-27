@@ -48,13 +48,16 @@
                         class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-slate-500">
                     <option value="">Unassigned</option>
                     @foreach($users as $u)
-                        <option value="{{ $u->id }}" {{ old('assigned_to', $assigneeIsCounselor ? '' : $activity->assigned_to) == $u->id ? 'selected' : '' }}>{{ $u->name }} ({{ $u->role_label }})</option>
+                        <option value="{{ $u->id }}" data-division="{{ $u->division_id }}" {{ old('assigned_to', $assigneeIsCounselor ? '' : $activity->assigned_to) == $u->id ? 'selected' : '' }}>{{ $u->name }} ({{ $u->role_label }})</option>
                     @endforeach
                     @if($canAssignCounselor && $counselors->count() > 0)
-                        <option value="__counselor__" {{ $assigneeIsCounselor ? 'selected' : '' }}>👤 A Counselor ({{ $counselors->count() }} available)</option>
+                        <option value="__counselor__" data-division="__counselor__" {{ $assigneeIsCounselor ? 'selected' : '' }}>👤 A Counselor ({{ $counselors->count() }} available)</option>
                     @endif
                 </select>
                 <input type="hidden" name="assigned_to" id="assigned_to_hidden" value="{{ old('assigned_to', $activity->assigned_to) }}">
+                @if(!$user->isDirector())
+                    <p id="division_hint" class="text-xs text-gray-400 mt-1 hidden">Showing staff from the selected division</p>
+                @endif
             </div>
 
             {{-- Counselor sub-dropdown --}}
@@ -153,11 +156,54 @@ function handleCounselorChange(select) {
     document.getElementById('assigned_to_hidden').value = select.value;
 }
 
-// On page load, ensure correct state
+// Filter assignee dropdown when division changes
+function handleDivisionChange(divisionId) {
+    const assigneeSelect = document.getElementById('assignee_select');
+    const hiddenInput = document.getElementById('assigned_to_hidden');
+    const hint = document.getElementById('division_hint');
+    const options = assigneeSelect.querySelectorAll('option');
+
+    options.forEach(option => {
+        if (option.value === '' || option.value === '__counselor__') {
+            option.style.display = '';
+            return;
+        }
+        const optDivision = option.getAttribute('data-division');
+        if (!divisionId || optDivision == divisionId) {
+            option.style.display = '';
+        } else {
+            option.style.display = 'none';
+            if (option.selected) {
+                assigneeSelect.value = '';
+                hiddenInput.value = '';
+                const wrapper = document.getElementById('counselor_dropdown_wrapper');
+                if (wrapper) wrapper.classList.add('hidden');
+            }
+        }
+    });
+
+    if (hint) {
+        hint.classList.toggle('hidden', !divisionId);
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     const assigneeSelect = document.getElementById('assignee_select');
     const hiddenInput = document.getElementById('assigned_to_hidden');
+    const divisionSelect = document.getElementById('division_id');
 
+    // Attach division change listener (only for non-directors)
+    if (divisionSelect) {
+        divisionSelect.addEventListener('change', function() {
+            handleDivisionChange(this.value);
+        });
+        // Apply initial filter based on current division
+        if (divisionSelect.value) {
+            handleDivisionChange(divisionSelect.value);
+        }
+    }
+
+    // Restore counselor state
     if (assigneeSelect.value === '__counselor__') {
         const wrapper = document.getElementById('counselor_dropdown_wrapper');
         if (wrapper) wrapper.classList.remove('hidden');

@@ -66,8 +66,11 @@ class ActivityController extends Controller
 
         $divisions = Division::where('is_active', true)->get();
 
-        // Build smart user list: all non-counselor active users
-        $usersQuery = User::where('is_active', true)->where('role', '!=', User::ROLE_COUNSELOR);
+        // Build smart user list: exclude counselors and Office of the Minister staff
+        $ministerRoles = [User::ROLE_MINISTER, User::ROLE_ADMIN_ASSISTANT, User::ROLE_TECH_ASSISTANT];
+        $usersQuery = User::where('is_active', true)
+            ->where('role', '!=', User::ROLE_COUNSELOR)
+            ->whereNotIn('role', $ministerRoles);
         if ($user->isDirector()) {
             $usersQuery->where('division_id', $user->division_id);
         }
@@ -181,8 +184,11 @@ class ActivityController extends Controller
 
         $divisions = Division::where('is_active', true)->get();
 
-        // Build smart user list: all non-counselor active users
-        $usersQuery = User::where('is_active', true)->where('role', '!=', User::ROLE_COUNSELOR);
+        // Build smart user list: exclude counselors and Office of the Minister staff
+        $ministerRoles = [User::ROLE_MINISTER, User::ROLE_ADMIN_ASSISTANT, User::ROLE_TECH_ASSISTANT];
+        $usersQuery = User::where('is_active', true)
+            ->where('role', '!=', User::ROLE_COUNSELOR)
+            ->whereNotIn('role', $ministerRoles);
         if ($user->isDirector()) {
             $usersQuery->where('division_id', $user->division_id);
         }

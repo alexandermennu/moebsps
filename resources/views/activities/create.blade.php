@@ -50,13 +50,16 @@
                         class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-slate-500">
                     <option value="">Unassigned</option>
                     @foreach($users as $u)
-                        <option value="{{ $u->id }}" {{ old('assigned_to') == $u->id ? 'selected' : '' }}>{{ $u->name }} ({{ $u->role_label }})</option>
+                        <option value="{{ $u->id }}" data-division="{{ $u->division_id }}" {{ old('assigned_to') == $u->id ? 'selected' : '' }}>{{ $u->name }} ({{ $u->role_label }})</option>
                     @endforeach
                     @if($canAssignCounselor && $counselors->count() > 0)
-                        <option value="__counselor__" {{ old('assigned_to') && $counselors->pluck('id')->contains(old('assigned_to')) ? 'selected' : '' }}>👤 A Counselor ({{ $counselors->count() }} available)</option>
+                        <option value="__counselor__" data-division="__counselor__" {{ old('assigned_to') && $counselors->pluck('id')->contains(old('assigned_to')) ? 'selected' : '' }}>👤 A Counselor ({{ $counselors->count() }} available)</option>
                     @endif
                 </select>
                 <input type="hidden" name="assigned_to" id="assigned_to_hidden" value="{{ old('assigned_to') }}">
+                @if(!$user->isDirector())
+                    <p id="division_hint" class="text-xs text-gray-400 mt-1 hidden">Showing staff from the selected division</p>
+                @endif
             </div>
 
             {{-- Counselor sub-dropdown (hidden by default) --}}
@@ -124,7 +127,6 @@ function handleAssigneeChange(select) {
 
     if (select.value === '__counselor__') {
         if (wrapper) wrapper.classList.remove('hidden');
-        // Reset hidden input until counselor is chosen
         hiddenInput.value = counselorSelect ? counselorSelect.value : '';
     } else {
         if (wrapper) wrapper.classList.add('hidden');
@@ -137,11 +139,57 @@ function handleCounselorChange(select) {
     document.getElementById('assigned_to_hidden').value = select.value;
 }
 
-// On page load, restore state if old value was a counselor
+// Filter assignee dropdown when division changes
+function handleDivisionChange(divisionId) {
+    const assigneeSelect = document.getElementById('assignee_select');
+    const hiddenInput = document.getElementById('assigned_to_hidden');
+    const hint = document.getElementById('division_hint');
+    const options = assigneeSelect.querySelectorAll('option');
+
+    options.forEach(option => {
+        if (option.value === '' || option.value === '__counselor__') {
+            // Always show Unassigned and Counselor options
+            option.style.display = '';
+            return;
+        }
+        const optDivision = option.getAttribute('data-division');
+        if (!divisionId || optDivision == divisionId) {
+            option.style.display = '';
+        } else {
+            option.style.display = 'none';
+            // Deselect if currently selected and now hidden
+            if (option.selected) {
+                assigneeSelect.value = '';
+                hiddenInput.value = '';
+                // Also hide counselor dropdown if open
+                const wrapper = document.getElementById('counselor_dropdown_wrapper');
+                if (wrapper) wrapper.classList.add('hidden');
+            }
+        }
+    });
+
+    if (hint) {
+        hint.classList.toggle('hidden', !divisionId);
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     const assigneeSelect = document.getElementById('assignee_select');
     const hiddenInput = document.getElementById('assigned_to_hidden');
+    const divisionSelect = document.getElementById('division_id');
 
+    // Attach division change listener (only for non-directors who have the division dropdown)
+    if (divisionSelect) {
+        divisionSelect.addEventListener('change', function() {
+            handleDivisionChange(this.value);
+        });
+        // Apply initial filter if division is already selected
+        if (divisionSelect.value) {
+            handleDivisionChange(divisionSelect.value);
+        }
+    }
+
+    // Restore counselor state
     if (assigneeSelect.value === '__counselor__') {
         const wrapper = document.getElementById('counselor_dropdown_wrapper');
         if (wrapper) wrapper.classList.remove('hidden');
