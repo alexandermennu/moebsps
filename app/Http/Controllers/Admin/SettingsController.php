@@ -19,13 +19,12 @@ class SettingsController extends Controller
     {
         $validated = $request->validate([
             'settings' => 'required|array',
-            'settings.*.key' => 'required|string',
-            'settings.*.value' => 'nullable|string',
+            'settings.*' => 'nullable|string',
         ]);
 
-        foreach ($validated['settings'] as $setting) {
-            SystemSetting::where('key', $setting['key'])->update([
-                'value' => $setting['value'],
+        foreach ($validated['settings'] as $key => $value) {
+            SystemSetting::where('key', $key)->update([
+                'value' => $value ?? '',
             ]);
         }
 
