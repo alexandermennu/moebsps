@@ -1,3 +1,4 @@
+{{-- User action buttons partial: expects $u --}}
 <div class="flex justify-end gap-2">
     <a href="{{ route('admin.users.edit', $u) }}" class="text-sm text-slate-600 hover:text-slate-800">Edit</a>
     <form method="POST" action="{{ route('admin.users.toggle-active', $u) }}">

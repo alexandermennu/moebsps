@@ -13,29 +13,35 @@ class UserController extends Controller
 {
     public function index(Request $request)
     {
-        $divisions = Division::where('is_active', true)->withCount('users')->get();
+        $divisions = Division::where('is_active', true)->get();
 
-        // Full-access users (no division)
-        $fullAccessUsers = User::with('division')
-            ->whereIn('role', [User::ROLE_MINISTER, User::ROLE_ADMIN_ASSISTANT, User::ROLE_TECH_ASSISTANT])
-            ->where('role', '!=', User::ROLE_COUNSELOR);
+        // "Office of the Minister" roles
+        $officeRoles = [
+            User::ROLE_MINISTER,
+            User::ROLE_ADMIN_ASSISTANT,
+            User::ROLE_TECH_ASSISTANT,
+            User::ROLE_RECORD_CLERK,
+            User::ROLE_SECRETARY,
+        ];
 
+        // Office of the Minister users (may or may not have a division)
+        $officeQuery = User::with('division')->whereIn('role', $officeRoles);
         if ($request->filled('search')) {
             $search = $request->search;
-            $fullAccessUsers->where(function ($q) use ($search) {
+            $officeQuery->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
                   ->orWhere('email', 'like', "%{$search}%");
             });
         }
-        $fullAccessUsers = $fullAccessUsers->latest()->get();
+        $officeUsers = $officeQuery->latest()->get();
 
-        // Group division staff (non-counselor, non-full-access) by division
+        // Division staff (non-office, non-counselor) grouped by division
         $divisionStaff = [];
         $counselorCounts = [];
         foreach ($divisions as $division) {
             $query = User::with('division')
                 ->where('division_id', $division->id)
-                ->whereNotIn('role', [User::ROLE_MINISTER, User::ROLE_ADMIN_ASSISTANT, User::ROLE_TECH_ASSISTANT, User::ROLE_COUNSELOR]);
+                ->whereNotIn('role', array_merge($officeRoles, [User::ROLE_COUNSELOR]));
 
             if ($request->filled('search')) {
                 $search = $request->search;
@@ -55,11 +61,10 @@ class UserController extends Controller
             }
         }
 
-        // Users with no division (non-full-access, non-counselor)
+        // Users with no division that aren't office roles or counselors
         $noDivisionQuery = User::with('division')
             ->whereNull('division_id')
-            ->whereNotIn('role', [User::ROLE_MINISTER, User::ROLE_ADMIN_ASSISTANT, User::ROLE_TECH_ASSISTANT, User::ROLE_COUNSELOR]);
-
+            ->whereNotIn('role', array_merge($officeRoles, [User::ROLE_COUNSELOR]));
         if ($request->filled('search')) {
             $search = $request->search;
             $noDivisionQuery->where(function ($q) use ($search) {
@@ -69,7 +74,7 @@ class UserController extends Controller
         }
         $noDivisionUsers = $noDivisionQuery->latest()->get();
 
-        return view('admin.users.index', compact('fullAccessUsers', 'divisions', 'divisionStaff', 'counselorCounts', 'noDivisionUsers'));
+        return view('admin.users.index', compact('officeUsers', 'divisions', 'divisionStaff', 'counselorCounts', 'noDivisionUsers'));
     }
 
     public function counselors(Request $request)

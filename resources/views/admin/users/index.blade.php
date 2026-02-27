@@ -29,15 +29,14 @@
     </form>
 
     {{-- ══════════════════════════════════════════════════════
-         Full Access Users (Minister, Admin Asst, Tech Asst)
+         Office of the Minister
          ══════════════════════════════════════════════════════ --}}
-    @if($fullAccessUsers->count() > 0)
     <div class="bg-white rounded-lg border border-amber-200">
         <div class="px-5 py-3 border-b border-amber-100 bg-amber-50 rounded-t-lg">
             <div class="flex items-center gap-2">
-                <span class="text-lg">⭐</span>
-                <h3 class="text-sm font-semibold text-amber-800">Full Access Users</h3>
-                <span class="text-xs px-2 py-0.5 rounded-full bg-amber-200 text-amber-800">{{ $fullAccessUsers->count() }}</span>
+                <span class="text-lg">🏛️</span>
+                <h3 class="text-sm font-semibold text-amber-800">Office of the Minister</h3>
+                <span class="text-xs px-2 py-0.5 rounded-full bg-amber-200 text-amber-800">{{ $officeUsers->count() }}</span>
             </div>
         </div>
         <div class="overflow-x-auto">
@@ -52,28 +51,31 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
-                    @foreach($fullAccessUsers as $u)
-                    <tr class="hover:bg-amber-50/30">
-                        <td class="px-5 py-3 font-medium text-gray-800">{{ $u->name }}</td>
-                        <td class="px-5 py-3 text-gray-600">{{ $u->email }}</td>
-                        <td class="px-5 py-3">
-                            <span class="text-xs px-2 py-1 rounded-full bg-amber-100 text-amber-700">{{ $u->role_label }}</span>
-                        </td>
-                        <td class="px-5 py-3 text-center">
-                            <span class="text-xs px-2 py-1 rounded-full {{ $u->is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
-                                {{ $u->is_active ? 'Active' : 'Inactive' }}
-                            </span>
-                        </td>
-                        <td class="px-5 py-3 text-right">
-                            @include('admin.users._actions', ['u' => $u])
-                        </td>
-                    </tr>
-                    @endforeach
+                    @forelse($officeUsers as $u)
+                        <tr class="hover:bg-amber-50/30">
+                            <td class="px-5 py-3 font-medium text-gray-800">{{ $u->name }}</td>
+                            <td class="px-5 py-3 text-gray-600">{{ $u->email }}</td>
+                            <td class="px-5 py-3">
+                                <span class="text-xs px-2 py-1 rounded-full bg-amber-100 text-amber-700">{{ $u->role_label }}</span>
+                            </td>
+                            <td class="px-5 py-3 text-center">
+                                <span class="text-xs px-2 py-1 rounded-full {{ $u->is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
+                                    {{ $u->is_active ? 'Active' : 'Inactive' }}
+                                </span>
+                            </td>
+                            <td class="px-5 py-3 text-right">
+                                @include('admin.users._actions', ['u' => $u])
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="5" class="px-5 py-8 text-center text-gray-500">No office staff found.</td>
+                        </tr>
+                    @endforelse
                 </tbody>
             </table>
         </div>
     </div>
-    @endif
 
     {{-- ══════════════════════════════════════════════════════
          Division Sections
@@ -154,7 +156,7 @@
     <div class="bg-white rounded-lg border border-gray-200">
         <div class="px-5 py-3 border-b border-gray-100 bg-gray-50 rounded-t-lg">
             <div class="flex items-center gap-2">
-                <span class="text-lg">📂</span>
+                <span class="text-lg">⚠️</span>
                 <h3 class="text-sm font-semibold text-gray-700">No Division Assigned</h3>
                 <span class="text-xs px-2 py-0.5 rounded-full bg-gray-200 text-gray-600">{{ $noDivisionUsers->count() }}</span>
             </div>
