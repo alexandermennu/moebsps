@@ -1,18 +1,18 @@
 @extends('layouts.app')
 
 @section('title', $activity->title)
-@section('page-title', 'Activity Details')
+@section('page-title', 'Assignment Details')
 
 @section('content')
 <div class="max-w-4xl">
     <div class="mb-6 flex items-center justify-between">
-        <a href="{{ route('activities.index') }}" class="text-sm text-gray-500 hover:text-gray-700">← Back to Activities</a>
+        <a href="{{ route('activities.index') }}" class="text-sm text-gray-500 hover:text-gray-700">← Back to Assignments</a>
         <div class="flex gap-2">
             @if($user->canManageDivision())
                 <a href="{{ route('activities.edit', $activity) }}" class="px-3 py-1.5 bg-slate-800 text-white text-sm rounded-md hover:bg-slate-700">Edit</a>
             @endif
             @if($user->hasFullAccess())
-                <form method="POST" action="{{ route('activities.destroy', $activity) }}" onsubmit="return confirm('Are you sure you want to delete this activity?')">
+                <form method="POST" action="{{ route('activities.destroy', $activity) }}" onsubmit="return confirm('Are you sure you want to delete this assignment?')">
                     @csrf
                     @method('DELETE')
                     <button type="submit" class="px-3 py-1.5 bg-red-600 text-white text-sm rounded-md hover:bg-red-700">Delete</button>
@@ -62,7 +62,7 @@
 
                 @if($activity->is_escalated)
                     <div class="bg-orange-50 border border-orange-200 rounded-md p-3 mb-4">
-                        <p class="text-sm text-orange-800 font-medium">🔺 This activity has been escalated to {{ str_replace('_', ' ', ucfirst($activity->escalated_to)) }}</p>
+                        <p class="text-sm text-orange-800 font-medium">🔺 This assignment has been escalated to {{ str_replace('_', ' ', ucfirst($activity->escalated_to)) }}</p>
                         <p class="text-xs text-orange-600 mt-1">Escalated {{ $activity->escalated_at?->diffForHumans() }}</p>
                     </div>
                 @endif

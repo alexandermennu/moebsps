@@ -16,7 +16,7 @@
         <a href="{{ route('activities.index') }}" class="bg-white rounded-lg border border-gray-200 p-5 hover:border-blue-400 hover:shadow-md transition group">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-xs text-gray-500 uppercase tracking-wide">Total Activities</p>
+                    <p class="text-xs text-gray-500 uppercase tracking-wide">Total Assignments</p>
                     <p class="text-2xl font-bold text-gray-800 mt-1">{{ $stats['total_activities'] }}</p>
                 </div>
                 <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center group-hover:bg-blue-200 transition">
@@ -120,7 +120,7 @@
     <div class="flex flex-wrap gap-3">
         <a href="{{ route('activities.create') }}" class="inline-flex items-center gap-1.5 px-4 py-2 bg-slate-800 text-white text-sm font-medium rounded-md hover:bg-slate-700">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
-            New Activity
+            New Assignment
         </a>
         <a href="{{ route('weekly-updates.create') }}" class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-50">+ New Weekly Update</a>
         <a href="{{ route('weekly-plans.create') }}" class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-50">+ New Weekly Plan</a>
@@ -461,10 +461,10 @@
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {{-- Recent Activities --}}
+        {{-- Recent Assignments --}}
         <div class="bg-white rounded-lg border border-gray-200">
             <div class="px-5 py-4 border-b border-gray-200 flex items-center justify-between">
-                <h3 class="text-sm font-semibold text-gray-800">Recent Activities</h3>
+                <h3 class="text-sm font-semibold text-gray-800">Recent Assignments</h3>
                 <a href="{{ route('activities.index') }}" class="text-xs text-blue-600 hover:text-blue-800">View all →</a>
             </div>
             <div class="divide-y divide-gray-100">
@@ -483,7 +483,7 @@
                         <p class="text-xs text-gray-500 mt-1">{{ $activity->assignee?->name }} · Due: {{ $activity->due_date->format('M d, Y') }}</p>
                     </a>
                 @empty
-                    <div class="px-5 py-8 text-center text-sm text-gray-500">No activities yet.</div>
+                    <div class="px-5 py-8 text-center text-sm text-gray-500">No assignments yet.</div>
                 @endforelse
             </div>
         </div>

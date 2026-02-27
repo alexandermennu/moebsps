@@ -8,7 +8,7 @@
     {{-- Stats --}}
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div class="bg-white rounded-lg border border-gray-200 p-5">
-            <p class="text-xs text-gray-500 uppercase tracking-wide">Total Activities</p>
+            <p class="text-xs text-gray-500 uppercase tracking-wide">Total Assignments</p>
             <p class="text-2xl font-bold text-gray-800 mt-1">{{ $stats['total_activities'] }}</p>
         </div>
         <div class="bg-white rounded-lg border border-gray-200 p-5">
@@ -25,9 +25,9 @@
         </div>
     </div>
 
-    {{-- Recent Activities --}}
+    {{-- Recent Assignments --}}
     <div class="bg-white rounded-lg border border-gray-200 p-5">
-        <h3 class="text-sm font-semibold text-gray-800 mb-4">Division Activities</h3>
+        <h3 class="text-sm font-semibold text-gray-800 mb-4">Division Assignments</h3>
         <div class="space-y-2">
             @forelse($recentActivities as $activity)
                 <a href="{{ route('activities.show', $activity) }}" class="block p-3 border border-gray-100 rounded-md hover:bg-gray-50">
@@ -40,7 +40,7 @@
                     </div>
                 </a>
             @empty
-                <p class="text-sm text-gray-500">No activities in your division.</p>
+                <p class="text-sm text-gray-500">No assignments in your division.</p>
             @endforelse
         </div>
     </div>

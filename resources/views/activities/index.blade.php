@@ -1,18 +1,18 @@
 @extends('layouts.app')
 
-@section('title', 'Activities')
-@section('page-title', 'Activities')
+@section('title', 'Assignments')
+@section('page-title', 'Assignments')
 
 @section('content')
 <div class="space-y-4">
     <div class="flex items-center justify-between">
         <div>
-            <h2 class="text-xl font-bold text-gray-800">Activities</h2>
-            <p class="text-sm text-gray-500">Track and manage all bureau activities</p>
+            <h2 class="text-xl font-bold text-gray-800">Assignments</h2>
+            <p class="text-sm text-gray-500">Track and manage all bureau assignments</p>
         </div>
         @if($user->canManageDivision())
             <a href="{{ route('activities.create') }}" class="inline-flex items-center px-4 py-2 bg-slate-800 text-white text-sm font-medium rounded-md hover:bg-slate-700">
-                + New Activity
+                + New Assignment
             </a>
         @endif
     </div>
@@ -21,7 +21,7 @@
     <form method="GET" class="flex flex-wrap gap-3 items-end">
         <div>
             <label class="block text-xs text-gray-500 mb-1">Search</label>
-            <input type="text" name="search" value="{{ request('search') }}" placeholder="Search activities..."
+            <input type="text" name="search" value="{{ request('search') }}" placeholder="Search assignments..."
                    class="px-3 py-2 border border-gray-300 rounded-md text-sm w-48">
         </div>
         <div>
@@ -67,7 +67,7 @@
             <table class="w-full text-sm">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="text-left px-5 py-3 text-gray-600 font-medium">Activity</th>
+                        <th class="text-left px-5 py-3 text-gray-600 font-medium">Assignment</th>
                         <th class="text-left px-5 py-3 text-gray-600 font-medium">Division</th>
                         <th class="text-left px-5 py-3 text-gray-600 font-medium">Assigned To</th>
                         <th class="text-center px-5 py-3 text-gray-600 font-medium">Priority</th>
@@ -123,7 +123,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8" class="px-5 py-8 text-center text-gray-500">No activities found.</td>
+                            <td colspan="8" class="px-5 py-8 text-center text-gray-500">No assignments found.</td>
                         </tr>
                     @endforelse
                 </tbody>

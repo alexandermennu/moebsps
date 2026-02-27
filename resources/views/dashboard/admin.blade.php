@@ -25,7 +25,7 @@
             <p class="text-2xl font-bold text-gray-800 mt-1">{{ $stats['total_divisions'] }}</p>
         </div>
         <div class="bg-white rounded-lg border border-gray-200 p-5">
-            <p class="text-sm text-gray-500">Activities</p>
+            <p class="text-sm text-gray-500">Assignments</p>
             <p class="text-2xl font-bold text-gray-800 mt-1">{{ $stats['total_activities'] }}</p>
         </div>
         <div class="bg-white rounded-lg border border-gray-200 p-5">

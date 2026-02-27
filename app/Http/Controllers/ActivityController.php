@@ -19,8 +19,18 @@ class ActivityController extends Controller
         // Personal-only users see only their assigned tasks
         if ($user->hasPersonalAccessOnly()) {
             $query->where('assigned_to', $user->id);
+        } elseif ($user->isDirector()) {
+            // Directors see their division's assignments but NOT those from Office of the Minister
+            $query->byDivision($user->division_id)
+                  ->whereHas('creator', function ($q) {
+                      $q->whereNotIn('role', [
+                          User::ROLE_MINISTER,
+                          User::ROLE_ADMIN_ASSISTANT,
+                          User::ROLE_TECH_ASSISTANT,
+                      ]);
+                  });
         } elseif ($user->isDivisionScoped()) {
-            // Division-scoped users see their division's activities
+            // Other division-scoped users see their division's assignments
             $query->byDivision($user->division_id);
         }
 
@@ -51,13 +61,30 @@ class ActivityController extends Controller
         $user = auth()->user();
 
         if (!$user->canManageDivision()) {
-            abort(403, 'You do not have permission to create activities.');
+            abort(403, 'You do not have permission to create assignments.');
         }
 
         $divisions = Division::where('is_active', true)->get();
-        $users = User::where('is_active', true)->get();
 
-        return view('activities.create', compact('user', 'divisions', 'users'));
+        // Build smart user list: all non-counselor active users
+        $usersQuery = User::where('is_active', true)->where('role', '!=', User::ROLE_COUNSELOR);
+        if ($user->isDirector()) {
+            $usersQuery->where('division_id', $user->division_id);
+        }
+        $users = $usersQuery->orderBy('name')->get();
+
+        // Counselors list: only for full-access users or CGPC (Counseling Division) directors
+        $counselors = collect();
+        $canAssignCounselor = false;
+        if ($user->hasFullAccess() || ($user->isDirector() && $user->division?->code === 'CGPC')) {
+            $canAssignCounselor = true;
+            $counselors = User::where('is_active', true)
+                ->where('role', User::ROLE_COUNSELOR)
+                ->orderBy('name')
+                ->get();
+        }
+
+        return view('activities.create', compact('user', 'divisions', 'users', 'counselors', 'canAssignCounselor'));
     }
 
     public function store(Request $request)
@@ -79,6 +106,16 @@ class ActivityController extends Controller
             abort(403);
         }
 
+        // Validate counselor assignment: only full-access or CGPC director
+        if ($validated['assigned_to']) {
+            $assignee = User::find($validated['assigned_to']);
+            if ($assignee && $assignee->isCounselor()) {
+                if (!$user->hasFullAccess() && !($user->isDirector() && $user->division?->code === 'CGPC')) {
+                    abort(403, 'You do not have permission to assign tasks to counselors.');
+                }
+            }
+        }
+
         if ($user->isDirector()) {
             $validated['division_id'] = $user->division_id;
         }
@@ -93,14 +130,14 @@ class ActivityController extends Controller
             BureauNotification::send(
                 $activity->assigned_to,
                 'reminder',
-                'New Activity Assigned',
-                "You have been assigned a new activity: {$activity->title}",
+                'New Assignment',
+                "You have been assigned a new task: {$activity->title}",
                 route('activities.show', $activity)
             );
         }
 
         return redirect()->route('activities.index')
-            ->with('success', 'Activity created successfully.');
+            ->with('success', 'Assignment created successfully.');
     }
 
     public function show(Activity $activity)
@@ -115,6 +152,11 @@ class ActivityController extends Controller
             abort(403);
         }
 
+        // Directors cannot view assignments created by Office of the Minister
+        if ($user->isDirector() && $activity->creator && $activity->creator->hasFullAccess()) {
+            abort(403);
+        }
+
         $activity->load(['division', 'assignee', 'creator', 'comments.user']);
 
         return view('activities.show', compact('activity', 'user'));
@@ -125,17 +167,42 @@ class ActivityController extends Controller
         $user = auth()->user();
 
         if (!$user->canManageDivision()) {
-            abort(403, 'You do not have permission to edit activities.');
+            abort(403, 'You do not have permission to edit assignments.');
         }
 
         if ($user->isDirector() && $activity->division_id !== $user->division_id) {
             abort(403);
         }
 
-        $divisions = Division::where('is_active', true)->get();
-        $users = User::where('is_active', true)->get();
+        // Directors cannot edit assignments created by Office of the Minister
+        if ($user->isDirector() && $activity->creator && $activity->creator->hasFullAccess()) {
+            abort(403);
+        }
 
-        return view('activities.edit', compact('activity', 'user', 'divisions', 'users'));
+        $divisions = Division::where('is_active', true)->get();
+
+        // Build smart user list: all non-counselor active users
+        $usersQuery = User::where('is_active', true)->where('role', '!=', User::ROLE_COUNSELOR);
+        if ($user->isDirector()) {
+            $usersQuery->where('division_id', $user->division_id);
+        }
+        $users = $usersQuery->orderBy('name')->get();
+
+        // Counselors list: only for full-access users or CGPC director
+        $counselors = collect();
+        $canAssignCounselor = false;
+        if ($user->hasFullAccess() || ($user->isDirector() && $user->division?->code === 'CGPC')) {
+            $canAssignCounselor = true;
+            $counselors = User::where('is_active', true)
+                ->where('role', User::ROLE_COUNSELOR)
+                ->orderBy('name')
+                ->get();
+        }
+
+        // Check if current assignee is a counselor
+        $assigneeIsCounselor = $activity->assignee && $activity->assignee->isCounselor();
+
+        return view('activities.edit', compact('activity', 'user', 'divisions', 'users', 'counselors', 'canAssignCounselor', 'assigneeIsCounselor'));
     }
 
     public function update(Request $request, Activity $activity)
@@ -147,6 +214,11 @@ class ActivityController extends Controller
         }
 
         if ($user->isDirector() && $activity->division_id !== $user->division_id) {
+            abort(403);
+        }
+
+        // Directors cannot edit assignments from Office of the Minister
+        if ($user->isDirector() && $activity->creator && $activity->creator->hasFullAccess()) {
             abort(403);
         }
 
@@ -163,6 +235,16 @@ class ActivityController extends Controller
             'remarks' => 'nullable|string',
         ]);
 
+        // Validate counselor assignment
+        if ($validated['assigned_to']) {
+            $assignee = User::find($validated['assigned_to']);
+            if ($assignee && $assignee->isCounselor()) {
+                if (!$user->hasFullAccess() && !($user->isDirector() && $user->division?->code === 'CGPC')) {
+                    abort(403, 'You do not have permission to assign tasks to counselors.');
+                }
+            }
+        }
+
         if ($validated['status'] === 'completed') {
             $validated['completed_date'] = now();
             $validated['progress_percentage'] = 100;
@@ -176,7 +258,7 @@ class ActivityController extends Controller
         $activity->update($validated);
 
         return redirect()->route('activities.show', $activity)
-            ->with('success', 'Activity updated successfully.');
+            ->with('success', 'Assignment updated successfully.');
     }
 
     public function addComment(Request $request, Activity $activity)
@@ -206,6 +288,6 @@ class ActivityController extends Controller
         $activity->delete();
 
         return redirect()->route('activities.index')
-            ->with('success', 'Activity deleted successfully.');
+            ->with('success', 'Assignment deleted successfully.');
     }
 }

@@ -25,7 +25,7 @@
         </div>
     </div>
 
-    {{-- My Activities --}}
+    {{-- My Assignments --}}
     <div class="bg-white rounded-lg border border-gray-200 p-5">
         <h3 class="text-sm font-semibold text-gray-800 mb-4">My Tasks</h3>
         <div class="space-y-2">

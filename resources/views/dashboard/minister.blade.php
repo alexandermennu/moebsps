@@ -17,7 +17,7 @@
             <p class="text-2xl font-bold text-gray-800 mt-1">{{ $stats['total_divisions'] }}</p>
         </div>
         <div class="bg-white rounded-lg border border-gray-200 p-5">
-            <p class="text-sm text-gray-500">Total Activities</p>
+            <p class="text-sm text-gray-500">Total Assignments</p>
             <p class="text-2xl font-bold text-gray-800 mt-1">{{ $stats['total_activities'] }}</p>
         </div>
         <div class="bg-white rounded-lg border border-gray-200 p-5">
@@ -75,10 +75,10 @@
         </div>
     </div>
 
-    {{-- Critical Activities Escalated to Minister --}}
+    {{-- Critical Assignments Escalated to Minister --}}
     <div class="bg-white rounded-lg border border-red-200">
         <div class="px-5 py-4 border-b border-red-200 bg-red-50">
-            <h3 class="font-semibold text-red-800">🚨 Activities Escalated to Minister</h3>
+            <h3 class="font-semibold text-red-800">🚨 Assignments Escalated to Minister</h3>
         </div>
         <div class="divide-y divide-gray-100">
             @forelse($criticalActivities as $activity)
@@ -94,7 +94,7 @@
                     </div>
                 </a>
             @empty
-                <div class="px-5 py-8 text-center text-sm text-gray-500">No activities escalated to minister level.</div>
+                <div class="px-5 py-8 text-center text-sm text-gray-500">No assignments escalated to minister level.</div>
             @endforelse
         </div>
     </div>

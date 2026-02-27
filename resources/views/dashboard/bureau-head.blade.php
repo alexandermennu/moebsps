@@ -17,15 +17,15 @@
             <p class="text-2xl font-bold text-gray-800 mt-1">{{ $stats['total_divisions'] }}</p>
         </div>
         <div class="bg-white rounded-lg border border-gray-200 p-5">
-            <p class="text-sm text-gray-500">Total Activities</p>
+            <p class="text-sm text-gray-500">Total Assignments</p>
             <p class="text-2xl font-bold text-gray-800 mt-1">{{ $stats['total_activities'] }}</p>
         </div>
         <div class="bg-white rounded-lg border border-gray-200 p-5">
-            <p class="text-sm text-gray-500">Overdue Activities</p>
+            <p class="text-sm text-gray-500">Overdue Assignments</p>
             <p class="text-2xl font-bold text-red-600 mt-1">{{ $stats['overdue_activities'] }}</p>
         </div>
         <div class="bg-white rounded-lg border border-gray-200 p-5">
-            <p class="text-sm text-gray-500">Escalated Activities</p>
+            <p class="text-sm text-gray-500">Escalated Assignments</p>
             <p class="text-2xl font-bold text-orange-600 mt-1">{{ $stats['escalated_activities'] }}</p>
         </div>
         <div class="bg-white rounded-lg border border-gray-200 p-5">
@@ -48,7 +48,7 @@
                 <thead class="bg-gray-50">
                     <tr>
                         <th class="text-left px-5 py-3 text-gray-600 font-medium">Division</th>
-                        <th class="text-center px-5 py-3 text-gray-600 font-medium">Activities</th>
+                        <th class="text-center px-5 py-3 text-gray-600 font-medium">Assignments</th>
                         <th class="text-center px-5 py-3 text-gray-600 font-medium">Completed</th>
                         <th class="text-center px-5 py-3 text-gray-600 font-medium">Overdue</th>
                         <th class="text-center px-5 py-3 text-gray-600 font-medium">Completion Rate</th>
@@ -84,10 +84,10 @@
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {{-- Escalated Activities --}}
+        {{-- Escalated Assignments --}}
         <div class="bg-white rounded-lg border border-orange-200">
             <div class="px-5 py-4 border-b border-orange-200 bg-orange-50">
-                <h3 class="font-semibold text-orange-800">🔺 Escalated Activities</h3>
+                <h3 class="font-semibold text-orange-800">🔺 Escalated Assignments</h3>
             </div>
             <div class="divide-y divide-gray-100">
                 @forelse($escalatedActivities as $activity)
@@ -96,7 +96,7 @@
                         <p class="text-xs text-gray-500 mt-1">{{ $activity->division->name }} · Due: {{ $activity->due_date->format('M d, Y') }}</p>
                     </a>
                 @empty
-                    <div class="px-5 py-8 text-center text-sm text-gray-500">No escalated activities.</div>
+                    <div class="px-5 py-8 text-center text-sm text-gray-500">No escalated assignments.</div>
                 @endforelse
             </div>
         </div>
