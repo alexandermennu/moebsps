@@ -105,4 +105,18 @@ class UserController extends Controller
         return redirect()->route('admin.users.index')
             ->with('success', 'User ' . ($user->is_active ? 'activated' : 'deactivated') . ' successfully.');
     }
+
+    public function destroy(User $user)
+    {
+        if ($user->id === auth()->id()) {
+            return redirect()->route('admin.users.index')
+                ->with('error', 'You cannot delete your own account.');
+        }
+
+        $name = $user->name;
+        $user->delete();
+
+        return redirect()->route('admin.users.index')
+            ->with('success', "User \"{$name}\" has been deleted.");
+    }
 }

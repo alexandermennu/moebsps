@@ -12,6 +12,7 @@ use App\Http\Controllers\LivePollController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\DivisionController;
 use App\Http\Controllers\Admin\SettingsController;
+use App\Http\Controllers\StaffController;
 
 /*
 |--------------------------------------------------------------------------
@@ -65,6 +66,16 @@ Route::middleware(['auth', 'active'])->group(function () {
     Route::get('/messages/{message}', [MessageController::class, 'show'])->name('messages.show');
     Route::post('/messages/{message}/reply', [MessageController::class, 'reply'])->name('messages.reply');
     Route::delete('/messages/{message}', [MessageController::class, 'destroy'])->name('messages.destroy');
+
+    // Director Staff Management
+    Route::middleware(['role:director'])->prefix('staff')->name('staff.')->group(function () {
+        Route::get('/', [StaffController::class, 'index'])->name('index');
+        Route::get('/create', [StaffController::class, 'create'])->name('create');
+        Route::post('/', [StaffController::class, 'store'])->name('store');
+        Route::get('/{staff_user}/edit', [StaffController::class, 'edit'])->name('edit');
+        Route::put('/{staff_user}', [StaffController::class, 'update'])->name('update');
+        Route::delete('/{staff_user}', [StaffController::class, 'destroy'])->name('destroy');
+    });
 
     /*
     |--------------------------------------------------------------------------

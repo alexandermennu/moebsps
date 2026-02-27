@@ -220,6 +220,28 @@ class User extends Authenticatable
         ]);
     }
 
+    /**
+     * Can create staff in their division (Directors only)
+     */
+    public function canCreateStaff(): bool
+    {
+        return $this->role === self::ROLE_DIRECTOR;
+    }
+
+    /**
+     * Roles a director is allowed to assign to staff they create.
+     */
+    public static function directorAssignableRoles(): array
+    {
+        return [
+            self::ROLE_SUPERVISOR   => 'Supervisor',
+            self::ROLE_COORDINATOR  => 'Coordinator',
+            self::ROLE_COUNSELOR    => 'Counselor',
+            self::ROLE_RECORD_CLERK => 'Record Clerk',
+            self::ROLE_SECRETARY    => 'Secretary',
+        ];
+    }
+
     public function hasRole(string|array $roles): bool
     {
         if (is_string($roles)) {
