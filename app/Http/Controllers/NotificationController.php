@@ -11,6 +11,7 @@ class NotificationController extends Controller
     {
         $notifications = $request->user()
             ->bureauNotifications()
+            ->where('type', '!=', 'message')
             ->latest()
             ->paginate(20);
 
@@ -36,6 +37,7 @@ class NotificationController extends Controller
     {
         $request->user()
             ->bureauNotifications()
+            ->where('type', '!=', 'message')
             ->unread()
             ->update([
                 'is_read' => true,
