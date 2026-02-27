@@ -205,7 +205,42 @@ class DashboardController extends Controller
             ->pluck('total', 'role')
             ->toArray();
 
-        return view('dashboard.full-access', compact('stats', 'divisions', 'escalatedActivities', 'pendingReviews', 'pendingPlanReviews', 'approvedPlans', 'approvedUpdates', 'recentActivities', 'staffByRole', 'trackedStats', 'flaggedActivities', 'user'));
+        // Division-level weekly update summaries
+        $divisionUpdateSummaries = Division::where('is_active', true)
+            ->with(['weeklyUpdates' => function ($q) {
+                $q->with('activities')
+                    ->whereIn('status', ['submitted', 'approved'])
+                    ->latest()
+                    ->take(5);
+            }])
+            ->withCount([
+                'weeklyUpdates as total_updates_count',
+                'weeklyUpdates as approved_updates_count' => fn($q) => $q->where('status', 'approved'),
+                'weeklyUpdates as submitted_updates_count' => fn($q) => $q->where('status', 'submitted'),
+                'weeklyUpdates as rejected_updates_count' => fn($q) => $q->where('status', 'rejected'),
+                'weeklyUpdates as draft_updates_count' => fn($q) => $q->where('status', 'draft'),
+            ])
+            ->get()
+            ->map(function ($division) {
+                // Calculate activity status breakdown from latest approved update
+                $latestApproved = $division->weeklyUpdates->where('status', 'approved')->first();
+                $division->latest_update = $latestApproved ?? $division->weeklyUpdates->first();
+                $division->activity_stats = ['completed' => 0, 'ongoing' => 0, 'not_started' => 0, 'na' => 0];
+                if ($division->latest_update && $division->latest_update->activities->count()) {
+                    foreach ($division->latest_update->activities as $act) {
+                        $flag = $act->status_flag ?? 'na';
+                        if (isset($division->activity_stats[$flag])) {
+                            $division->activity_stats[$flag]++;
+                        }
+                    }
+                }
+                $division->submission_rate = $division->total_updates_count > 0
+                    ? round(($division->approved_updates_count / $division->total_updates_count) * 100)
+                    : 0;
+                return $division;
+            });
+
+        return view('dashboard.full-access', compact('stats', 'divisions', 'escalatedActivities', 'pendingReviews', 'pendingPlanReviews', 'approvedPlans', 'approvedUpdates', 'recentActivities', 'staffByRole', 'trackedStats', 'flaggedActivities', 'divisionUpdateSummaries', 'user'));
     }
 
     private function ministerDashboard(User $user)

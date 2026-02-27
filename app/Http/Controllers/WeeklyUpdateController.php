@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\BureauNotification;
+use App\Models\Division;
 use App\Models\UpdateActivity;
 use App\Models\UpdateActivityComment;
 use App\Models\WeeklyUpdate;
@@ -228,6 +229,132 @@ class WeeklyUpdateController extends Controller
 
         return redirect()->route('weekly-updates.show', $weeklyUpdate)
             ->with('success', 'Weekly update ' . $validated['action'] . ' successfully.');
+    }
+
+    public function consolidated(Request $request)
+    {
+        $user = $request->user();
+
+        if (!$user->hasFullAccess() && !$user->isDirector()) {
+            abort(403);
+        }
+
+        // Week filter: default to current week
+        $weekStart = $request->filled('week_start') ? $request->week_start : now()->startOfWeek()->format('Y-m-d');
+        $weekEnd = $request->filled('week_end') ? $request->week_end : now()->endOfWeek()->format('Y-m-d');
+        $statusFilter = $request->input('status', '');
+
+        $query = WeeklyUpdate::with(['division', 'submitter', 'reviewer', 'activities'])
+            ->where('week_start', '>=', $weekStart)
+            ->where('week_end', '<=', $weekEnd);
+
+        if ($user->isDirector() && !$user->hasFullAccess()) {
+            $query->where('division_id', $user->division_id);
+        }
+
+        if ($statusFilter) {
+            $query->where('status', $statusFilter);
+        } else {
+            $query->whereIn('status', ['submitted', 'approved']);
+        }
+
+        $updates = $query->orderBy('division_id')->latest()->get();
+
+        // Group by division
+        $groupedUpdates = $updates->groupBy(fn($u) => $u->division->name ?? 'Unknown');
+
+        // Division analytics
+        $divisions = Division::where('is_active', true)->get();
+        $divisionAnalytics = [];
+        foreach ($divisions as $division) {
+            $divUpdates = $updates->where('division_id', $division->id);
+            $allActivities = $divUpdates->flatMap->activities;
+            $divisionAnalytics[$division->name] = [
+                'total_updates' => $divUpdates->count(),
+                'total_activities' => $allActivities->count(),
+                'completed' => $allActivities->where('status_flag', 'completed')->count(),
+                'ongoing' => $allActivities->where('status_flag', 'ongoing')->count(),
+                'not_started' => $allActivities->where('status_flag', 'not_started')->count(),
+            ];
+        }
+
+        return view('weekly-updates.consolidated', compact(
+            'groupedUpdates', 'divisionAnalytics', 'weekStart', 'weekEnd', 'statusFilter', 'user'
+        ));
+    }
+
+    public function downloadSingle(Request $request, WeeklyUpdate $weeklyUpdate)
+    {
+        $user = $request->user();
+
+        if ($user->isDivisionScoped() && $weeklyUpdate->division_id !== $user->division_id) {
+            abort(403);
+        }
+
+        $weeklyUpdate->load(['division', 'submitter', 'reviewer', 'activities']);
+        $format = $request->input('format', 'pdf');
+
+        $html = view('weekly-updates.download', [
+            'updates' => collect([$weeklyUpdate]),
+            'title' => "Weekly Update – {$weeklyUpdate->division->name}",
+            'subtitle' => "Week of {$weeklyUpdate->week_start->format('M d')} – {$weeklyUpdate->week_end->format('M d, Y')}",
+            'isConsolidated' => false,
+            'format' => $format,
+        ])->render();
+
+        if ($format === 'word') {
+            $filename = "weekly-update-{$weeklyUpdate->division->code}-{$weeklyUpdate->week_start->format('Y-m-d')}.doc";
+            return response($html)
+                ->header('Content-Type', 'application/vnd.ms-word')
+                ->header('Content-Disposition', "attachment; filename=\"{$filename}\"");
+        }
+
+        // For PDF, return the printable page so the browser can print/save as PDF
+        return response($html);
+    }
+
+    public function downloadConsolidated(Request $request)
+    {
+        $user = $request->user();
+
+        if (!$user->hasFullAccess() && !$user->isDirector()) {
+            abort(403);
+        }
+
+        $weekStart = $request->input('week_start', now()->startOfWeek()->format('Y-m-d'));
+        $weekEnd = $request->input('week_end', now()->endOfWeek()->format('Y-m-d'));
+        $format = $request->input('format', 'pdf');
+
+        $query = WeeklyUpdate::with(['division', 'submitter', 'reviewer', 'activities'])
+            ->where('week_start', '>=', $weekStart)
+            ->where('week_end', '<=', $weekEnd)
+            ->whereIn('status', ['submitted', 'approved']);
+
+        if ($user->isDirector() && !$user->hasFullAccess()) {
+            $query->where('division_id', $user->division_id);
+        }
+
+        $updates = $query->orderBy('division_id')->latest()->get();
+        $grouped = $updates->groupBy(fn($u) => $u->division->name ?? 'Unknown');
+
+        $html = view('weekly-updates.download', [
+            'updates' => $updates,
+            'grouped' => $grouped,
+            'title' => 'Consolidated Weekly Updates Report',
+            'subtitle' => "Period: " . \Carbon\Carbon::parse($weekStart)->format('M d') . " – " . \Carbon\Carbon::parse($weekEnd)->format('M d, Y'),
+            'isConsolidated' => true,
+            'format' => $format,
+        ])->render();
+
+        if ($format === 'word') {
+            $filename = "consolidated-updates-{$weekStart}-to-{$weekEnd}.doc";
+            return response($html)
+                ->header('Content-Type', 'application/vnd.ms-word')
+                ->header('Content-Disposition', "attachment; filename=\"{$filename}\"");
+        }
+
+        // For PDF, return the printable page
+        return response($html);
     }
 
     private function notifyBureauHead(WeeklyUpdate $update): void

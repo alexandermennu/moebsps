@@ -183,6 +183,100 @@
     </div>
     @endif
 
+    {{-- Weekly Updates Summary by Division --}}
+    <div>
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-bold text-gray-800">📄 Weekly Updates Summary</h3>
+            <a href="{{ route('weekly-updates.consolidated') }}" class="inline-flex items-center gap-1.5 px-4 py-2 bg-slate-800 text-white text-sm font-medium rounded-md hover:bg-slate-700">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                View Consolidated Reports
+            </a>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+            @foreach($divisionUpdateSummaries as $divSummary)
+                <div class="bg-white rounded-lg border border-gray-200 p-5 hover:shadow-md transition">
+                    <div class="flex items-center justify-between mb-3">
+                        <div>
+                            <h4 class="text-sm font-semibold text-gray-800">{{ $divSummary->name }}</h4>
+                            <p class="text-xs text-gray-400">{{ $divSummary->code }}</p>
+                        </div>
+                        @if($divSummary->latest_update)
+                            <span class="text-xs px-2 py-0.5 rounded-full
+                                {{ $divSummary->latest_update->status === 'approved' ? 'bg-green-100 text-green-700' : '' }}
+                                {{ $divSummary->latest_update->status === 'submitted' ? 'bg-blue-100 text-blue-700' : '' }}
+                                {{ $divSummary->latest_update->status === 'rejected' ? 'bg-red-100 text-red-700' : '' }}
+                                {{ $divSummary->latest_update->status === 'draft' ? 'bg-gray-100 text-gray-700' : '' }}">
+                                {{ ucfirst($divSummary->latest_update->status) }}
+                            </span>
+                        @endif
+                    </div>
+
+                    {{-- Analytics row --}}
+                    <div class="grid grid-cols-4 gap-2 mb-3">
+                        <div class="text-center p-1.5 bg-gray-50 rounded">
+                            <p class="text-sm font-bold text-gray-800">{{ $divSummary->total_updates_count }}</p>
+                            <p class="text-[10px] text-gray-400">Total</p>
+                        </div>
+                        <div class="text-center p-1.5 bg-green-50 rounded">
+                            <p class="text-sm font-bold text-green-700">{{ $divSummary->approved_updates_count }}</p>
+                            <p class="text-[10px] text-green-500">Approved</p>
+                        </div>
+                        <div class="text-center p-1.5 bg-blue-50 rounded">
+                            <p class="text-sm font-bold text-blue-700">{{ $divSummary->submitted_updates_count }}</p>
+                            <p class="text-[10px] text-blue-500">Pending</p>
+                        </div>
+                        <div class="text-center p-1.5 bg-red-50 rounded">
+                            <p class="text-sm font-bold text-red-700">{{ $divSummary->rejected_updates_count }}</p>
+                            <p class="text-[10px] text-red-500">Rejected</p>
+                        </div>
+                    </div>
+
+                    {{-- Latest update activity status breakdown --}}
+                    @if($divSummary->latest_update)
+                        <div class="mb-3">
+                            <p class="text-xs text-gray-500 mb-1.5">Latest Report: {{ $divSummary->latest_update->week_start->format('M d') }} – {{ $divSummary->latest_update->week_end->format('M d') }}</p>
+                            @if(array_sum($divSummary->activity_stats) > 0)
+                                <div class="flex items-center gap-1.5 text-xs">
+                                    @if($divSummary->activity_stats['completed'] > 0)
+                                        <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-green-100 text-green-700">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>{{ $divSummary->activity_stats['completed'] }}
+                                        </span>
+                                    @endif
+                                    @if($divSummary->activity_stats['ongoing'] > 0)
+                                        <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-yellow-100 text-yellow-700">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-yellow-400"></span>{{ $divSummary->activity_stats['ongoing'] }}
+                                        </span>
+                                    @endif
+                                    @if($divSummary->activity_stats['not_started'] > 0)
+                                        <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-red-100 text-red-700">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>{{ $divSummary->activity_stats['not_started'] }}
+                                        </span>
+                                    @endif
+                                </div>
+                            @endif
+                        </div>
+
+                        {{-- Approval rate bar --}}
+                        <div class="flex items-center gap-2">
+                            <div class="flex-1 bg-gray-100 rounded-full h-1.5">
+                                <div class="h-1.5 rounded-full {{ $divSummary->submission_rate >= 70 ? 'bg-green-500' : ($divSummary->submission_rate >= 40 ? 'bg-yellow-500' : 'bg-red-500') }}" style="width: {{ $divSummary->submission_rate }}%"></div>
+                            </div>
+                            <span class="text-xs text-gray-500">{{ $divSummary->submission_rate }}%</span>
+                        </div>
+                        <p class="text-[10px] text-gray-400 mt-1">Approval rate</p>
+
+                        <div class="mt-3 pt-3 border-t border-gray-100">
+                            <a href="{{ route('weekly-updates.show', $divSummary->latest_update) }}" class="text-xs text-blue-600 hover:text-blue-800">View latest report →</a>
+                        </div>
+                    @else
+                        <p class="text-xs text-gray-400 italic">No updates submitted yet.</p>
+                    @endif
+                </div>
+            @endforeach
+        </div>
+    </div>
+
     {{-- Bureau Overview Section --}}
     <div>
         <h3 class="text-lg font-bold text-gray-800 mb-4">📊 Bureau Overview</h3>

@@ -48,9 +48,12 @@ Route::middleware(['auth', 'active'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // Weekly Updates
+    Route::get('weekly-updates/consolidated', [WeeklyUpdateController::class, 'consolidated'])->name('weekly-updates.consolidated');
+    Route::get('weekly-updates/download-consolidated', [WeeklyUpdateController::class, 'downloadConsolidated'])->name('weekly-updates.download-consolidated');
     Route::resource('weekly-updates', WeeklyUpdateController::class);
     Route::post('weekly-updates/{weekly_update}/review', [WeeklyUpdateController::class, 'review'])->name('weekly-updates.review');
     Route::post('weekly-updates/activity/{activity}/comment', [WeeklyUpdateController::class, 'activityComment'])->name('weekly-updates.activity-comment');
+    Route::get('weekly-updates/{weekly_update}/download', [WeeklyUpdateController::class, 'downloadSingle'])->name('weekly-updates.download');
 
     // Weekly Plans
     Route::resource('weekly-plans', WeeklyPlanController::class);
