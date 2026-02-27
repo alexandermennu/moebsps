@@ -68,11 +68,11 @@
 
         {{-- Actions --}}
         <div class="mt-6 pt-4 border-t border-gray-200 flex gap-3">
-            @if($user->isDirector() && in_array($weeklyUpdate->status, ['draft', 'rejected']))
+            @if($user->canManageDivision() && in_array($weeklyUpdate->status, ['draft', 'rejected']))
                 <a href="{{ route('weekly-updates.edit', $weeklyUpdate) }}" class="px-4 py-2 bg-slate-800 text-white text-sm font-medium rounded-md hover:bg-slate-700">Edit</a>
             @endif
 
-            @if(($user->isBureauHead() || $user->isMinister()) && $weeklyUpdate->status === 'submitted')
+            @if($user->canReview() && $weeklyUpdate->status === 'submitted')
                 <form method="POST" action="{{ route('weekly-updates.review', $weeklyUpdate) }}" class="flex gap-3 items-end flex-1">
                     @csrf
                     <div class="flex-1">

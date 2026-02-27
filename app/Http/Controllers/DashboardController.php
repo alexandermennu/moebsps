@@ -15,13 +15,20 @@ class DashboardController extends Controller
     {
         $user = $request->user();
 
-        return match($user->role) {
-            'director' => $this->directorDashboard($user),
-            'bureau_head' => $this->bureauHeadDashboard($user),
-            'minister' => $this->ministerDashboard($user),
-            'admin' => $this->adminDashboard($user),
-            default => abort(403),
-        };
+        if ($user->hasFullAccess()) {
+            return $this->fullAccessDashboard($user);
+        }
+
+        if ($user->isDirector()) {
+            return $this->directorDashboard($user);
+        }
+
+        if (in_array($user->role, ['supervisor', 'coordinator', 'counselor'])) {
+            return $this->limitedDivisionDashboard($user);
+        }
+
+        // Record Clerk, Secretary - personal access
+        return $this->personalDashboard($user);
     }
 
     private function directorDashboard(User $user)
@@ -53,7 +60,7 @@ class DashboardController extends Controller
         return view('dashboard.director', compact('stats', 'recentActivities', 'overdueActivities', 'user'));
     }
 
-    private function bureauHeadDashboard(User $user)
+    private function fullAccessDashboard(User $user)
     {
         $divisions = Division::where('is_active', true)->withCount([
             'activities',
@@ -68,6 +75,10 @@ class DashboardController extends Controller
             'escalated_activities' => Activity::escalated()->count(),
             'pending_updates' => WeeklyUpdate::where('status', 'submitted')->count(),
             'pending_plans' => WeeklyPlan::where('status', 'submitted')->count(),
+            'completion_rate' => Activity::count() > 0
+                ? round((Activity::where('status', 'completed')->count() / Activity::count()) * 100)
+                : 0,
+            'total_users' => User::where('is_active', true)->count(),
         ];
 
         $escalatedActivities = Activity::escalated()
@@ -82,7 +93,9 @@ class DashboardController extends Controller
             ->take(5)
             ->get();
 
-        return view('dashboard.bureau-head', compact('stats', 'divisions', 'escalatedActivities', 'pendingReviews', 'user'));
+        $recentUsers = User::latest()->take(5)->get();
+
+        return view('dashboard.full-access', compact('stats', 'divisions', 'escalatedActivities', 'pendingReviews', 'recentUsers', 'user'));
     }
 
     private function ministerDashboard(User $user)
@@ -112,18 +125,41 @@ class DashboardController extends Controller
         return view('dashboard.minister', compact('stats', 'divisions', 'criticalActivities', 'user'));
     }
 
-    private function adminDashboard(User $user)
+    private function limitedDivisionDashboard(User $user)
     {
+        $divisionId = $user->division_id;
+
         $stats = [
-            'total_users' => User::count(),
-            'active_users' => User::where('is_active', true)->count(),
-            'total_divisions' => Division::count(),
-            'total_activities' => Activity::count(),
-            'overdue_activities' => Activity::overdue()->count(),
+            'total_activities' => Activity::byDivision($divisionId)->count(),
+            'in_progress' => Activity::byDivision($divisionId)->where('status', 'in_progress')->count(),
+            'completed' => Activity::byDivision($divisionId)->where('status', 'completed')->count(),
+            'overdue' => Activity::byDivision($divisionId)->overdue()->count(),
         ];
 
-        $recentUsers = User::latest()->take(5)->get();
+        $recentActivities = Activity::byDivision($divisionId)
+            ->with('assignee')
+            ->latest()
+            ->take(10)
+            ->get();
 
-        return view('dashboard.admin', compact('stats', 'recentUsers', 'user'));
+        return view('dashboard.limited-division', compact('stats', 'recentActivities', 'user'));
+    }
+
+    private function personalDashboard(User $user)
+    {
+        $myActivities = Activity::where('assigned_to', $user->id)
+            ->with('division')
+            ->latest()
+            ->take(10)
+            ->get();
+
+        $stats = [
+            'assigned_to_me' => Activity::where('assigned_to', $user->id)->count(),
+            'in_progress' => Activity::where('assigned_to', $user->id)->where('status', 'in_progress')->count(),
+            'completed' => Activity::where('assigned_to', $user->id)->where('status', 'completed')->count(),
+            'overdue' => Activity::where('assigned_to', $user->id)->overdue()->count(),
+        ];
+
+        return view('dashboard.personal', compact('stats', 'myActivities', 'user'));
     }
 }

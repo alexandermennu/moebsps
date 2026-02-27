@@ -12,7 +12,7 @@ use Illuminate\Console\Command;
 class EscalateOverdueActivities extends Command
 {
     protected $signature = 'activities:escalate';
-    protected $description = 'Escalate overdue activities to Bureau Head and Minister';
+    protected $description = 'Escalate overdue activities to full-access users and Minister';
 
     public function handle(): int
     {
@@ -22,25 +22,26 @@ class EscalateOverdueActivities extends Command
 
         $escalatedCount = 0;
 
-        // Escalate to Bureau Head
+        // Escalate to full-access users (Admin Assistant, Tech Assistant)
         $toEscalate = Activity::where('is_overdue', true)
             ->where('is_escalated', false)
             ->whereNotNull('due_date')
             ->whereRaw('JULIANDAY(?) - JULIANDAY(due_date) >= ?', [$today, $escalationDays])
             ->get();
 
-        $bureauHeads = User::where('role', User::ROLE_BUREAU_HEAD)->where('is_active', true)->get();
+        $fullAccessUsers = User::whereIn('role', [User::ROLE_ADMIN_ASSISTANT, User::ROLE_TECH_ASSISTANT])
+            ->where('is_active', true)->get();
 
         foreach ($toEscalate as $activity) {
             $activity->update([
                 'is_escalated' => true,
-                'escalated_to' => 'bureau_head',
+                'escalated_to' => 'admin',
                 'escalated_at' => now(),
             ]);
 
-            foreach ($bureauHeads as $head) {
+            foreach ($fullAccessUsers as $admin) {
                 BureauNotification::send(
-                    $head->id,
+                    $admin->id,
                     'escalation',
                     'Escalated Activity: ' . $activity->title,
                     'Activity "' . $activity->title . '" from ' . ($activity->division?->name ?? 'Unknown Division') . ' has been overdue for ' . $escalationDays . '+ days.',
@@ -54,7 +55,7 @@ class EscalateOverdueActivities extends Command
         // Escalate to Minister
         $toMinister = Activity::where('is_overdue', true)
             ->where('is_escalated', true)
-            ->where('escalated_to', 'bureau_head')
+            ->where('escalated_to', 'admin')
             ->whereNotNull('due_date')
             ->whereRaw('JULIANDAY(?) - JULIANDAY(due_date) >= ?', [$today, $ministerDays])
             ->get();
@@ -78,7 +79,7 @@ class EscalateOverdueActivities extends Command
             }
         }
 
-        $this->info("Escalated {$escalatedCount} activities to Bureau Head.");
+        $this->info("Escalated {$escalatedCount} activities to admin.");
         $this->info("Escalated " . $toMinister->count() . " activities to Minister.");
 
         return Command::SUCCESS;

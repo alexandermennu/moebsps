@@ -17,16 +17,33 @@ class User extends Authenticatable
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
 
-    const ROLE_DIRECTOR = 'director';
-    const ROLE_BUREAU_HEAD = 'bureau_head';
+    // ── Full Access Roles ───────────────────────────────────
     const ROLE_MINISTER = 'minister';
-    const ROLE_ADMIN = 'admin';
+    const ROLE_ADMIN_ASSISTANT = 'admin_assistant';
+    const ROLE_TECH_ASSISTANT = 'tech_assistant';
+
+    // ── Division Director ──────────────────────────────────
+    const ROLE_DIRECTOR = 'director';
+
+    // ── Limited Division Access ────────────────────────────
+    const ROLE_SUPERVISOR = 'supervisor';
+    const ROLE_COORDINATOR = 'coordinator';
+    const ROLE_COUNSELOR = 'counselor';
+
+    // ── Personal Access Only ───────────────────────────────
+    const ROLE_RECORD_CLERK = 'record_clerk';
+    const ROLE_SECRETARY = 'secretary';
 
     const ROLES = [
-        self::ROLE_DIRECTOR => 'Division Director',
-        self::ROLE_BUREAU_HEAD => 'Bureau Head',
         self::ROLE_MINISTER => 'Minister',
-        self::ROLE_ADMIN => 'Admin',
+        self::ROLE_ADMIN_ASSISTANT => 'Administrative Assistant',
+        self::ROLE_TECH_ASSISTANT => 'Technical Assistant',
+        self::ROLE_DIRECTOR => 'Director',
+        self::ROLE_SUPERVISOR => 'Supervisor',
+        self::ROLE_COORDINATOR => 'Coordinator',
+        self::ROLE_COUNSELOR => 'Counselor',
+        self::ROLE_RECORD_CLERK => 'Record Clerk',
+        self::ROLE_SECRETARY => 'Secretary',
     ];
 
     protected function casts(): array
@@ -72,24 +89,135 @@ class User extends Authenticatable
 
     // ── Role Helpers ───────────────────────────────────────
 
-    public function isDirector(): bool
-    {
-        return $this->role === self::ROLE_DIRECTOR;
-    }
-
-    public function isBureauHead(): bool
-    {
-        return $this->role === self::ROLE_BUREAU_HEAD;
-    }
-
     public function isMinister(): bool
     {
         return $this->role === self::ROLE_MINISTER;
     }
 
+    public function isAdminAssistant(): bool
+    {
+        return $this->role === self::ROLE_ADMIN_ASSISTANT;
+    }
+
+    public function isTechAssistant(): bool
+    {
+        return $this->role === self::ROLE_TECH_ASSISTANT;
+    }
+
+    public function isDirector(): bool
+    {
+        return $this->role === self::ROLE_DIRECTOR;
+    }
+
+    public function isSupervisor(): bool
+    {
+        return $this->role === self::ROLE_SUPERVISOR;
+    }
+
+    public function isCoordinator(): bool
+    {
+        return $this->role === self::ROLE_COORDINATOR;
+    }
+
+    public function isCounselor(): bool
+    {
+        return $this->role === self::ROLE_COUNSELOR;
+    }
+
+    public function isRecordClerk(): bool
+    {
+        return $this->role === self::ROLE_RECORD_CLERK;
+    }
+
+    public function isSecretary(): bool
+    {
+        return $this->role === self::ROLE_SECRETARY;
+    }
+
+    /**
+     * Full access: Minister, Admin Assistant, Technical Assistant
+     */
+    public function hasFullAccess(): bool
+    {
+        return in_array($this->role, [
+            self::ROLE_MINISTER,
+            self::ROLE_ADMIN_ASSISTANT,
+            self::ROLE_TECH_ASSISTANT,
+        ]);
+    }
+
+    /**
+     * Admin panel access: Admin Assistant, Technical Assistant
+     */
     public function isAdmin(): bool
     {
-        return $this->role === self::ROLE_ADMIN;
+        return in_array($this->role, [
+            self::ROLE_ADMIN_ASSISTANT,
+            self::ROLE_TECH_ASSISTANT,
+        ]);
+    }
+
+    /**
+     * Can manage division content (create/edit activities, submit updates/plans)
+     */
+    public function canManageDivision(): bool
+    {
+        return in_array($this->role, [
+            self::ROLE_MINISTER,
+            self::ROLE_ADMIN_ASSISTANT,
+            self::ROLE_TECH_ASSISTANT,
+            self::ROLE_DIRECTOR,
+        ]);
+    }
+
+    /**
+     * Can view division activities (read-only for limited roles)
+     */
+    public function hasDivisionAccess(): bool
+    {
+        return in_array($this->role, [
+            self::ROLE_MINISTER,
+            self::ROLE_ADMIN_ASSISTANT,
+            self::ROLE_TECH_ASSISTANT,
+            self::ROLE_DIRECTOR,
+            self::ROLE_SUPERVISOR,
+            self::ROLE_COORDINATOR,
+            self::ROLE_COUNSELOR,
+        ]);
+    }
+
+    /**
+     * Personal access only (Record Clerk, Secretary)
+     */
+    public function hasPersonalAccessOnly(): bool
+    {
+        return in_array($this->role, [
+            self::ROLE_RECORD_CLERK,
+            self::ROLE_SECRETARY,
+        ]);
+    }
+
+    /**
+     * Can review/approve weekly updates and plans
+     */
+    public function canReview(): bool
+    {
+        return $this->hasFullAccess();
+    }
+
+    /**
+     * Is scoped to a specific division
+     */
+    public function isDivisionScoped(): bool
+    {
+        return in_array($this->role, [
+            self::ROLE_DIRECTOR,
+            self::ROLE_SUPERVISOR,
+            self::ROLE_COORDINATOR,
+            self::ROLE_COUNSELOR,
+            self::ROLE_RECORD_CLERK,
+            self::ROLE_SECRETARY,
+        ]);
     }
 
     public function hasRole(string|array $roles): bool

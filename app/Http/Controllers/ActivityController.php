@@ -16,7 +16,11 @@ class ActivityController extends Controller
         $user = $request->user();
         $query = Activity::with(['division', 'assignee', 'creator']);
 
-        if ($user->isDirector()) {
+        // Personal-only users see only their assigned tasks
+        if ($user->hasPersonalAccessOnly()) {
+            $query->where('assigned_to', $user->id);
+        } elseif ($user->isDivisionScoped()) {
+            // Division-scoped users see their division's activities
             $query->byDivision($user->division_id);
         }
 
@@ -28,7 +32,7 @@ class ActivityController extends Controller
             $query->where('priority', $request->priority);
         }
 
-        if ($request->filled('division_id') && !$user->isDirector()) {
+        if ($request->filled('division_id') && $user->hasFullAccess()) {
             $query->where('division_id', $request->division_id);
         }
 
@@ -45,6 +49,11 @@ class ActivityController extends Controller
     public function create()
     {
         $user = auth()->user();
+
+        if (!$user->canManageDivision()) {
+            abort(403, 'You do not have permission to create activities.');
+        }
+
         $divisions = Division::where('is_active', true)->get();
         $users = User::where('is_active', true)->get();
 
@@ -65,6 +74,10 @@ class ActivityController extends Controller
             'due_date' => 'required|date',
             'remarks' => 'nullable|string',
         ]);
+
+        if (!$user->canManageDivision()) {
+            abort(403);
+        }
 
         if ($user->isDirector()) {
             $validated['division_id'] = $user->division_id;
@@ -94,7 +107,11 @@ class ActivityController extends Controller
     {
         $user = auth()->user();
 
-        if ($user->isDirector() && $activity->division_id !== $user->division_id) {
+        if ($user->hasPersonalAccessOnly() && $activity->assigned_to !== $user->id) {
+            abort(403);
+        }
+
+        if ($user->isDivisionScoped() && $activity->division_id !== $user->division_id) {
             abort(403);
         }
 
@@ -106,6 +123,10 @@ class ActivityController extends Controller
     public function edit(Activity $activity)
     {
         $user = auth()->user();
+
+        if (!$user->canManageDivision()) {
+            abort(403, 'You do not have permission to edit activities.');
+        }
 
         if ($user->isDirector() && $activity->division_id !== $user->division_id) {
             abort(403);
@@ -120,6 +141,10 @@ class ActivityController extends Controller
     public function update(Request $request, Activity $activity)
     {
         $user = $request->user();
+
+        if (!$user->canManageDivision()) {
+            abort(403);
+        }
 
         if ($user->isDirector() && $activity->division_id !== $user->division_id) {
             abort(403);
@@ -174,7 +199,7 @@ class ActivityController extends Controller
     {
         $user = auth()->user();
 
-        if (!$user->isAdmin() && !($user->isBureauHead())) {
+        if (!$user->hasFullAccess()) {
             abort(403);
         }
 

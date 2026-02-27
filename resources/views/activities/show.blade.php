@@ -8,10 +8,10 @@
     <div class="mb-6 flex items-center justify-between">
         <a href="{{ route('activities.index') }}" class="text-sm text-gray-500 hover:text-gray-700">← Back to Activities</a>
         <div class="flex gap-2">
-            @if($user->isDirector() || $user->isBureauHead() || $user->isAdmin())
+            @if($user->canManageDivision())
                 <a href="{{ route('activities.edit', $activity) }}" class="px-3 py-1.5 bg-slate-800 text-white text-sm rounded-md hover:bg-slate-700">Edit</a>
             @endif
-            @if($user->isAdmin() || $user->isBureauHead())
+            @if($user->hasFullAccess())
                 <form method="POST" action="{{ route('activities.destroy', $activity) }}" onsubmit="return confirm('Are you sure you want to delete this activity?')">
                     @csrf
                     @method('DELETE')

@@ -24,11 +24,12 @@
                 <a href="{{ route('activities.index') }}"
                    class="flex items-center gap-3 px-3 py-2 rounded-md text-sm {{ request()->routeIs('activities.*') ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white' }}">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
-                    Activities
+                    {{ $user->hasPersonalAccessOnly() ? 'My Tasks' : 'Activities' }}
                 </a>
             </li>
 
-            {{-- Weekly Updates --}}
+            {{-- Weekly Updates (only for users with division access or higher) --}}
+            @if(!$user->hasPersonalAccessOnly())
             <li>
                 <a href="{{ route('weekly-updates.index') }}"
                    class="flex items-center gap-3 px-3 py-2 rounded-md text-sm {{ request()->routeIs('weekly-updates.*') ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white' }}">
@@ -45,6 +46,7 @@
                     Weekly Plans
                 </a>
             </li>
+            @endif
 
             {{-- Messages --}}
             <li>

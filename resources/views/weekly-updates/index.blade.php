@@ -10,7 +10,7 @@
             <h2 class="text-xl font-bold text-gray-800">Weekly Updates</h2>
             <p class="text-sm text-gray-500">Review and manage weekly activity reports</p>
         </div>
-        @if($user->isDirector())
+        @if($user->canManageDivision())
             <a href="{{ route('weekly-updates.create') }}" class="inline-flex items-center px-4 py-2 bg-slate-800 text-white text-sm font-medium rounded-md hover:bg-slate-700">
                 + New Update
             </a>

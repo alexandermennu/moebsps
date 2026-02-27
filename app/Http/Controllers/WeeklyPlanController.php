@@ -11,9 +11,14 @@ class WeeklyPlanController extends Controller
     public function index(Request $request)
     {
         $user = $request->user();
+
+        if ($user->hasPersonalAccessOnly()) {
+            abort(403, 'You do not have access to weekly plans.');
+        }
+
         $query = WeeklyPlan::with(['division', 'submitter', 'reviewer']);
 
-        if ($user->isDirector()) {
+        if ($user->isDivisionScoped()) {
             $query->where('division_id', $user->division_id);
         }
 
@@ -21,7 +26,7 @@ class WeeklyPlanController extends Controller
             $query->where('status', $request->status);
         }
 
-        if ($request->filled('division_id') && !$user->isDirector()) {
+        if ($request->filled('division_id') && !$user->isDivisionScoped()) {
             $query->where('division_id', $request->division_id);
         }
 
@@ -34,8 +39,8 @@ class WeeklyPlanController extends Controller
     {
         $user = auth()->user();
 
-        if (!$user->isDirector()) {
-            abort(403, 'Only Division Directors can create weekly plans.');
+        if (!$user->canManageDivision()) {
+            abort(403, 'You do not have permission to create weekly plans.');
         }
 
         return view('weekly-plans.create', compact('user'));
@@ -45,7 +50,7 @@ class WeeklyPlanController extends Controller
     {
         $user = $request->user();
 
-        if (!$user->isDirector()) {
+        if (!$user->canManageDivision()) {
             abort(403);
         }
 
@@ -78,7 +83,7 @@ class WeeklyPlanController extends Controller
     {
         $user = auth()->user();
 
-        if ($user->isDirector() && $weeklyPlan->division_id !== $user->division_id) {
+        if ($user->isDivisionScoped() && $weeklyPlan->division_id !== $user->division_id) {
             abort(403);
         }
 
@@ -91,7 +96,7 @@ class WeeklyPlanController extends Controller
     {
         $user = auth()->user();
 
-        if (!$user->isDirector() || $weeklyPlan->submitted_by !== $user->id) {
+        if (!$user->canManageDivision() || $weeklyPlan->submitted_by !== $user->id) {
             abort(403);
         }
 
@@ -107,7 +112,7 @@ class WeeklyPlanController extends Controller
     {
         $user = $request->user();
 
-        if (!$user->isDirector() || $weeklyPlan->submitted_by !== $user->id) {
+        if (!$user->canManageDivision() || $weeklyPlan->submitted_by !== $user->id) {
             abort(403);
         }
 
@@ -135,7 +140,7 @@ class WeeklyPlanController extends Controller
     {
         $user = $request->user();
 
-        if (!$user->isBureauHead() && !$user->isMinister()) {
+        if (!$user->canReview()) {
             abort(403);
         }
 
@@ -165,11 +170,12 @@ class WeeklyPlanController extends Controller
 
     private function notifyBureauHead(WeeklyPlan $plan): void
     {
-        $bureauHeads = \App\Models\User::where('role', 'bureau_head')->where('is_active', true)->get();
+        $reviewers = \App\Models\User::whereIn('role', ['minister', 'admin_assistant', 'tech_assistant'])
+            ->where('is_active', true)->get();
 
-        foreach ($bureauHeads as $head) {
+        foreach ($reviewers as $reviewer) {
             BureauNotification::send(
-                $head->id,
+                $reviewer->id,
                 'reminder',
                 'New Weekly Plan Submitted',
                 "A weekly plan has been submitted by {$plan->submitter->name} from {$plan->division->name}.",

@@ -10,7 +10,7 @@
             <h2 class="text-xl font-bold text-gray-800">Activities</h2>
             <p class="text-sm text-gray-500">Track and manage all bureau activities</p>
         </div>
-        @if($user->isDirector() || $user->isBureauHead() || $user->isAdmin())
+        @if($user->canManageDivision())
             <a href="{{ route('activities.create') }}" class="inline-flex items-center px-4 py-2 bg-slate-800 text-white text-sm font-medium rounded-md hover:bg-slate-700">
                 + New Activity
             </a>

@@ -35,26 +35,32 @@ class BureauTrackerSeeder extends Seeder
             Division::updateOrCreate(['code' => $division['code']], $division);
         }
 
-        // Create Admin User
+        // Remove old role accounts
+        User::whereIn('email', [
+            'admin@moebsps.com',
+            'bureauhead@moebsps.com',
+        ])->delete();
+
+        // Create Administrative Assistant
         User::updateOrCreate(
             ['email' => 'admin@moebsps.com'],
             [
-                'name' => 'System Administrator',
+                'name' => 'Administrative Assistant',
                 'password' => Hash::make('password'),
-                'role' => User::ROLE_ADMIN,
-                'position' => 'System Administrator',
+                'role' => User::ROLE_ADMIN_ASSISTANT,
+                'position' => 'Administrative Assistant',
                 'is_active' => true,
             ]
         );
 
-        // Create Bureau Head
+        // Create Technical Assistant
         User::updateOrCreate(
-            ['email' => 'bureauhead@moebsps.com'],
+            ['email' => 'tech@moebsps.com'],
             [
-                'name' => 'Bureau Head',
+                'name' => 'Technical Assistant',
                 'password' => Hash::make('password'),
-                'role' => User::ROLE_BUREAU_HEAD,
-                'position' => 'Head of Bureau',
+                'role' => User::ROLE_TECH_ASSISTANT,
+                'position' => 'Technical Assistant',
                 'is_active' => true,
             ]
         );
@@ -134,6 +140,70 @@ class BureauTrackerSeeder extends Seeder
                 'role' => User::ROLE_DIRECTOR,
                 'division_id' => $dnspDiv->id,
                 'position' => 'Division Director',
+                'is_active' => true,
+            ]
+        );
+
+        // Create sample Supervisor (DSH division)
+        User::updateOrCreate(
+            ['email' => 'supervisor.schoolhealth@moebsps.com'],
+            [
+                'name' => 'School Health Supervisor',
+                'password' => Hash::make('password'),
+                'role' => User::ROLE_SUPERVISOR,
+                'division_id' => $dshDiv->id,
+                'position' => 'Supervisor',
+                'is_active' => true,
+            ]
+        );
+
+        // Create sample Coordinator (CGPC division)
+        User::updateOrCreate(
+            ['email' => 'coordinator.counseling@moebsps.com'],
+            [
+                'name' => 'Counseling Coordinator',
+                'password' => Hash::make('password'),
+                'role' => User::ROLE_COORDINATOR,
+                'division_id' => $cgpcDiv->id,
+                'position' => 'Coordinator',
+                'is_active' => true,
+            ]
+        );
+
+        // Create sample Counselor (CGPC division)
+        User::updateOrCreate(
+            ['email' => 'counselor@moebsps.com'],
+            [
+                'name' => 'Psychosocial Counselor',
+                'password' => Hash::make('password'),
+                'role' => User::ROLE_COUNSELOR,
+                'division_id' => $cgpcDiv->id,
+                'position' => 'Counselor',
+                'is_active' => true,
+            ]
+        );
+
+        // Create sample Record Clerk
+        User::updateOrCreate(
+            ['email' => 'clerk@moebsps.com'],
+            [
+                'name' => 'Record Clerk',
+                'password' => Hash::make('password'),
+                'role' => User::ROLE_RECORD_CLERK,
+                'division_id' => $dsfDiv->id,
+                'position' => 'Record Clerk',
+                'is_active' => true,
+            ]
+        );
+
+        // Create sample Secretary
+        User::updateOrCreate(
+            ['email' => 'secretary@moebsps.com'],
+            [
+                'name' => 'Bureau Secretary',
+                'password' => Hash::make('password'),
+                'role' => User::ROLE_SECRETARY,
+                'position' => 'Secretary',
                 'is_active' => true,
             ]
         );

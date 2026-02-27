@@ -11,9 +11,15 @@ class WeeklyUpdateController extends Controller
     public function index(Request $request)
     {
         $user = $request->user();
+
+        // Personal access only - cannot view weekly updates
+        if ($user->hasPersonalAccessOnly()) {
+            abort(403, 'You do not have access to weekly updates.');
+        }
+
         $query = WeeklyUpdate::with(['division', 'submitter', 'reviewer']);
 
-        if ($user->isDirector()) {
+        if ($user->isDivisionScoped()) {
             $query->where('division_id', $user->division_id);
         }
 
@@ -21,7 +27,7 @@ class WeeklyUpdateController extends Controller
             $query->where('status', $request->status);
         }
 
-        if ($request->filled('division_id') && !$user->isDirector()) {
+        if ($request->filled('division_id') && !$user->isDivisionScoped()) {
             $query->where('division_id', $request->division_id);
         }
 
@@ -34,8 +40,8 @@ class WeeklyUpdateController extends Controller
     {
         $user = auth()->user();
 
-        if (!$user->isDirector()) {
-            abort(403, 'Only Division Directors can create weekly updates.');
+        if (!$user->canManageDivision()) {
+            abort(403, 'You do not have permission to create weekly updates.');
         }
 
         return view('weekly-updates.create', compact('user'));
@@ -45,7 +51,7 @@ class WeeklyUpdateController extends Controller
     {
         $user = $request->user();
 
-        if (!$user->isDirector()) {
+        if (!$user->canManageDivision()) {
             abort(403);
         }
 
@@ -78,7 +84,7 @@ class WeeklyUpdateController extends Controller
     {
         $user = auth()->user();
 
-        if ($user->isDirector() && $weeklyUpdate->division_id !== $user->division_id) {
+        if ($user->isDivisionScoped() && $weeklyUpdate->division_id !== $user->division_id) {
             abort(403);
         }
 
@@ -91,7 +97,7 @@ class WeeklyUpdateController extends Controller
     {
         $user = auth()->user();
 
-        if (!$user->isDirector() || $weeklyUpdate->submitted_by !== $user->id) {
+        if (!$user->canManageDivision() || $weeklyUpdate->submitted_by !== $user->id) {
             abort(403);
         }
 
@@ -107,7 +113,7 @@ class WeeklyUpdateController extends Controller
     {
         $user = $request->user();
 
-        if (!$user->isDirector() || $weeklyUpdate->submitted_by !== $user->id) {
+        if (!$user->canManageDivision() || $weeklyUpdate->submitted_by !== $user->id) {
             abort(403);
         }
 
@@ -135,7 +141,7 @@ class WeeklyUpdateController extends Controller
     {
         $user = $request->user();
 
-        if (!$user->isBureauHead() && !$user->isMinister()) {
+        if (!$user->canReview()) {
             abort(403);
         }
 
@@ -166,11 +172,12 @@ class WeeklyUpdateController extends Controller
 
     private function notifyBureauHead(WeeklyUpdate $update): void
     {
-        $bureauHeads = \App\Models\User::where('role', 'bureau_head')->where('is_active', true)->get();
+        $reviewers = \App\Models\User::whereIn('role', ['minister', 'admin_assistant', 'tech_assistant'])
+            ->where('is_active', true)->get();
 
-        foreach ($bureauHeads as $head) {
+        foreach ($reviewers as $reviewer) {
             BureauNotification::send(
-                $head->id,
+                $reviewer->id,
                 'reminder',
                 'New Weekly Update Submitted',
                 "A weekly update has been submitted by {$update->submitter->name} from {$update->division->name}.",
