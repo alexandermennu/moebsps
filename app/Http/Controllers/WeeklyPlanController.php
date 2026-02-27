@@ -57,19 +57,36 @@ class WeeklyPlanController extends Controller
         $validated = $request->validate([
             'week_start' => 'required|date',
             'week_end' => 'required|date|after:week_start',
-            'planned_activities' => 'required|string',
             'objectives' => 'nullable|string',
             'expected_outcomes' => 'nullable|string',
             'resources_needed' => 'nullable|string',
             'status' => 'in:draft,submitted',
+            'activities' => 'required|array|min:1',
+            'activities.*.activity' => 'required|string',
+            'activities.*.responsible_persons' => 'nullable|string|max:255',
+            'activities.*.status_comment' => 'nullable|string',
         ]);
 
         $plan = WeeklyPlan::create([
-            ...$validated,
+            'week_start' => $validated['week_start'],
+            'week_end' => $validated['week_end'],
+            'planned_activities' => '', // kept for backward compatibility
+            'objectives' => $validated['objectives'] ?? null,
+            'expected_outcomes' => $validated['expected_outcomes'] ?? null,
+            'resources_needed' => $validated['resources_needed'] ?? null,
             'division_id' => $user->division_id,
             'submitted_by' => $user->id,
             'status' => $request->input('status', 'draft'),
         ]);
+
+        foreach ($validated['activities'] as $index => $activityData) {
+            $plan->activities()->create([
+                'sort_order' => $index + 1,
+                'activity' => $activityData['activity'],
+                'responsible_persons' => $activityData['responsible_persons'] ?? null,
+                'status_comment' => $activityData['status_comment'] ?? null,
+            ]);
+        }
 
         if ($plan->status === 'submitted') {
             $this->notifyBureauHead($plan);
@@ -87,7 +104,7 @@ class WeeklyPlanController extends Controller
             abort(403);
         }
 
-        $weeklyPlan->load(['division', 'submitter', 'reviewer']);
+        $weeklyPlan->load(['division', 'submitter', 'reviewer', 'activities']);
 
         return view('weekly-plans.show', compact('weeklyPlan', 'user'));
     }
@@ -105,6 +122,8 @@ class WeeklyPlanController extends Controller
                 ->with('error', 'Only draft or rejected plans can be edited.');
         }
 
+        $weeklyPlan->load('activities');
+
         return view('weekly-plans.edit', compact('weeklyPlan', 'user'));
     }
 
@@ -119,14 +138,35 @@ class WeeklyPlanController extends Controller
         $validated = $request->validate([
             'week_start' => 'required|date',
             'week_end' => 'required|date|after:week_start',
-            'planned_activities' => 'required|string',
             'objectives' => 'nullable|string',
             'expected_outcomes' => 'nullable|string',
             'resources_needed' => 'nullable|string',
             'status' => 'in:draft,submitted',
+            'activities' => 'required|array|min:1',
+            'activities.*.activity' => 'required|string',
+            'activities.*.responsible_persons' => 'nullable|string|max:255',
+            'activities.*.status_comment' => 'nullable|string',
         ]);
 
-        $weeklyPlan->update($validated);
+        $weeklyPlan->update([
+            'week_start' => $validated['week_start'],
+            'week_end' => $validated['week_end'],
+            'objectives' => $validated['objectives'] ?? null,
+            'expected_outcomes' => $validated['expected_outcomes'] ?? null,
+            'resources_needed' => $validated['resources_needed'] ?? null,
+            'status' => $request->input('status', 'draft'),
+        ]);
+
+        // Delete existing activities and recreate
+        $weeklyPlan->activities()->delete();
+        foreach ($validated['activities'] as $index => $activityData) {
+            $weeklyPlan->activities()->create([
+                'sort_order' => $index + 1,
+                'activity' => $activityData['activity'],
+                'responsible_persons' => $activityData['responsible_persons'] ?? null,
+                'status_comment' => $activityData['status_comment'] ?? null,
+            ]);
+        }
 
         if ($weeklyPlan->status === 'submitted') {
             $this->notifyBureauHead($weeklyPlan);

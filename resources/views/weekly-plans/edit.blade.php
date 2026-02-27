@@ -4,20 +4,21 @@
 @section('page-title', 'Edit Weekly Plan')
 
 @section('content')
-<div class="max-w-3xl">
+<div class="max-w-6xl">
     <div class="mb-6">
         <a href="{{ route('weekly-plans.show', $weeklyPlan) }}" class="text-sm text-gray-500 hover:text-gray-700">← Back to Plan</a>
     </div>
 
-    <div class="bg-white rounded-lg border border-gray-200 p-6">
-        <h2 class="text-lg font-semibold text-gray-800 mb-1">Edit Weekly Plan</h2>
-        <p class="text-sm text-gray-500 mb-6">{{ $user->division?->name }}</p>
+    <form method="POST" action="{{ route('weekly-plans.update', $weeklyPlan) }}" id="weeklyPlanForm">
+        @csrf
+        @method('PUT')
 
-        <form method="POST" action="{{ route('weekly-plans.update', $weeklyPlan) }}">
-            @csrf
-            @method('PUT')
+        {{-- Header Section --}}
+        <div class="bg-white rounded-lg border border-gray-200 p-6 mb-6">
+            <h2 class="text-lg font-semibold text-gray-800 mb-1">Edit Weekly Plan</h2>
+            <p class="text-sm text-gray-500 mb-6">{{ $user->division?->name }} · Submitted by {{ $user->name }} ({{ $user->role_label }})</p>
 
-            <div class="grid grid-cols-2 gap-4 mb-4">
+            <div class="grid grid-cols-2 gap-4">
                 <div>
                     <label for="week_start" class="block text-sm font-medium text-gray-700 mb-1">Week Start</label>
                     <input type="date" name="week_start" id="week_start" value="{{ old('week_start', $weeklyPlan->week_start->format('Y-m-d')) }}" required
@@ -29,36 +30,177 @@
                            class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-slate-500">
                 </div>
             </div>
+        </div>
 
-            <div class="mb-4">
-                <label for="planned_activities" class="block text-sm font-medium text-gray-700 mb-1">Planned Activities *</label>
-                <textarea name="planned_activities" id="planned_activities" rows="5" required
-                          class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-slate-500">{{ old('planned_activities', $weeklyPlan->planned_activities) }}</textarea>
+        {{-- Activities Table --}}
+        <div class="bg-white rounded-lg border border-gray-200 mb-6">
+            <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-800">Planned Activities</h3>
+                    <p class="text-xs text-gray-500 mt-0.5">Add each activity planned for the coming week</p>
+                </div>
+                <button type="button" onclick="addActivityRow()"
+                        class="inline-flex items-center gap-1 px-3 py-1.5 bg-slate-800 text-white text-xs font-medium rounded-md hover:bg-slate-700">
+                    + Add Row
+                </button>
             </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm" id="activitiesTable">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="text-left px-4 py-3 text-gray-600 font-medium w-10">No.</th>
+                            <th class="text-left px-4 py-3 text-gray-600 font-medium" style="min-width: 320px;">Activities *</th>
+                            <th class="text-left px-4 py-3 text-gray-600 font-medium" style="min-width: 180px;">Responsible Persons</th>
+                            <th class="text-left px-4 py-3 text-gray-600 font-medium" style="min-width: 200px;">Status / Comment</th>
+                            <th class="text-center px-4 py-3 text-gray-600 font-medium w-16"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="activitiesBody" class="divide-y divide-gray-100">
+                        {{-- Rows populated by JS --}}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="px-6 py-3 bg-gray-50 border-t border-gray-200 rounded-b-lg">
+                <button type="button" onclick="addActivityRow()"
+                        class="text-sm text-slate-600 hover:text-slate-800 font-medium">+ Add another activity</button>
+            </div>
+        </div>
+
+        {{-- Additional Notes (optional) --}}
+        <div class="bg-white rounded-lg border border-gray-200 p-6 mb-6">
+            <h3 class="text-sm font-semibold text-gray-800 mb-3">Additional Notes (Optional)</h3>
 
             <div class="mb-4">
                 <label for="objectives" class="block text-sm font-medium text-gray-700 mb-1">Objectives</label>
-                <textarea name="objectives" id="objectives" rows="3"
-                          class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-slate-500">{{ old('objectives', $weeklyPlan->objectives) }}</textarea>
+                <textarea name="objectives" id="objectives" rows="2"
+                          class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-slate-500"
+                          placeholder="What are the key objectives for this week?">{{ old('objectives', $weeklyPlan->objectives) }}</textarea>
             </div>
 
             <div class="mb-4">
                 <label for="expected_outcomes" class="block text-sm font-medium text-gray-700 mb-1">Expected Outcomes</label>
-                <textarea name="expected_outcomes" id="expected_outcomes" rows="3"
-                          class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-slate-500">{{ old('expected_outcomes', $weeklyPlan->expected_outcomes) }}</textarea>
+                <textarea name="expected_outcomes" id="expected_outcomes" rows="2"
+                          class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-slate-500"
+                          placeholder="What outcomes do you expect to achieve?">{{ old('expected_outcomes', $weeklyPlan->expected_outcomes) }}</textarea>
             </div>
 
-            <div class="mb-6">
+            <div>
                 <label for="resources_needed" class="block text-sm font-medium text-gray-700 mb-1">Resources Needed</label>
-                <textarea name="resources_needed" id="resources_needed" rows="3"
-                          class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-slate-500">{{ old('resources_needed', $weeklyPlan->resources_needed) }}</textarea>
+                <textarea name="resources_needed" id="resources_needed" rows="2"
+                          class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-slate-500"
+                          placeholder="Any resources or support needed?">{{ old('resources_needed', $weeklyPlan->resources_needed) }}</textarea>
             </div>
+        </div>
 
-            <div class="flex gap-3">
-                <button type="submit" name="status" value="submitted" class="px-4 py-2 bg-slate-800 text-white text-sm font-medium rounded-md hover:bg-slate-700">Submit for Review</button>
-                <button type="submit" name="status" value="draft" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-50">Save as Draft</button>
+        {{-- Validation Errors --}}
+        @if($errors->any())
+            <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <p class="text-sm font-medium text-red-800 mb-2">Please fix the following errors:</p>
+                <ul class="list-disc list-inside text-sm text-red-600">
+                    @foreach($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
             </div>
-        </form>
-    </div>
+        @endif
+
+        {{-- Submit Buttons --}}
+        <div class="flex gap-3">
+            <button type="submit" name="status" value="submitted" class="px-5 py-2.5 bg-slate-800 text-white text-sm font-medium rounded-md hover:bg-slate-700">
+                Submit for Review
+            </button>
+            <button type="submit" name="status" value="draft" class="px-5 py-2.5 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-50">
+                Save as Draft
+            </button>
+        </div>
+    </form>
 </div>
+
+<script>
+    let rowCount = 0;
+
+    function addActivityRow(data = {}) {
+        rowCount++;
+        const tbody = document.getElementById('activitiesBody');
+        const row = document.createElement('tr');
+        row.className = 'hover:bg-gray-50';
+        row.id = `activity-row-${rowCount}`;
+
+        const activity = data.activity || '';
+        const responsible = data.responsible_persons || '';
+        const statusComment = data.status_comment || '';
+
+        row.innerHTML = `
+            <td class="px-4 py-3 text-gray-400 font-medium text-center align-top row-number">${rowCount}</td>
+            <td class="px-4 py-2 align-top">
+                <textarea name="activities[${rowCount}][activity]" rows="3" required
+                    class="w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-slate-500 resize-y"
+                    placeholder="Describe the planned activity...">${activity}</textarea>
+            </td>
+            <td class="px-4 py-2 align-top">
+                <input type="text" name="activities[${rowCount}][responsible_persons]" value="${responsible}"
+                    class="w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-slate-500"
+                    placeholder="e.g. SHD / SPS">
+            </td>
+            <td class="px-4 py-2 align-top">
+                <textarea name="activities[${rowCount}][status_comment]" rows="2"
+                    class="w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-slate-500 resize-y"
+                    placeholder="Status or comments...">${statusComment}</textarea>
+            </td>
+            <td class="px-4 py-2 text-center align-top">
+                <button type="button" onclick="removeActivityRow(${rowCount})"
+                    class="text-red-400 hover:text-red-600 text-lg" title="Remove row">✕</button>
+            </td>
+        `;
+
+        tbody.appendChild(row);
+        renumberRows();
+    }
+
+    function removeActivityRow(id) {
+        const tbody = document.getElementById('activitiesBody');
+        if (tbody.children.length <= 1) {
+            alert('You must have at least one activity.');
+            return;
+        }
+        const row = document.getElementById(`activity-row-${id}`);
+        if (row) {
+            row.remove();
+            renumberRows();
+        }
+    }
+
+    function renumberRows() {
+        const rows = document.querySelectorAll('#activitiesBody tr');
+        rows.forEach((row, index) => {
+            const numCell = row.querySelector('.row-number');
+            if (numCell) numCell.textContent = index + 1;
+        });
+    }
+
+    // Initialize with old form data or existing plan activities
+    document.addEventListener('DOMContentLoaded', function() {
+        @if(old('activities'))
+            @foreach(old('activities') as $i => $act)
+                addActivityRow({
+                    activity: @json($act['activity'] ?? ''),
+                    responsible_persons: @json($act['responsible_persons'] ?? ''),
+                    status_comment: @json($act['status_comment'] ?? ''),
+                });
+            @endforeach
+        @elseif($weeklyPlan->activities->count())
+            @foreach($weeklyPlan->activities as $activity)
+                addActivityRow({
+                    activity: @json($activity->activity),
+                    responsible_persons: @json($activity->responsible_persons ?? ''),
+                    status_comment: @json($activity->status_comment ?? ''),
+                });
+            @endforeach
+        @else
+            addActivityRow();
+        @endif
+    });
+</script>
 @endsection

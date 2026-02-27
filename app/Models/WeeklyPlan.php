@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable([
     'division_id', 'submitted_by', 'week_start', 'week_end',
@@ -38,6 +39,11 @@ class WeeklyPlan extends Model
     public function reviewer(): BelongsTo
     {
         return $this->belongsTo(User::class, 'reviewed_by');
+    }
+
+    public function activities(): HasMany
+    {
+        return $this->hasMany(PlanActivity::class)->orderBy('sort_order');
     }
 
     public function getStatusBadgeColorAttribute(): string
