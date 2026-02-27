@@ -37,7 +37,41 @@ class WeeklyUpdateController extends Controller
 
         $updates = $query->latest()->paginate(15);
 
-        return view('weekly-updates.index', compact('updates', 'user'));
+        // Division summaries for the bottom cards (full-access & directors)
+        $divisionSummaries = collect();
+        if ($user->hasFullAccess() || $user->isDirector()) {
+            $summaryQuery = Division::where('is_active', true);
+            if ($user->isDirector() && !$user->hasFullAccess()) {
+                $summaryQuery->where('id', $user->division_id);
+            }
+            $divisionSummaries = $summaryQuery
+                ->withCount([
+                    'weeklyUpdates as total_updates',
+                    'weeklyUpdates as approved_updates' => fn($q) => $q->where('status', 'approved'),
+                    'weeklyUpdates as submitted_updates' => fn($q) => $q->where('status', 'submitted'),
+                    'weeklyUpdates as rejected_updates' => fn($q) => $q->where('status', 'rejected'),
+                ])
+                ->with(['weeklyUpdates' => function ($q) {
+                    $q->with('activities')->whereIn('status', ['submitted', 'approved'])->latest()->take(1);
+                }])
+                ->get()
+                ->map(function ($division) {
+                    $latest = $division->weeklyUpdates->first();
+                    $division->latest_update = $latest;
+                    $division->activity_stats = ['completed' => 0, 'ongoing' => 0, 'not_started' => 0];
+                    if ($latest && $latest->activities->count()) {
+                        foreach ($latest->activities as $act) {
+                            $flag = $act->status_flag ?? 'na';
+                            if (isset($division->activity_stats[$flag])) {
+                                $division->activity_stats[$flag]++;
+                            }
+                        }
+                    }
+                    return $division;
+                });
+        }
+
+        return view('weekly-updates.index', compact('updates', 'user', 'divisionSummaries'));
     }
 
     public function create()
