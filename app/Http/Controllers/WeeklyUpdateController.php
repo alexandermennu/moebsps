@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\BureauNotification;
+use App\Models\UpdateActivity;
 use App\Models\WeeklyUpdate;
 use Illuminate\Http\Request;
 
@@ -58,19 +59,41 @@ class WeeklyUpdateController extends Controller
         $validated = $request->validate([
             'week_start' => 'required|date',
             'week_end' => 'required|date|after:week_start',
-            'accomplishments' => 'required|string',
+            'accomplishments' => 'nullable|string',
             'challenges' => 'nullable|string',
             'support_needed' => 'nullable|string',
             'key_metrics' => 'nullable|string',
             'status' => 'in:draft,submitted',
+            'activities' => 'required|array|min:1',
+            'activities.*.activity' => 'required|string',
+            'activities.*.responsible_persons' => 'nullable|string|max:255',
+            'activities.*.status_flag' => 'required|in:not_started,ongoing,completed,na',
+            'activities.*.status_comment' => 'nullable|string',
+            'activities.*.challenges' => 'nullable|string',
         ]);
 
         $update = WeeklyUpdate::create([
-            ...$validated,
+            'week_start' => $validated['week_start'],
+            'week_end' => $validated['week_end'],
+            'accomplishments' => $validated['accomplishments'] ?? '',
+            'challenges' => $validated['challenges'] ?? null,
+            'support_needed' => $validated['support_needed'] ?? null,
+            'key_metrics' => $validated['key_metrics'] ?? null,
             'division_id' => $user->division_id,
             'submitted_by' => $user->id,
             'status' => $request->input('status', 'draft'),
         ]);
+
+        foreach ($validated['activities'] as $index => $activityData) {
+            $update->activities()->create([
+                'sort_order' => $index + 1,
+                'activity' => $activityData['activity'],
+                'responsible_persons' => $activityData['responsible_persons'] ?? null,
+                'status_flag' => $activityData['status_flag'],
+                'status_comment' => $activityData['status_comment'] ?? null,
+                'challenges' => $activityData['challenges'] ?? null,
+            ]);
+        }
 
         if ($update->status === 'submitted') {
             $this->notifyBureauHead($update);
@@ -88,7 +111,7 @@ class WeeklyUpdateController extends Controller
             abort(403);
         }
 
-        $weeklyUpdate->load(['division', 'submitter', 'reviewer']);
+        $weeklyUpdate->load(['division', 'submitter', 'reviewer', 'activities']);
 
         return view('weekly-updates.show', compact('weeklyUpdate', 'user'));
     }
@@ -106,6 +129,8 @@ class WeeklyUpdateController extends Controller
                 ->with('error', 'Only draft or rejected updates can be edited.');
         }
 
+        $weeklyUpdate->load('activities');
+
         return view('weekly-updates.edit', compact('weeklyUpdate', 'user'));
     }
 
@@ -120,14 +145,41 @@ class WeeklyUpdateController extends Controller
         $validated = $request->validate([
             'week_start' => 'required|date',
             'week_end' => 'required|date|after:week_start',
-            'accomplishments' => 'required|string',
+            'accomplishments' => 'nullable|string',
             'challenges' => 'nullable|string',
             'support_needed' => 'nullable|string',
             'key_metrics' => 'nullable|string',
             'status' => 'in:draft,submitted',
+            'activities' => 'required|array|min:1',
+            'activities.*.activity' => 'required|string',
+            'activities.*.responsible_persons' => 'nullable|string|max:255',
+            'activities.*.status_flag' => 'required|in:not_started,ongoing,completed,na',
+            'activities.*.status_comment' => 'nullable|string',
+            'activities.*.challenges' => 'nullable|string',
         ]);
 
-        $weeklyUpdate->update($validated);
+        $weeklyUpdate->update([
+            'week_start' => $validated['week_start'],
+            'week_end' => $validated['week_end'],
+            'accomplishments' => $validated['accomplishments'] ?? '',
+            'challenges' => $validated['challenges'] ?? null,
+            'support_needed' => $validated['support_needed'] ?? null,
+            'key_metrics' => $validated['key_metrics'] ?? null,
+            'status' => $validated['status'] ?? 'draft',
+        ]);
+
+        // Replace all activities
+        $weeklyUpdate->activities()->delete();
+        foreach ($validated['activities'] as $index => $activityData) {
+            $weeklyUpdate->activities()->create([
+                'sort_order' => $index + 1,
+                'activity' => $activityData['activity'],
+                'responsible_persons' => $activityData['responsible_persons'] ?? null,
+                'status_flag' => $activityData['status_flag'],
+                'status_comment' => $activityData['status_comment'] ?? null,
+                'challenges' => $activityData['challenges'] ?? null,
+            ]);
+        }
 
         if ($weeklyUpdate->status === 'submitted') {
             $this->notifyBureauHead($weeklyUpdate);
