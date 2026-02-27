@@ -61,8 +61,8 @@
                     @endforeach
                 </select>
                 <p class="mt-1 text-xs text-gray-400">
-                    <strong>Supervisor / Coordinator / Counselor</strong> — Can view division activities (read-only).<br>
-                    <strong>Record Clerk / Secretary</strong> — Can only see personally assigned tasks.
+                    <strong>Supervisor / Coordinator</strong> — Can view division activities (read-only).<br>
+                    <strong>Counselor</strong> — Available for CGPC division only.
                 </p>
             </div>
 

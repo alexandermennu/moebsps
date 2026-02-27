@@ -13,41 +13,91 @@ class UserController extends Controller
 {
     public function index(Request $request)
     {
-        $query = User::with('division');
+        $divisions = Division::where('is_active', true)->withCount('users')->get();
 
-        if ($request->filled('role')) {
-            $query->where('role', $request->role);
+        // Full-access users (no division)
+        $fullAccessUsers = User::with('division')
+            ->whereIn('role', [User::ROLE_MINISTER, User::ROLE_ADMIN_ASSISTANT, User::ROLE_TECH_ASSISTANT])
+            ->where('role', '!=', User::ROLE_COUNSELOR);
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $fullAccessUsers->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%");
+            });
         }
+        $fullAccessUsers = $fullAccessUsers->latest()->get();
+
+        // Group division staff (non-counselor, non-full-access) by division
+        $divisionStaff = [];
+        $counselorCounts = [];
+        foreach ($divisions as $division) {
+            $query = User::with('division')
+                ->where('division_id', $division->id)
+                ->whereNotIn('role', [User::ROLE_MINISTER, User::ROLE_ADMIN_ASSISTANT, User::ROLE_TECH_ASSISTANT, User::ROLE_COUNSELOR]);
+
+            if ($request->filled('search')) {
+                $search = $request->search;
+                $query->where(function ($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                      ->orWhere('email', 'like', "%{$search}%");
+                });
+            }
+
+            $divisionStaff[$division->id] = $query->latest()->get();
+
+            // Count counselors for CGPC
+            if ($division->code === 'CGPC') {
+                $counselorCounts[$division->id] = User::where('division_id', $division->id)
+                    ->where('role', User::ROLE_COUNSELOR)
+                    ->count();
+            }
+        }
+
+        // Users with no division (non-full-access, non-counselor)
+        $noDivisionQuery = User::with('division')
+            ->whereNull('division_id')
+            ->whereNotIn('role', [User::ROLE_MINISTER, User::ROLE_ADMIN_ASSISTANT, User::ROLE_TECH_ASSISTANT, User::ROLE_COUNSELOR]);
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $noDivisionQuery->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+        $noDivisionUsers = $noDivisionQuery->latest()->get();
+
+        return view('admin.users.index', compact('fullAccessUsers', 'divisions', 'divisionStaff', 'counselorCounts', 'noDivisionUsers'));
+    }
+
+    public function counselors(Request $request)
+    {
+        $query = User::with('division')
+            ->where('role', User::ROLE_COUNSELOR);
 
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%");
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('counselor_school', 'like', "%{$search}%")
+                  ->orWhere('counselor_county', 'like', "%{$search}%");
             });
         }
 
-        // Get non-counselor users for the main table
-        $usersQuery = clone $query;
-        $users = $usersQuery->where('role', '!=', User::ROLE_COUNSELOR)->latest()->paginate(15);
-
-        // Get counselors separately (only when not filtering by a non-counselor role)
-        $counselors = collect();
-        if (!$request->filled('role') || $request->role === User::ROLE_COUNSELOR) {
-            $counselorQuery = User::with('division');
-            if ($request->filled('search')) {
-                $search = $request->search;
-                $counselorQuery->where(function ($q) use ($search) {
-                    $q->where('name', 'like', "%{$search}%")
-                      ->orWhere('email', 'like', "%{$search}%");
-                });
-            }
-            $counselors = $counselorQuery->where('role', User::ROLE_COUNSELOR)->latest()->get();
+        if ($request->filled('county')) {
+            $query->where('counselor_county', $request->county);
         }
 
-        $divisions = Division::where('is_active', true)->get();
+        if ($request->filled('status')) {
+            $query->where('counselor_status', $request->status);
+        }
 
-        return view('admin.users.index', compact('users', 'counselors', 'divisions'));
+        $counselors = $query->latest()->paginate(20);
+
+        return view('admin.users.counselors', compact('counselors'));
     }
 
     public function create()

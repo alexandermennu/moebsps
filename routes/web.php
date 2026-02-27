@@ -107,6 +107,7 @@ Route::middleware(['auth', 'active'])->group(function () {
 
     Route::middleware(['role:admin_assistant,tech_assistant,minister'])->prefix('admin')->name('admin.')->group(function () {
         // User Management
+        Route::get('users/counselors', [UserController::class, 'counselors'])->name('users.counselors');
         Route::resource('users', UserController::class)->except(['show']);
         Route::patch('users/{user}/toggle-active', [UserController::class, 'toggleActive'])->name('users.toggle-active');
 
