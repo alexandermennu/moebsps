@@ -14,6 +14,8 @@ use App\Http\Controllers\Admin\DivisionController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\StaffApprovalController;
 use App\Http\Controllers\StaffController;
+use App\Http\Controllers\SrgbvCaseController;
+use App\Http\Controllers\SrgbvDashboardController;
 
 /*
 |--------------------------------------------------------------------------
@@ -76,6 +78,21 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::get('/{staff_user}/edit', [StaffController::class, 'edit'])->name('edit');
         Route::put('/{staff_user}', [StaffController::class, 'update'])->name('update');
         Route::delete('/{staff_user}', [StaffController::class, 'destroy'])->name('destroy');
+    });
+
+    // SRGBV Case Management
+    Route::prefix('srgbv')->name('srgbv.')->group(function () {
+        Route::get('/dashboard', [SrgbvDashboardController::class, 'index'])->name('dashboard');
+        Route::get('/cases', [SrgbvCaseController::class, 'index'])->name('cases.index');
+        Route::get('/cases/create', [SrgbvCaseController::class, 'create'])->name('cases.create');
+        Route::post('/cases', [SrgbvCaseController::class, 'store'])->name('cases.store');
+        Route::get('/cases/{srgbvCase}', [SrgbvCaseController::class, 'show'])->name('cases.show');
+        Route::get('/cases/{srgbvCase}/edit', [SrgbvCaseController::class, 'edit'])->name('cases.edit');
+        Route::put('/cases/{srgbvCase}', [SrgbvCaseController::class, 'update'])->name('cases.update');
+        Route::post('/cases/{srgbvCase}/notes', [SrgbvCaseController::class, 'addNote'])->name('cases.notes');
+        Route::post('/cases/{srgbvCase}/files', [SrgbvCaseController::class, 'uploadFiles'])->name('cases.files');
+        Route::delete('/cases/{srgbvCase}/files/{file}', [SrgbvCaseController::class, 'deleteFile'])->name('cases.files.delete');
+        Route::patch('/cases/{srgbvCase}/status', [SrgbvCaseController::class, 'updateStatus'])->name('cases.status');
     });
 
     /*
