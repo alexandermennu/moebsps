@@ -48,9 +48,15 @@ class SrgbvDashboardController extends Controller
             ->pluck('total', 'priority')
             ->toArray();
 
-        // Monthly trend (last 12 months)
+        // Monthly trend (last 12 months) - database agnostic
+        $driver = DB::connection()->getDriverName();
+        $monthExpr = match($driver) {
+            'mysql', 'mariadb' => "DATE_FORMAT(created_at, '%Y-%m')",
+            'pgsql' => "TO_CHAR(created_at, 'YYYY-MM')",
+            default => "strftime('%Y-%m', created_at)",
+        };
         $monthlyTrend = SrgbvCase::select(
-                DB::raw("strftime('%Y-%m', created_at) as month"),
+                DB::raw("$monthExpr as month"),
                 DB::raw('count(*) as total')
             )
             ->where('created_at', '>=', now()->subMonths(12))
@@ -77,10 +83,15 @@ class SrgbvDashboardController extends Controller
             ? round(($closedCases / $totalCases) * 100)
             : 0;
 
-        // Average days to resolve
+        // Average days to resolve - database agnostic
+        $avgDaysExpr = match($driver) {
+            'mysql', 'mariadb' => 'AVG(DATEDIFF(resolution_date, created_at))',
+            'pgsql' => 'AVG(EXTRACT(EPOCH FROM (resolution_date::timestamp - created_at::timestamp)) / 86400)',
+            default => 'AVG(CAST(julianday(resolution_date) - julianday(created_at) AS INTEGER))',
+        };
         $avgResolutionDays = SrgbvCase::closed()
             ->whereNotNull('resolution_date')
-            ->selectRaw('AVG(CAST(julianday(resolution_date) - julianday(created_at) AS INTEGER)) as avg_days')
+            ->selectRaw("$avgDaysExpr as avg_days")
             ->value('avg_days');
 
         return view('srgbv.dashboard', [

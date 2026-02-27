@@ -16,6 +16,7 @@ use App\Http\Controllers\Admin\StaffApprovalController;
 use App\Http\Controllers\StaffController;
 use App\Http\Controllers\SrgbvCaseController;
 use App\Http\Controllers\SrgbvDashboardController;
+use App\Http\Controllers\CasesReportController;
 
 /*
 |--------------------------------------------------------------------------
@@ -79,6 +80,9 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::put('/{staff_user}', [StaffController::class, 'update'])->name('update');
         Route::delete('/{staff_user}', [StaffController::class, 'destroy'])->name('destroy');
     });
+
+    // Cases Report Landing
+    Route::get('/cases-report', [CasesReportController::class, 'index'])->name('cases-report');
 
     // SRGBV Case Management
     Route::prefix('srgbv')->name('srgbv.')->group(function () {
