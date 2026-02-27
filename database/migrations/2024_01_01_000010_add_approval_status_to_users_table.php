@@ -9,14 +9,14 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->string('approval_status')->default('approved')->after('is_active');
+            $table->string('approval_status')->default('approved');
             // approved = can log in (default for admin-created users)
             // pending  = waiting for full-access user to approve (director-created staff)
             // rejected = rejected by full-access user
-            $table->unsignedBigInteger('created_by_user_id')->nullable()->after('approval_status');
-            $table->timestamp('approved_at')->nullable()->after('created_by_user_id');
-            $table->unsignedBigInteger('approved_by')->nullable()->after('approved_at');
-            $table->text('rejection_reason')->nullable()->after('approved_by');
+            $table->unsignedBigInteger('created_by_user_id')->nullable();
+            $table->timestamp('approved_at')->nullable();
+            $table->unsignedBigInteger('approved_by')->nullable();
+            $table->text('rejection_reason')->nullable();
         });
     }
 
