@@ -70,7 +70,7 @@ class UserController extends Controller
             'phone' => 'nullable|string|max:20',
             'is_active' => 'boolean',
             'counselor_school' => 'required_if:role,counselor|nullable|string|max:255',
-            'counselor_county' => 'required_if:role,counselor|nullable|string|max:255',
+            'counselor_county' => 'required_if:role,counselor|nullable|in:' . implode(',', User::COUNTIES),
             'counselor_status' => 'required_if:role,counselor|nullable|in:' . implode(',', array_keys(User::COUNSELOR_STATUSES)),
         ]);
 
@@ -110,7 +110,7 @@ class UserController extends Controller
             'phone' => 'nullable|string|max:20',
             'is_active' => 'boolean',
             'counselor_school' => 'required_if:role,counselor|nullable|string|max:255',
-            'counselor_county' => 'required_if:role,counselor|nullable|string|max:255',
+            'counselor_county' => 'required_if:role,counselor|nullable|in:' . implode(',', User::COUNTIES),
             'counselor_status' => 'required_if:role,counselor|nullable|in:' . implode(',', array_keys(User::COUNSELOR_STATUSES)),
         ]);
 

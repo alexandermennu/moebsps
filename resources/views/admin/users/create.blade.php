@@ -86,8 +86,13 @@
                     </div>
                     <div>
                         <label for="counselor_county" class="block text-sm font-medium text-gray-700 mb-1">County *</label>
-                        <input type="text" name="counselor_county" id="counselor_county" value="{{ old('counselor_county') }}"
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-slate-500">
+                        <select name="counselor_county" id="counselor_county"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-slate-500">
+                            <option value="">Select County...</option>
+                            @foreach(\App\Models\User::COUNTIES as $county)
+                                <option value="{{ $county }}" {{ old('counselor_county') === $county ? 'selected' : '' }}>{{ $county }}</option>
+                            @endforeach
+                        </select>
                     </div>
                 </div>
                 <div>

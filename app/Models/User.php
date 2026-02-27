@@ -71,6 +71,25 @@ class User extends Authenticatable
         'returned_from_study' => 'Returned from Study',
     ];
 
+    // ── County Constants ────────────────────────────────────
+    const COUNTIES = [
+        'Bomi County',
+        'Bong County',
+        'Gbarpolu County',
+        'Grand Bassa County',
+        'Grand Cape Mount County',
+        'Grand Gedeh County',
+        'Grand Kru County',
+        'Lofa County',
+        'Margibi County',
+        'Maryland County',
+        'Montserrado County',
+        'Nimba County',
+        'River Cess County',
+        'River Gee County',
+        'Sinoe County',
+    ];
+
     // ── Relationships ──────────────────────────────────────
 
     public function division(): BelongsTo
