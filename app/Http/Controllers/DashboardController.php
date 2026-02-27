@@ -86,7 +86,22 @@ class DashboardController extends Controller
             ->orderBy('name')
             ->get();
 
-        return view('dashboard.director', compact('stats', 'recentActivities', 'overdueActivities', 'divisionStaff', 'user'));
+        // Submitted plans & updates for status tracking
+        $submittedPlans = WeeklyPlan::where('division_id', $divisionId)
+            ->with('reviewer')
+            ->whereIn('status', ['submitted', 'approved', 'rejected'])
+            ->latest()
+            ->take(10)
+            ->get();
+
+        $submittedUpdates = WeeklyUpdate::where('division_id', $divisionId)
+            ->with('reviewer')
+            ->whereIn('status', ['submitted', 'approved', 'rejected'])
+            ->latest()
+            ->take(10)
+            ->get();
+
+        return view('dashboard.director', compact('stats', 'recentActivities', 'overdueActivities', 'divisionStaff', 'submittedPlans', 'submittedUpdates', 'user'));
     }
 
     private function fullAccessDashboard(User $user)
@@ -133,6 +148,25 @@ class DashboardController extends Controller
             ->take(5)
             ->get();
 
+        $pendingPlanReviews = WeeklyPlan::where('status', 'submitted')
+            ->with(['division', 'submitter'])
+            ->latest()
+            ->take(5)
+            ->get();
+
+        // Approved plans & updates for Minister's dashboard
+        $approvedPlans = WeeklyPlan::where('status', 'approved')
+            ->with(['division', 'submitter', 'reviewer'])
+            ->latest('reviewed_at')
+            ->take(10)
+            ->get();
+
+        $approvedUpdates = WeeklyUpdate::where('status', 'approved')
+            ->with(['division', 'submitter', 'reviewer'])
+            ->latest('reviewed_at')
+            ->take(10)
+            ->get();
+
         $recentActivities = Activity::with(['division', 'assignee'])
             ->latest()
             ->take(5)
@@ -145,7 +179,7 @@ class DashboardController extends Controller
             ->pluck('total', 'role')
             ->toArray();
 
-        return view('dashboard.full-access', compact('stats', 'divisions', 'escalatedActivities', 'pendingReviews', 'recentActivities', 'staffByRole', 'user'));
+        return view('dashboard.full-access', compact('stats', 'divisions', 'escalatedActivities', 'pendingReviews', 'pendingPlanReviews', 'approvedPlans', 'approvedUpdates', 'recentActivities', 'staffByRole', 'user'));
     }
 
     private function ministerDashboard(User $user)

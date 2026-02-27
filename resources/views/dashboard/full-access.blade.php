@@ -272,10 +272,11 @@
             </div>
         </div>
 
-        {{-- Pending Reviews --}}
+        {{-- Pending Reviews (Admin Asst / Tech Asst only) --}}
+        @if($user->canReviewSubmissions())
         <div class="bg-white rounded-lg border border-gray-200">
             <div class="px-5 py-4 border-b border-gray-200 flex items-center justify-between">
-                <h3 class="text-sm font-semibold text-gray-800">📝 Pending Reviews</h3>
+                <h3 class="text-sm font-semibold text-gray-800">📝 Pending Update Reviews</h3>
                 <span class="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">{{ $stats['pending_updates'] }}</span>
             </div>
             <div class="divide-y divide-gray-50">
@@ -285,10 +286,79 @@
                         <p class="text-xs text-gray-500">By {{ $update->submitter?->name }} · {{ $update->created_at->diffForHumans() }}</p>
                     </a>
                 @empty
-                    <div class="px-5 py-8 text-center text-sm text-gray-500">No pending reviews.</div>
+                    <div class="px-5 py-8 text-center text-sm text-gray-500">No pending update reviews.</div>
                 @endforelse
             </div>
         </div>
+
+        <div class="bg-white rounded-lg border border-gray-200">
+            <div class="px-5 py-4 border-b border-gray-200 flex items-center justify-between">
+                <h3 class="text-sm font-semibold text-gray-800">📋 Pending Plan Reviews</h3>
+                <span class="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">{{ $stats['pending_plans'] }}</span>
+            </div>
+            <div class="divide-y divide-gray-50">
+                @forelse($pendingPlanReviews as $plan)
+                    <a href="{{ route('weekly-plans.show', $plan) }}" class="block px-5 py-3 hover:bg-purple-50">
+                        <p class="text-sm font-medium text-gray-800">{{ $plan->division?->name }}</p>
+                        <p class="text-xs text-gray-500">By {{ $plan->submitter?->name }} · {{ $plan->created_at->diffForHumans() }}</p>
+                    </a>
+                @empty
+                    <div class="px-5 py-8 text-center text-sm text-gray-500">No pending plan reviews.</div>
+                @endforelse
+            </div>
+        </div>
+        @endif
+
+        {{-- Approved Plans & Updates (Minister only) --}}
+        @if($user->isMinister())
+        <div class="bg-white rounded-lg border border-green-200">
+            <div class="px-5 py-4 border-b border-green-200 bg-green-50 flex items-center justify-between">
+                <h3 class="text-sm font-semibold text-green-800">✅ Approved Plans</h3>
+                <a href="{{ route('weekly-plans.index', ['status' => 'approved']) }}" class="text-xs text-green-600 hover:text-green-800">View all →</a>
+            </div>
+            <div class="divide-y divide-gray-50">
+                @forelse($approvedPlans as $plan)
+                    <a href="{{ route('weekly-plans.show', $plan) }}" class="block px-5 py-3 hover:bg-green-50">
+                        <div class="flex items-center justify-between">
+                            <p class="text-sm font-medium text-gray-800">{{ $plan->division?->name }}</p>
+                            <span class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Approved</span>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">
+                            {{ $plan->week_start->format('M d') }} – {{ $plan->week_end->format('M d') }}
+                            · By {{ $plan->submitter?->name }}
+                            · Reviewed by {{ $plan->reviewer?->name }}
+                        </p>
+                    </a>
+                @empty
+                    <div class="px-5 py-8 text-center text-sm text-gray-500">No approved plans yet.</div>
+                @endforelse
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg border border-green-200">
+            <div class="px-5 py-4 border-b border-green-200 bg-green-50 flex items-center justify-between">
+                <h3 class="text-sm font-semibold text-green-800">✅ Approved Updates</h3>
+                <a href="{{ route('weekly-updates.index', ['status' => 'approved']) }}" class="text-xs text-green-600 hover:text-green-800">View all →</a>
+            </div>
+            <div class="divide-y divide-gray-50">
+                @forelse($approvedUpdates as $update)
+                    <a href="{{ route('weekly-updates.show', $update) }}" class="block px-5 py-3 hover:bg-green-50">
+                        <div class="flex items-center justify-between">
+                            <p class="text-sm font-medium text-gray-800">{{ $update->division?->name }}</p>
+                            <span class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Approved</span>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">
+                            {{ $update->week_start->format('M d') }} – {{ $update->week_end->format('M d') }}
+                            · By {{ $update->submitter?->name }}
+                            · Reviewed by {{ $update->reviewer?->name }}
+                        </p>
+                    </a>
+                @empty
+                    <div class="px-5 py-8 text-center text-sm text-gray-500">No approved updates yet.</div>
+                @endforelse
+            </div>
+        </div>
+        @endif
     </div>
 
     {{-- Quick Actions --}}

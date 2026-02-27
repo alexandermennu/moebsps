@@ -193,7 +193,7 @@ class WeeklyUpdateController extends Controller
     {
         $user = $request->user();
 
-        if (!$user->canReview()) {
+        if (!$user->canReviewSubmissions()) {
             abort(403);
         }
 
@@ -218,13 +218,19 @@ class WeeklyUpdateController extends Controller
             route('weekly-updates.show', $weeklyUpdate)
         );
 
+        // If approved, notify the Minister so it appears on their dashboard
+        if ($validated['action'] === 'approved') {
+            $this->notifyMinister($weeklyUpdate, 'update');
+        }
+
         return redirect()->route('weekly-updates.show', $weeklyUpdate)
             ->with('success', 'Weekly update ' . $validated['action'] . ' successfully.');
     }
 
     private function notifyBureauHead(WeeklyUpdate $update): void
     {
-        $reviewers = \App\Models\User::whereIn('role', ['minister', 'admin_assistant', 'tech_assistant'])
+        // Only notify Admin Asst & Tech Asst for review (not Minister)
+        $reviewers = \App\Models\User::whereIn('role', ['admin_assistant', 'tech_assistant'])
             ->where('is_active', true)->get();
 
         foreach ($reviewers as $reviewer) {
@@ -233,6 +239,24 @@ class WeeklyUpdateController extends Controller
                 'reminder',
                 'New Weekly Update Submitted',
                 "A weekly update has been submitted by {$update->submitter->name} from {$update->division->name}.",
+                route('weekly-updates.show', $update)
+            );
+        }
+    }
+
+    private function notifyMinister($update, string $type = 'update'): void
+    {
+        $ministers = \App\Models\User::where('role', 'minister')
+            ->where('is_active', true)->get();
+
+        $label = $type === 'update' ? 'Weekly Update' : 'Weekly Plan';
+
+        foreach ($ministers as $minister) {
+            BureauNotification::send(
+                $minister->id,
+                'approval',
+                "{$label} Approved",
+                "A {$label} from {$update->division->name} by {$update->submitter->name} has been approved and is ready for your review.",
                 route('weekly-updates.show', $update)
             );
         }

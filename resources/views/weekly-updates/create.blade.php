@@ -147,7 +147,7 @@
         const challenges = data.challenges || '';
 
         row.innerHTML = `
-            <td class="px-4 py-3 text-gray-400 font-medium text-center align-top row-number">${getRowIndex(row)}</td>
+            <td class="px-4 py-3 text-gray-400 font-medium text-center align-top row-number">${rowCount}</td>
             <td class="px-4 py-2 align-top">
                 <textarea name="activities[${rowCount}][activity]" rows="3" required
                     class="w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-slate-500 resize-y"

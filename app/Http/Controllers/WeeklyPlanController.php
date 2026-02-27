@@ -140,7 +140,7 @@ class WeeklyPlanController extends Controller
     {
         $user = $request->user();
 
-        if (!$user->canReview()) {
+        if (!$user->canReviewSubmissions()) {
             abort(403);
         }
 
@@ -164,13 +164,19 @@ class WeeklyPlanController extends Controller
             route('weekly-plans.show', $weeklyPlan)
         );
 
+        // If approved, notify the Minister
+        if ($validated['action'] === 'approved') {
+            $this->notifyMinister($weeklyPlan);
+        }
+
         return redirect()->route('weekly-plans.show', $weeklyPlan)
             ->with('success', 'Weekly plan ' . $validated['action'] . ' successfully.');
     }
 
     private function notifyBureauHead(WeeklyPlan $plan): void
     {
-        $reviewers = \App\Models\User::whereIn('role', ['minister', 'admin_assistant', 'tech_assistant'])
+        // Only notify Admin Asst & Tech Asst for review (not Minister)
+        $reviewers = \App\Models\User::whereIn('role', ['admin_assistant', 'tech_assistant'])
             ->where('is_active', true)->get();
 
         foreach ($reviewers as $reviewer) {
@@ -179,6 +185,22 @@ class WeeklyPlanController extends Controller
                 'reminder',
                 'New Weekly Plan Submitted',
                 "A weekly plan has been submitted by {$plan->submitter->name} from {$plan->division->name}.",
+                route('weekly-plans.show', $plan)
+            );
+        }
+    }
+
+    private function notifyMinister(WeeklyPlan $plan): void
+    {
+        $ministers = \App\Models\User::where('role', 'minister')
+            ->where('is_active', true)->get();
+
+        foreach ($ministers as $minister) {
+            BureauNotification::send(
+                $minister->id,
+                'approval',
+                'Weekly Plan Approved',
+                "A weekly plan from {$plan->division->name} by {$plan->submitter->name} has been approved and is ready for your review.",
                 route('weekly-plans.show', $plan)
             );
         }

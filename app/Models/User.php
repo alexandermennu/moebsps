@@ -265,11 +265,23 @@ class User extends Authenticatable
     }
 
     /**
-     * Can review/approve weekly updates and plans
+     * Can review/approve weekly updates and plans (legacy - includes minister)
      */
     public function canReview(): bool
     {
         return $this->hasFullAccess();
+    }
+
+    /**
+     * Can review/approve submitted plans & updates (Admin Asst & Tech Asst only).
+     * Minister only sees approved submissions on their dashboard.
+     */
+    public function canReviewSubmissions(): bool
+    {
+        return in_array($this->role, [
+            self::ROLE_ADMIN_ASSISTANT,
+            self::ROLE_TECH_ASSISTANT,
+        ]);
     }
 
     /**

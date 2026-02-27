@@ -156,7 +156,7 @@
             <a href="{{ route('weekly-updates.edit', $weeklyUpdate) }}" class="px-4 py-2 bg-slate-800 text-white text-sm font-medium rounded-md hover:bg-slate-700">Edit</a>
         @endif
 
-        @if($user->canReview() && $weeklyUpdate->status === 'submitted')
+        @if($user->canReviewSubmissions() && $weeklyUpdate->status === 'submitted')
             <form method="POST" action="{{ route('weekly-updates.review', $weeklyUpdate) }}" class="flex gap-3 items-end flex-1">
                 @csrf
                 <div class="flex-1">

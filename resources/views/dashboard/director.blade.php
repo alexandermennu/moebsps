@@ -130,6 +130,85 @@
         </a>
     </div>
 
+    {{-- Submitted Plans & Updates Status Tracking --}}
+    <div>
+        <h3 class="text-lg font-bold text-gray-800 mb-4">📋 Submission Status Tracker</h3>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {{-- Submitted Plans Status --}}
+        <div class="bg-white rounded-lg border border-gray-200">
+            <div class="px-5 py-4 border-b border-gray-200 flex items-center justify-between">
+                <h3 class="text-sm font-semibold text-gray-800">Weekly Plans</h3>
+                <a href="{{ route('weekly-plans.index') }}" class="text-xs text-blue-600 hover:text-blue-800">View all →</a>
+            </div>
+            <div class="divide-y divide-gray-100">
+                @forelse($submittedPlans as $plan)
+                    <a href="{{ route('weekly-plans.show', $plan) }}" class="block px-5 py-3 hover:bg-gray-50">
+                        <div class="flex items-center justify-between">
+                            <p class="text-sm font-medium text-gray-800">
+                                {{ $plan->week_start->format('M d') }} – {{ $plan->week_end->format('M d') }}
+                            </p>
+                            <span class="text-xs px-2.5 py-0.5 rounded-full font-medium
+                                {{ $plan->status === 'approved' ? 'bg-green-100 text-green-700' : '' }}
+                                {{ $plan->status === 'submitted' ? 'bg-blue-100 text-blue-700' : '' }}
+                                {{ $plan->status === 'rejected' ? 'bg-red-100 text-red-700' : '' }}">
+                                {{ ucfirst($plan->status) }}
+                            </span>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">
+                            @if($plan->status === 'submitted')
+                                Awaiting review by Admin/Tech Asst
+                            @elseif($plan->status === 'approved')
+                                Approved by {{ $plan->reviewer?->name }} · {{ $plan->reviewed_at?->diffForHumans() }}
+                            @elseif($plan->status === 'rejected')
+                                Rejected by {{ $plan->reviewer?->name }} · {{ $plan->reviewed_at?->diffForHumans() }}
+                            @endif
+                        </p>
+                    </a>
+                @empty
+                    <div class="px-5 py-8 text-center text-sm text-gray-500">No submitted plans yet.</div>
+                @endforelse
+            </div>
+        </div>
+
+        {{-- Submitted Updates Status --}}
+        <div class="bg-white rounded-lg border border-gray-200">
+            <div class="px-5 py-4 border-b border-gray-200 flex items-center justify-between">
+                <h3 class="text-sm font-semibold text-gray-800">Weekly Updates</h3>
+                <a href="{{ route('weekly-updates.index') }}" class="text-xs text-blue-600 hover:text-blue-800">View all →</a>
+            </div>
+            <div class="divide-y divide-gray-100">
+                @forelse($submittedUpdates as $update)
+                    <a href="{{ route('weekly-updates.show', $update) }}" class="block px-5 py-3 hover:bg-gray-50">
+                        <div class="flex items-center justify-between">
+                            <p class="text-sm font-medium text-gray-800">
+                                {{ $update->week_start->format('M d') }} – {{ $update->week_end->format('M d') }}
+                            </p>
+                            <span class="text-xs px-2.5 py-0.5 rounded-full font-medium
+                                {{ $update->status === 'approved' ? 'bg-green-100 text-green-700' : '' }}
+                                {{ $update->status === 'submitted' ? 'bg-blue-100 text-blue-700' : '' }}
+                                {{ $update->status === 'rejected' ? 'bg-red-100 text-red-700' : '' }}">
+                                {{ ucfirst($update->status) }}
+                            </span>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">
+                            @if($update->status === 'submitted')
+                                Awaiting review by Admin/Tech Asst
+                            @elseif($update->status === 'approved')
+                                Approved by {{ $update->reviewer?->name }} · {{ $update->reviewed_at?->diffForHumans() }}
+                            @elseif($update->status === 'rejected')
+                                Rejected by {{ $update->reviewer?->name }} · {{ $update->reviewed_at?->diffForHumans() }}
+                            @endif
+                        </p>
+                    </a>
+                @empty
+                    <div class="px-5 py-8 text-center text-sm text-gray-500">No submitted updates yet.</div>
+                @endforelse
+            </div>
+        </div>
+    </div>
+
     {{-- Division Overview Section --}}
     <div>
         <h3 class="text-lg font-bold text-gray-800 mb-4">📊 Division Overview</h3>
