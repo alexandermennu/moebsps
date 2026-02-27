@@ -4,10 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\Activity;
 use App\Models\Division;
+use App\Models\SrgbvCase;
 use App\Models\User;
 use App\Models\WeeklyPlan;
 use App\Models\WeeklyUpdate;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
@@ -34,15 +36,31 @@ class DashboardController extends Controller
     private function directorDashboard(User $user)
     {
         $divisionId = $user->division_id;
+        $totalActivities = Activity::byDivision($divisionId)->count();
 
         $stats = [
-            'total_activities' => Activity::byDivision($divisionId)->count(),
+            'total_activities' => $totalActivities,
             'in_progress' => Activity::byDivision($divisionId)->where('status', 'in_progress')->count(),
             'completed' => Activity::byDivision($divisionId)->where('status', 'completed')->count(),
             'overdue' => Activity::byDivision($divisionId)->overdue()->count(),
+            'not_started' => Activity::byDivision($divisionId)->where('status', 'not_started')->count(),
+            'completion_rate' => $totalActivities > 0
+                ? round((Activity::byDivision($divisionId)->where('status', 'completed')->count() / $totalActivities) * 100)
+                : 0,
             'pending_updates' => WeeklyUpdate::where('division_id', $divisionId)->where('status', 'draft')->count(),
             'pending_plans' => WeeklyPlan::where('division_id', $divisionId)->where('status', 'draft')->count(),
+            'total_updates' => WeeklyUpdate::where('division_id', $divisionId)->count(),
+            'total_plans' => WeeklyPlan::where('division_id', $divisionId)->count(),
+            'total_staff' => User::where('division_id', $divisionId)->where('is_active', true)->count(),
+            'escalated' => Activity::byDivision($divisionId)->escalated()->count(),
         ];
+
+        // SRGBV stats for CGPC directors
+        if ($user->division && $user->division->code === 'CGPC') {
+            $stats['srgbv_total'] = SrgbvCase::count();
+            $stats['srgbv_open'] = SrgbvCase::open()->count();
+            $stats['srgbv_critical'] = SrgbvCase::critical()->open()->count();
+        }
 
         $recentActivities = Activity::byDivision($divisionId)
             ->with('assignee')
@@ -57,7 +75,18 @@ class DashboardController extends Controller
             ->take(5)
             ->get();
 
-        return view('dashboard.director', compact('stats', 'recentActivities', 'overdueActivities', 'user'));
+        // Division staff list
+        $divisionStaff = User::where('division_id', $divisionId)
+            ->where('is_active', true)
+            ->withCount([
+                'activities',
+                'activities as completed_activities_count' => fn($q) => $q->where('status', 'completed'),
+                'activities as overdue_activities_count' => fn($q) => $q->where('is_overdue', true),
+            ])
+            ->orderBy('name')
+            ->get();
+
+        return view('dashboard.director', compact('stats', 'recentActivities', 'overdueActivities', 'divisionStaff', 'user'));
     }
 
     private function fullAccessDashboard(User $user)
@@ -66,20 +95,30 @@ class DashboardController extends Controller
             'activities',
             'activities as overdue_count' => fn($q) => $q->where('is_overdue', true),
             'activities as completed_count' => fn($q) => $q->where('status', 'completed'),
+            'activities as in_progress_count' => fn($q) => $q->where('status', 'in_progress'),
+            'users as staff_count' => fn($q) => $q->where('is_active', true),
         ])->get();
 
+        $totalActivities = Activity::count();
         $stats = [
             'total_divisions' => Division::where('is_active', true)->count(),
-            'total_activities' => Activity::count(),
+            'total_activities' => $totalActivities,
+            'in_progress' => Activity::where('status', 'in_progress')->count(),
+            'completed' => Activity::where('status', 'completed')->count(),
             'overdue_activities' => Activity::overdue()->count(),
             'escalated_activities' => Activity::escalated()->count(),
             'pending_updates' => WeeklyUpdate::where('status', 'submitted')->count(),
             'pending_plans' => WeeklyPlan::where('status', 'submitted')->count(),
-            'completion_rate' => Activity::count() > 0
-                ? round((Activity::where('status', 'completed')->count() / Activity::count()) * 100)
+            'total_updates' => WeeklyUpdate::count(),
+            'total_plans' => WeeklyPlan::count(),
+            'completion_rate' => $totalActivities > 0
+                ? round((Activity::where('status', 'completed')->count() / $totalActivities) * 100)
                 : 0,
             'total_users' => User::where('is_active', true)->count(),
             'pending_staff' => User::pendingApproval()->count(),
+            'srgbv_total' => SrgbvCase::count(),
+            'srgbv_open' => SrgbvCase::open()->count(),
+            'srgbv_critical' => SrgbvCase::critical()->open()->count(),
         ];
 
         $escalatedActivities = Activity::escalated()
@@ -94,9 +133,19 @@ class DashboardController extends Controller
             ->take(5)
             ->get();
 
-        $recentUsers = User::latest()->take(5)->get();
+        $recentActivities = Activity::with(['division', 'assignee'])
+            ->latest()
+            ->take(5)
+            ->get();
 
-        return view('dashboard.full-access', compact('stats', 'divisions', 'escalatedActivities', 'pendingReviews', 'recentUsers', 'user'));
+        // Staff by role breakdown
+        $staffByRole = User::where('is_active', true)
+            ->select('role', DB::raw('count(*) as total'))
+            ->groupBy('role')
+            ->pluck('total', 'role')
+            ->toArray();
+
+        return view('dashboard.full-access', compact('stats', 'divisions', 'escalatedActivities', 'pendingReviews', 'recentActivities', 'staffByRole', 'user'));
     }
 
     private function ministerDashboard(User $user)
