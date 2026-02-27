@@ -144,8 +144,8 @@
             </div>
             <div class="divide-y divide-gray-100">
                 @forelse($submittedPlans as $plan)
-                    <a href="{{ route('weekly-plans.show', $plan) }}" class="block px-5 py-3 hover:bg-gray-50">
-                        <div class="flex items-center justify-between">
+                    <a href="{{ route('weekly-plans.show', $plan) }}" class="block px-5 py-4 hover:bg-gray-50">
+                        <div class="flex items-center justify-between mb-3">
                             <p class="text-sm font-medium text-gray-800">
                                 {{ $plan->week_start->format('M d') }} – {{ $plan->week_end->format('M d') }}
                             </p>
@@ -156,7 +156,40 @@
                                 {{ ucfirst($plan->status) }}
                             </span>
                         </div>
-                        <p class="text-xs text-gray-500 mt-1">
+                        {{-- Progress Stepper --}}
+                        @php
+                            $steps = [
+                                ['label' => 'Submitted', 'done' => in_array($plan->status, ['submitted', 'approved', 'rejected'])],
+                                ['label' => 'Under Review', 'done' => in_array($plan->status, ['approved', 'rejected']), 'active' => $plan->status === 'submitted'],
+                                ['label' => $plan->status === 'rejected' ? 'Rejected' : 'Approved', 'done' => in_array($plan->status, ['approved', 'rejected']), 'rejected' => $plan->status === 'rejected'],
+                            ];
+                        @endphp
+                        <div class="flex items-center gap-0">
+                            @foreach($steps as $i => $step)
+                                <div class="flex items-center {{ $i < count($steps) - 1 ? 'flex-1' : '' }}">
+                                    <div class="flex flex-col items-center">
+                                        <div class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold
+                                            {{ ($step['rejected'] ?? false) ? 'bg-red-500 text-white' : '' }}
+                                            {{ $step['done'] && !($step['rejected'] ?? false) ? 'bg-green-500 text-white' : '' }}
+                                            {{ ($step['active'] ?? false) ? 'bg-blue-500 text-white ring-2 ring-blue-200' : '' }}
+                                            {{ !$step['done'] && !($step['active'] ?? false) ? 'bg-gray-200 text-gray-400' : '' }}">
+                                            @if($step['done'] && !($step['rejected'] ?? false))
+                                                ✓
+                                            @elseif($step['rejected'] ?? false)
+                                                ✕
+                                            @else
+                                                {{ $i + 1 }}
+                                            @endif
+                                        </div>
+                                        <span class="text-[10px] text-gray-500 mt-1 whitespace-nowrap">{{ $step['label'] }}</span>
+                                    </div>
+                                    @if($i < count($steps) - 1)
+                                        <div class="flex-1 h-0.5 mx-1 mt-[-12px] {{ $step['done'] ? 'bg-green-400' : 'bg-gray-200' }}"></div>
+                                    @endif
+                                </div>
+                            @endforeach
+                        </div>
+                        <p class="text-xs text-gray-400 mt-2">
                             @if($plan->status === 'submitted')
                                 Awaiting review by Admin/Tech Asst
                             @elseif($plan->status === 'approved')
@@ -180,8 +213,8 @@
             </div>
             <div class="divide-y divide-gray-100">
                 @forelse($submittedUpdates as $update)
-                    <a href="{{ route('weekly-updates.show', $update) }}" class="block px-5 py-3 hover:bg-gray-50">
-                        <div class="flex items-center justify-between">
+                    <a href="{{ route('weekly-updates.show', $update) }}" class="block px-5 py-4 hover:bg-gray-50">
+                        <div class="flex items-center justify-between mb-3">
                             <p class="text-sm font-medium text-gray-800">
                                 {{ $update->week_start->format('M d') }} – {{ $update->week_end->format('M d') }}
                             </p>
@@ -192,7 +225,40 @@
                                 {{ ucfirst($update->status) }}
                             </span>
                         </div>
-                        <p class="text-xs text-gray-500 mt-1">
+                        {{-- Progress Stepper --}}
+                        @php
+                            $steps = [
+                                ['label' => 'Submitted', 'done' => in_array($update->status, ['submitted', 'approved', 'rejected'])],
+                                ['label' => 'Under Review', 'done' => in_array($update->status, ['approved', 'rejected']), 'active' => $update->status === 'submitted'],
+                                ['label' => $update->status === 'rejected' ? 'Rejected' : 'Approved', 'done' => in_array($update->status, ['approved', 'rejected']), 'rejected' => $update->status === 'rejected'],
+                            ];
+                        @endphp
+                        <div class="flex items-center gap-0">
+                            @foreach($steps as $i => $step)
+                                <div class="flex items-center {{ $i < count($steps) - 1 ? 'flex-1' : '' }}">
+                                    <div class="flex flex-col items-center">
+                                        <div class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold
+                                            {{ ($step['rejected'] ?? false) ? 'bg-red-500 text-white' : '' }}
+                                            {{ $step['done'] && !($step['rejected'] ?? false) ? 'bg-green-500 text-white' : '' }}
+                                            {{ ($step['active'] ?? false) ? 'bg-blue-500 text-white ring-2 ring-blue-200' : '' }}
+                                            {{ !$step['done'] && !($step['active'] ?? false) ? 'bg-gray-200 text-gray-400' : '' }}">
+                                            @if($step['done'] && !($step['rejected'] ?? false))
+                                                ✓
+                                            @elseif($step['rejected'] ?? false)
+                                                ✕
+                                            @else
+                                                {{ $i + 1 }}
+                                            @endif
+                                        </div>
+                                        <span class="text-[10px] text-gray-500 mt-1 whitespace-nowrap">{{ $step['label'] }}</span>
+                                    </div>
+                                    @if($i < count($steps) - 1)
+                                        <div class="flex-1 h-0.5 mx-1 mt-[-12px] {{ $step['done'] ? 'bg-green-400' : 'bg-gray-200' }}"></div>
+                                    @endif
+                                </div>
+                            @endforeach
+                        </div>
+                        <p class="text-xs text-gray-400 mt-2">
                             @if($update->status === 'submitted')
                                 Awaiting review by Admin/Tech Asst
                             @elseif($update->status === 'approved')

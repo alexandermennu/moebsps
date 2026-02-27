@@ -27,6 +27,44 @@
             </span>
         </div>
 
+        {{-- Progress Stepper --}}
+        @if($weeklyUpdate->status !== 'draft')
+            @php
+                $steps = [
+                    ['label' => 'Submitted', 'done' => in_array($weeklyUpdate->status, ['submitted', 'approved', 'rejected'])],
+                    ['label' => 'Under Review', 'done' => in_array($weeklyUpdate->status, ['approved', 'rejected']), 'active' => $weeklyUpdate->status === 'submitted'],
+                    ['label' => $weeklyUpdate->status === 'rejected' ? 'Rejected' : 'Approved', 'done' => in_array($weeklyUpdate->status, ['approved', 'rejected']), 'rejected' => $weeklyUpdate->status === 'rejected'],
+                ];
+            @endphp
+            <div class="mt-4 mb-4 px-4">
+                <div class="flex items-center">
+                    @foreach($steps as $i => $step)
+                        <div class="flex items-center {{ $i < count($steps) - 1 ? 'flex-1' : '' }}">
+                            <div class="flex flex-col items-center">
+                                <div class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold
+                                    {{ ($step['rejected'] ?? false) ? 'bg-red-500 text-white' : '' }}
+                                    {{ $step['done'] && !($step['rejected'] ?? false) ? 'bg-green-500 text-white' : '' }}
+                                    {{ ($step['active'] ?? false) ? 'bg-blue-500 text-white ring-4 ring-blue-100' : '' }}
+                                    {{ !$step['done'] && !($step['active'] ?? false) ? 'bg-gray-200 text-gray-400' : '' }}">
+                                    @if($step['done'] && !($step['rejected'] ?? false))
+                                        ✓
+                                    @elseif($step['rejected'] ?? false)
+                                        ✕
+                                    @else
+                                        {{ $i + 1 }}
+                                    @endif
+                                </div>
+                                <span class="text-xs text-gray-500 mt-1.5 font-medium whitespace-nowrap">{{ $step['label'] }}</span>
+                            </div>
+                            @if($i < count($steps) - 1)
+                                <div class="flex-1 h-1 mx-2 mt-[-18px] rounded-full {{ $step['done'] ? 'bg-green-400' : 'bg-gray-200' }}"></div>
+                            @endif
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        @endif
+
         {{-- Status Legend --}}
         <div class="mt-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
             <p class="text-xs font-semibold text-gray-600 mb-2">Legend: Status</p>
@@ -57,6 +95,7 @@
                             <th class="text-left px-4 py-3 text-gray-600 font-medium w-40">Status</th>
                             <th class="text-left px-4 py-3 text-gray-600 font-medium" style="min-width: 180px;">Status Comment</th>
                             <th class="text-left px-4 py-3 text-gray-600 font-medium" style="min-width: 180px;">Challenges</th>
+                            <th class="text-center px-4 py-3 text-gray-600 font-medium w-16">💬</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100">
@@ -93,6 +132,54 @@
                                 </td>
                                 <td class="px-4 py-3 text-gray-600 align-top whitespace-pre-line">{{ $activity->status_comment ?? '—' }}</td>
                                 <td class="px-4 py-3 text-gray-600 align-top whitespace-pre-line">{{ $activity->challenges ?? '—' }}</td>
+                                <td class="px-4 py-3 text-center align-top">
+                                    <button type="button" onclick="toggleComments({{ $activity->id }})"
+                                            class="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-slate-700 {{ $activity->comments->count() > 0 ? 'font-semibold text-blue-600' : '' }}">
+                                        💬 {{ $activity->comments->count() ?: '' }}
+                                    </button>
+                                </td>
+                            </tr>
+                            {{-- Comment row (hidden by default) --}}
+                            <tr id="comments-{{ $activity->id }}" class="hidden bg-slate-50">
+                                <td colspan="7" class="px-4 py-4">
+                                    <div class="max-w-2xl ml-8">
+                                        <p class="text-xs font-semibold text-gray-600 mb-3">Comments on Activity #{{ $index + 1 }}</p>
+
+                                        {{-- Existing comments --}}
+                                        @if($activity->comments->count() > 0)
+                                            <div class="space-y-3 mb-4">
+                                                @foreach($activity->comments as $comment)
+                                                    <div class="bg-white rounded-lg border border-gray-200 p-3">
+                                                        <div class="flex items-center gap-2 mb-1">
+                                                            <div class="w-6 h-6 bg-slate-200 rounded-full flex items-center justify-center text-[10px] font-bold text-slate-600">
+                                                                {{ strtoupper(substr($comment->user->name, 0, 1)) }}
+                                                            </div>
+                                                            <span class="text-xs font-medium text-gray-800">{{ $comment->user->name }}</span>
+                                                            <span class="text-xs text-gray-400">{{ $comment->user->role_label }}</span>
+                                                            <span class="text-xs text-gray-400 ml-auto">{{ $comment->created_at->diffForHumans() }}</span>
+                                                        </div>
+                                                        <p class="text-sm text-gray-700 ml-8 whitespace-pre-line">{{ $comment->body }}</p>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        @else
+                                            <p class="text-xs text-gray-400 mb-3">No comments yet.</p>
+                                        @endif
+
+                                        {{-- Add comment form (visible to full-access users and the submitting director) --}}
+                                        @if($user->hasFullAccess() || ($user->isDirector() && $user->division_id === $weeklyUpdate->division_id))
+                                            <form method="POST" action="{{ route('weekly-updates.activity-comment', $activity) }}" class="flex gap-2">
+                                                @csrf
+                                                <input type="text" name="body" required
+                                                       class="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-slate-500"
+                                                       placeholder="Add a comment on this activity...">
+                                                <button type="submit" class="px-3 py-2 bg-slate-800 text-white text-xs font-medium rounded-md hover:bg-slate-700 whitespace-nowrap">
+                                                    Comment
+                                                </button>
+                                            </form>
+                                        @endif
+                                    </div>
+                                </td>
                             </tr>
                         @endforeach
                     </tbody>
@@ -168,4 +255,13 @@
         @endif
     </div>
 </div>
+
+<script>
+    function toggleComments(id) {
+        const row = document.getElementById('comments-' + id);
+        if (row) {
+            row.classList.toggle('hidden');
+        }
+    }
+</script>
 @endsection

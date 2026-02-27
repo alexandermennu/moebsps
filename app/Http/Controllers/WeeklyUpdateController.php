@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\BureauNotification;
 use App\Models\UpdateActivity;
+use App\Models\UpdateActivityComment;
 use App\Models\WeeklyUpdate;
 use Illuminate\Http\Request;
 
@@ -111,7 +112,7 @@ class WeeklyUpdateController extends Controller
             abort(403);
         }
 
-        $weeklyUpdate->load(['division', 'submitter', 'reviewer', 'activities']);
+        $weeklyUpdate->load(['division', 'submitter', 'reviewer', 'activities.comments.user']);
 
         return view('weekly-updates.show', compact('weeklyUpdate', 'user'));
     }
@@ -260,5 +261,39 @@ class WeeklyUpdateController extends Controller
                 route('weekly-updates.show', $update)
             );
         }
+    }
+
+    public function activityComment(Request $request, UpdateActivity $activity)
+    {
+        $user = $request->user();
+
+        // Only full-access users and directors of the same division can comment
+        if (!$user->hasFullAccess() && !($user->isDirector() && $user->division_id === $activity->weeklyUpdate->division_id)) {
+            abort(403);
+        }
+
+        $validated = $request->validate([
+            'body' => 'required|string|max:2000',
+        ]);
+
+        $comment = $activity->comments()->create([
+            'user_id' => $user->id,
+            'body' => $validated['body'],
+        ]);
+
+        // Notify the update submitter if the commenter is different
+        $weeklyUpdate = $activity->weeklyUpdate;
+        if ($user->id !== $weeklyUpdate->submitted_by) {
+            BureauNotification::send(
+                $weeklyUpdate->submitted_by,
+                'reminder',
+                'Comment on Your Activity',
+                "{$user->name} commented on an activity in your weekly update for {$weeklyUpdate->week_start->format('M d')} - {$weeklyUpdate->week_end->format('M d, Y')}.",
+                route('weekly-updates.show', $weeklyUpdate)
+            );
+        }
+
+        return redirect()->route('weekly-updates.show', $weeklyUpdate)
+            ->with('success', 'Comment added successfully.');
     }
 }

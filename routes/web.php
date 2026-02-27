@@ -49,6 +49,7 @@ Route::middleware(['auth', 'active'])->group(function () {
     // Weekly Updates
     Route::resource('weekly-updates', WeeklyUpdateController::class);
     Route::post('weekly-updates/{weekly_update}/review', [WeeklyUpdateController::class, 'review'])->name('weekly-updates.review');
+    Route::post('weekly-updates/activity/{activity}/comment', [WeeklyUpdateController::class, 'activityComment'])->name('weekly-updates.activity-comment');
 
     // Weekly Plans
     Route::resource('weekly-plans', WeeklyPlanController::class);
