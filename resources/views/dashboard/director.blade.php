@@ -130,6 +130,55 @@
         </a>
     </div>
 
+    {{-- Tracked Activities from Submissions --}}
+    @if(($trackedStats['stale'] ?? 0) > 0 || ($trackedStats['repeated'] ?? 0) > 0)
+    <div class="bg-white rounded-lg border border-gray-200 p-5">
+        <div class="flex items-center justify-between mb-3">
+            <h3 class="text-sm font-semibold text-gray-800">📡 Activity Tracker</h3>
+            <a href="{{ route('tracked-activities.index') }}" class="text-xs text-blue-600 hover:text-blue-800">View all tracked →</a>
+        </div>
+
+        <div class="grid grid-cols-3 gap-3 mb-4">
+            <a href="{{ route('tracked-activities.index') }}" class="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition text-center">
+                <p class="text-xl font-bold text-gray-800">{{ $trackedStats['total'] }}</p>
+                <p class="text-xs text-gray-500">Tracked</p>
+            </a>
+            <a href="{{ route('tracked-activities.index', ['flag' => 'stale']) }}" class="p-3 bg-amber-50 rounded-lg border border-amber-200 hover:border-amber-400 transition text-center">
+                <p class="text-xl font-bold text-amber-700">{{ $trackedStats['stale'] }}</p>
+                <p class="text-xs text-amber-600 font-semibold">🟠 Stale</p>
+            </a>
+            <a href="{{ route('tracked-activities.index', ['flag' => 'repeated']) }}" class="p-3 bg-purple-50 rounded-lg border border-purple-200 hover:border-purple-400 transition text-center">
+                <p class="text-xl font-bold text-purple-700">{{ $trackedStats['repeated'] }}</p>
+                <p class="text-xs text-purple-600 font-semibold">🟣 Repeated</p>
+            </a>
+        </div>
+
+        @if($flaggedActivities->count() > 0)
+        <div class="border-t border-gray-100 pt-3">
+            <p class="text-xs font-semibold text-gray-500 mb-2">⚠ Activities Requiring Attention</p>
+            <div class="space-y-2">
+                @foreach($flaggedActivities as $tracked)
+                    <div class="flex items-center gap-3 p-2 rounded-lg {{ $tracked->is_stale && $tracked->is_repeated ? 'bg-red-50' : ($tracked->is_stale ? 'bg-amber-50' : 'bg-purple-50') }}">
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm text-gray-800 font-medium truncate">{{ $tracked->activity_text }}</p>
+                            <p class="text-xs text-gray-400">{{ $tracked->status_label }} for {{ $tracked->weeks_unchanged }}w · Reported {{ $tracked->times_reported }}×</p>
+                        </div>
+                        <div class="flex items-center gap-1 flex-shrink-0">
+                            @if($tracked->is_stale)
+                                <span class="text-xs px-1.5 py-0.5 rounded bg-amber-200 text-amber-800 font-semibold">Stale</span>
+                            @endif
+                            @if($tracked->is_repeated)
+                                <span class="text-xs px-1.5 py-0.5 rounded bg-purple-200 text-purple-800 font-semibold">Repeated</span>
+                            @endif
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+        @endif
+    </div>
+    @endif
+
     {{-- Submitted Plans & Updates Status Tracking --}}
     <div>
         <h3 class="text-lg font-bold text-gray-800 mb-4">📋 Submission Status Tracker</h3>

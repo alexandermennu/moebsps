@@ -46,6 +46,19 @@
                     Weekly Plans
                 </a>
             </li>
+
+            {{-- Tracked Activities --}}
+            <li>
+                @php $flaggedCount = \App\Models\TrackedActivity::flagged()->count(); @endphp
+                <a href="{{ route('tracked-activities.index') }}"
+                   class="flex items-center gap-3 px-3 py-2 rounded-md text-sm {{ request()->routeIs('tracked-activities.*') ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white' }}">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                    Activity Tracker
+                    @if($flaggedCount > 0)
+                        <span class="ml-auto bg-amber-500 text-white text-xs rounded-full px-2 py-0.5">{{ $flaggedCount }}</span>
+                    @endif
+                </a>
+            </li>
             @endif
 
             {{-- Director Staff Management --}}

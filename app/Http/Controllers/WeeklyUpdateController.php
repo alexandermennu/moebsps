@@ -6,6 +6,7 @@ use App\Models\BureauNotification;
 use App\Models\UpdateActivity;
 use App\Models\UpdateActivityComment;
 use App\Models\WeeklyUpdate;
+use App\Services\ActivitySyncService;
 use Illuminate\Http\Request;
 
 class WeeklyUpdateController extends Controller
@@ -219,8 +220,9 @@ class WeeklyUpdateController extends Controller
             route('weekly-updates.show', $weeklyUpdate)
         );
 
-        // If approved, notify the Minister so it appears on their dashboard
+        // If approved, sync activities to tracker and notify Minister
         if ($validated['action'] === 'approved') {
+            app(ActivitySyncService::class)->syncFromWeeklyUpdate($weeklyUpdate);
             $this->notifyMinister($weeklyUpdate, 'update');
         }
 

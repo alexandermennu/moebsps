@@ -17,6 +17,7 @@ use App\Http\Controllers\StaffController;
 use App\Http\Controllers\SrgbvCaseController;
 use App\Http\Controllers\SrgbvDashboardController;
 use App\Http\Controllers\CasesReportController;
+use App\Http\Controllers\TrackedActivityController;
 
 /*
 |--------------------------------------------------------------------------
@@ -58,6 +59,9 @@ Route::middleware(['auth', 'active'])->group(function () {
     // Activities
     Route::resource('activities', ActivityController::class);
     Route::post('activities/{activity}/comment', [ActivityController::class, 'addComment'])->name('activities.comment');
+
+    // Tracked Activities (from weekly submissions)
+    Route::get('tracked-activities', [TrackedActivityController::class, 'index'])->name('tracked-activities.index');
 
     // Notifications
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');

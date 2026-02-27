@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Activity;
 use App\Models\Division;
 use App\Models\SrgbvCase;
+use App\Models\TrackedActivity;
 use App\Models\User;
 use App\Models\WeeklyPlan;
 use App\Models\WeeklyUpdate;
@@ -101,7 +102,19 @@ class DashboardController extends Controller
             ->take(10)
             ->get();
 
-        return view('dashboard.director', compact('stats', 'recentActivities', 'overdueActivities', 'divisionStaff', 'submittedPlans', 'submittedUpdates', 'user'));
+        // Tracked activities from submissions
+        $trackedStats = [
+            'total' => TrackedActivity::byDivision($divisionId)->count(),
+            'stale' => TrackedActivity::byDivision($divisionId)->stale()->count(),
+            'repeated' => TrackedActivity::byDivision($divisionId)->repeated()->count(),
+        ];
+        $flaggedActivities = TrackedActivity::byDivision($divisionId)
+            ->flagged()
+            ->latest('last_reported_at')
+            ->take(5)
+            ->get();
+
+        return view('dashboard.director', compact('stats', 'recentActivities', 'overdueActivities', 'divisionStaff', 'submittedPlans', 'submittedUpdates', 'trackedStats', 'flaggedActivities', 'user'));
     }
 
     private function fullAccessDashboard(User $user)
@@ -172,6 +185,19 @@ class DashboardController extends Controller
             ->take(5)
             ->get();
 
+        // Tracked activities from submissions
+        $trackedStats = [
+            'total' => TrackedActivity::count(),
+            'stale' => TrackedActivity::stale()->count(),
+            'repeated' => TrackedActivity::repeated()->count(),
+            'active' => TrackedActivity::active()->count(),
+        ];
+        $flaggedActivities = TrackedActivity::with('division')
+            ->flagged()
+            ->latest('last_reported_at')
+            ->take(8)
+            ->get();
+
         // Staff by role breakdown
         $staffByRole = User::where('is_active', true)
             ->select('role', DB::raw('count(*) as total'))
@@ -179,7 +205,7 @@ class DashboardController extends Controller
             ->pluck('total', 'role')
             ->toArray();
 
-        return view('dashboard.full-access', compact('stats', 'divisions', 'escalatedActivities', 'pendingReviews', 'pendingPlanReviews', 'approvedPlans', 'approvedUpdates', 'recentActivities', 'staffByRole', 'user'));
+        return view('dashboard.full-access', compact('stats', 'divisions', 'escalatedActivities', 'pendingReviews', 'pendingPlanReviews', 'approvedPlans', 'approvedUpdates', 'recentActivities', 'staffByRole', 'trackedStats', 'flaggedActivities', 'user'));
     }
 
     private function ministerDashboard(User $user)
