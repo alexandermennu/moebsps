@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'email', 'password', 'role', 'division_id', 'position', 'phone', 'is_active'])]
+#[Fillable(['name', 'email', 'password', 'role', 'division_id', 'position', 'phone', 'is_active', 'approval_status', 'created_by_user_id', 'approved_at', 'approved_by', 'rejection_reason'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -52,8 +52,14 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_active' => 'boolean',
+            'approved_at' => 'datetime',
         ];
     }
+
+    // ── Approval Constants ──────────────────────────────────
+    const APPROVAL_APPROVED = 'approved';
+    const APPROVAL_PENDING  = 'pending';
+    const APPROVAL_REJECTED = 'rejected';
 
     // ── Relationships ──────────────────────────────────────
 
@@ -85,6 +91,38 @@ class User extends Authenticatable
     public function bureauNotifications(): HasMany
     {
         return $this->hasMany(BureauNotification::class);
+    }
+
+    public function createdByUser(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by_user_id');
+    }
+
+    public function approvedByUser(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'approved_by');
+    }
+
+    // ── Approval Helpers ───────────────────────────────────
+
+    public function isPending(): bool
+    {
+        return $this->approval_status === self::APPROVAL_PENDING;
+    }
+
+    public function isApproved(): bool
+    {
+        return $this->approval_status === self::APPROVAL_APPROVED;
+    }
+
+    public function isRejected(): bool
+    {
+        return $this->approval_status === self::APPROVAL_REJECTED;
+    }
+
+    public function scopePendingApproval($query)
+    {
+        return $query->where('approval_status', self::APPROVAL_PENDING);
     }
 
     // ── Role Helpers ───────────────────────────────────────
@@ -230,16 +268,26 @@ class User extends Authenticatable
 
     /**
      * Roles a director is allowed to assign to staff they create.
+     * Counselor role is only available to the CGPC (Counseling) division.
      */
-    public static function directorAssignableRoles(): array
+    public static function directorAssignableRoles(?int $divisionId = null): array
     {
-        return [
+        $roles = [
             self::ROLE_SUPERVISOR   => 'Supervisor',
             self::ROLE_COORDINATOR  => 'Coordinator',
-            self::ROLE_COUNSELOR    => 'Counselor',
             self::ROLE_RECORD_CLERK => 'Record Clerk',
             self::ROLE_SECRETARY    => 'Secretary',
         ];
+
+        // Only the Counseling division (CGPC) can assign Counselor role
+        if ($divisionId !== null) {
+            $division = \App\Models\Division::find($divisionId);
+            if ($division && $division->code === 'CGPC') {
+                $roles[self::ROLE_COUNSELOR] = 'Counselor';
+            }
+        }
+
+        return $roles;
     }
 
     public function hasRole(string|array $roles): bool

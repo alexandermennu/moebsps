@@ -79,6 +79,7 @@ class DashboardController extends Controller
                 ? round((Activity::where('status', 'completed')->count() / Activity::count()) * 100)
                 : 0,
             'total_users' => User::where('is_active', true)->count(),
+            'pending_staff' => User::pendingApproval()->count(),
         ];
 
         $escalatedActivities = Activity::escalated()

@@ -15,8 +15,13 @@
         </a>
     </div>
 
+    {{-- Info banner --}}
+    <div class="bg-blue-50 border border-blue-200 rounded-md p-3 text-sm text-blue-700">
+        <strong>Note:</strong> New staff members require approval from an administrator before they can log in.
+    </div>
+
     {{-- Filters --}}
-    <form method="GET" class="flex gap-3 items-end">
+    <form method="GET" class="flex gap-3 items-end flex-wrap">
         <div>
             <label class="block text-xs text-gray-500 mb-1">Search</label>
             <input type="text" name="search" value="{{ request('search') }}" placeholder="Name or email..."
@@ -31,8 +36,17 @@
                 @endforeach
             </select>
         </div>
+        <div>
+            <label class="block text-xs text-gray-500 mb-1">Status</label>
+            <select name="status" class="px-3 py-2 border border-gray-300 rounded-md text-sm">
+                <option value="">All Statuses</option>
+                <option value="approved" {{ request('status') === 'approved' ? 'selected' : '' }}>Approved</option>
+                <option value="pending" {{ request('status') === 'pending' ? 'selected' : '' }}>Pending</option>
+                <option value="rejected" {{ request('status') === 'rejected' ? 'selected' : '' }}>Rejected</option>
+            </select>
+        </div>
         <button type="submit" class="px-4 py-2 bg-gray-100 border border-gray-300 text-sm rounded-md hover:bg-gray-200">Filter</button>
-        @if(request()->hasAny(['search', 'role']))
+        @if(request()->hasAny(['search', 'role', 'status']))
             <a href="{{ route('staff.index') }}" class="px-4 py-2 text-sm text-gray-500 hover:text-gray-700">Clear</a>
         @endif
     </form>
@@ -46,7 +60,7 @@
                         <th class="text-left px-5 py-3 text-gray-600 font-medium">Email</th>
                         <th class="text-left px-5 py-3 text-gray-600 font-medium">Role</th>
                         <th class="text-left px-5 py-3 text-gray-600 font-medium">Position</th>
-                        <th class="text-center px-5 py-3 text-gray-600 font-medium">Status</th>
+                        <th class="text-center px-5 py-3 text-gray-600 font-medium">Approval</th>
                         <th class="text-right px-5 py-3 text-gray-600 font-medium">Actions</th>
                     </tr>
                 </thead>
@@ -69,9 +83,17 @@
                             </td>
                             <td class="px-5 py-3 text-gray-600">{{ $member->position ?? '—' }}</td>
                             <td class="px-5 py-3 text-center">
-                                <span class="text-xs px-2 py-1 rounded-full {{ $member->is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
-                                    {{ $member->is_active ? 'Active' : 'Inactive' }}
-                                </span>
+                                @if($member->approval_status === 'pending')
+                                    <span class="text-xs px-2 py-1 rounded-full bg-amber-100 text-amber-700">⏳ Pending</span>
+                                @elseif($member->approval_status === 'approved')
+                                    <span class="text-xs px-2 py-1 rounded-full bg-green-100 text-green-700">✓ Approved</span>
+                                @elseif($member->approval_status === 'rejected')
+                                    <span class="text-xs px-2 py-1 rounded-full bg-red-100 text-red-700" title="{{ $member->rejection_reason }}">✗ Rejected</span>
+                                @else
+                                    <span class="text-xs px-2 py-1 rounded-full {{ $member->is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
+                                        {{ $member->is_active ? 'Active' : 'Inactive' }}
+                                    </span>
+                                @endif
                             </td>
                             <td class="px-5 py-3 text-right">
                                 <div class="flex justify-end gap-2">

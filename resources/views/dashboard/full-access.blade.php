@@ -39,6 +39,13 @@
             <p class="text-xs text-gray-500 uppercase tracking-wide">Active Users</p>
             <p class="text-2xl font-bold text-gray-800 mt-1">{{ $stats['total_users'] }}</p>
         </div>
+        @if(($stats['pending_staff'] ?? 0) > 0)
+        <div class="bg-amber-50 rounded-lg border border-amber-200 p-5">
+            <p class="text-xs text-amber-600 uppercase tracking-wide font-semibold">Staff Awaiting Approval</p>
+            <p class="text-2xl font-bold text-amber-700 mt-1">{{ $stats['pending_staff'] }}</p>
+            <a href="{{ route('admin.staff-approvals.index') }}" class="text-xs text-amber-600 hover:text-amber-800 mt-1 inline-block">Review →</a>
+        </div>
+        @endif
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -98,14 +105,21 @@
             @endif
         </div>
 
-        {{-- Admin Quick Actions --}}
-        @if($user->isAdmin())
+        {{-- Quick Actions --}}
+        @if($user->isAdmin() || $user->isMinister())
         <div class="bg-white rounded-lg border border-gray-200 p-5">
             <h3 class="text-sm font-semibold text-gray-800 mb-4">Quick Actions</h3>
             <div class="space-y-2">
+                @if(($stats['pending_staff'] ?? 0) > 0)
+                    <a href="{{ route('admin.staff-approvals.index') }}" class="block p-3 bg-amber-50 border border-amber-200 rounded-md hover:bg-amber-100 text-sm text-amber-700 font-medium">
+                        ⏳ Review {{ $stats['pending_staff'] }} Pending Staff {{ Str::plural('Approval', $stats['pending_staff']) }}
+                    </a>
+                @endif
+                @if($user->isAdmin())
                 <a href="{{ route('admin.users.create') }}" class="block p-3 bg-gray-50 border border-gray-200 rounded-md hover:bg-gray-100 text-sm text-gray-700">+ Add New User</a>
                 <a href="{{ route('admin.divisions.create') }}" class="block p-3 bg-gray-50 border border-gray-200 rounded-md hover:bg-gray-100 text-sm text-gray-700">+ Add New Division</a>
                 <a href="{{ route('admin.settings.index') }}" class="block p-3 bg-gray-50 border border-gray-200 rounded-md hover:bg-gray-100 text-sm text-gray-700">⚙ System Settings</a>
+                @endif
             </div>
         </div>
         @endif

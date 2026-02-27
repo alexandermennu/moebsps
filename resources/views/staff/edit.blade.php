@@ -79,13 +79,15 @@
                 </div>
             </div>
 
-            <div class="mb-6">
-                <label class="flex items-center gap-2">
-                    <input type="checkbox" name="is_active" value="1" {{ old('is_active', $staff->is_active) ? 'checked' : '' }}
-                           class="h-4 w-4 text-slate-600 border-gray-300 rounded focus:ring-slate-500">
-                    <span class="text-sm text-gray-700">Active account</span>
-                </label>
-            </div>
+            @if($staff->isPending())
+                <div class="mb-6 p-3 bg-amber-50 border border-amber-200 rounded-md text-sm text-amber-700">
+                    <strong>⏳ Pending Approval</strong> — This account is awaiting administrator approval. Active status cannot be changed until approved.
+                </div>
+            @elseif($staff->isRejected())
+                <div class="mb-6 p-3 bg-red-50 border border-red-200 rounded-md text-sm text-red-700">
+                    <strong>✗ Rejected</strong> — {{ $staff->rejection_reason ?? 'This account was rejected by an administrator.' }}
+                </div>
+            @endif
 
             <div class="flex gap-3">
                 <button type="submit" class="px-4 py-2 bg-slate-800 text-white text-sm font-medium rounded-md hover:bg-slate-700">Update Staff</button>

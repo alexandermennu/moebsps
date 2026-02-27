@@ -11,7 +11,11 @@
 
     <div class="bg-white rounded-lg border border-gray-200 p-6">
         <h2 class="text-lg font-semibold text-gray-800 mb-2">Add Staff to {{ $user->division?->name }}</h2>
-        <p class="text-sm text-gray-500 mb-6">Create a new staff member under your division. You can assign them as Supervisor, Coordinator, Counselor, Record Clerk, or Secretary.</p>
+        <p class="text-sm text-gray-500 mb-4">Create a new staff member under your division.</p>
+
+        <div class="mb-6 p-3 bg-amber-50 border border-amber-200 rounded-md text-sm text-amber-700">
+            <strong>⏳ Approval Required:</strong> New staff accounts will be submitted for review and must be approved by an administrator before the user can log in.
+        </div>
 
         @if($errors->any())
             <div class="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">

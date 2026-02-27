@@ -12,6 +12,7 @@ use App\Http\Controllers\LivePollController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\DivisionController;
 use App\Http\Controllers\Admin\SettingsController;
+use App\Http\Controllers\Admin\StaffApprovalController;
 use App\Http\Controllers\StaffController;
 
 /*
@@ -87,6 +88,12 @@ Route::middleware(['auth', 'active'])->group(function () {
         // User Management
         Route::resource('users', UserController::class)->except(['show']);
         Route::patch('users/{user}/toggle-active', [UserController::class, 'toggleActive'])->name('users.toggle-active');
+
+        // Staff Approvals
+        Route::get('staff-approvals', [StaffApprovalController::class, 'index'])->name('staff-approvals.index');
+        Route::get('staff-approvals/{user}', [StaffApprovalController::class, 'show'])->name('staff-approvals.show');
+        Route::post('staff-approvals/{user}/approve', [StaffApprovalController::class, 'approve'])->name('staff-approvals.approve');
+        Route::post('staff-approvals/{user}/reject', [StaffApprovalController::class, 'reject'])->name('staff-approvals.reject');
 
         // Division Management
         Route::resource('divisions', DivisionController::class)->except(['show']);

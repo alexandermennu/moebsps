@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\BureauNotification;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -22,7 +23,7 @@ class StaffController extends Controller
 
         $query = User::where('division_id', $user->division_id)
             ->where('id', '!=', $user->id)
-            ->whereIn('role', array_keys(User::directorAssignableRoles()));
+            ->whereIn('role', array_keys(User::directorAssignableRoles($user->division_id)));
 
         if ($request->filled('search')) {
             $search = $request->search;
@@ -36,8 +37,12 @@ class StaffController extends Controller
             $query->where('role', $request->role);
         }
 
+        if ($request->filled('status')) {
+            $query->where('approval_status', $request->status);
+        }
+
         $staff = $query->latest()->paginate(15);
-        $roles = User::directorAssignableRoles();
+        $roles = User::directorAssignableRoles($user->division_id);
 
         return view('staff.index', compact('staff', 'roles', 'user'));
     }
@@ -53,13 +58,14 @@ class StaffController extends Controller
             abort(403);
         }
 
-        $roles = User::directorAssignableRoles();
+        $roles = User::directorAssignableRoles($user->division_id);
 
         return view('staff.create', compact('user', 'roles'));
     }
 
     /**
      * Store a new staff member under the director's division.
+     * Staff is created with pending approval status — must be approved by full-access user.
      */
     public function store(Request $request)
     {
@@ -69,7 +75,7 @@ class StaffController extends Controller
             abort(403);
         }
 
-        $allowedRoles = array_keys(User::directorAssignableRoles());
+        $allowedRoles = array_keys(User::directorAssignableRoles($user->division_id));
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -80,7 +86,7 @@ class StaffController extends Controller
             'phone' => 'nullable|string|max:20',
         ]);
 
-        User::create([
+        $newStaff = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
@@ -88,11 +94,30 @@ class StaffController extends Controller
             'division_id' => $user->division_id,
             'position' => $validated['position'] ?? null,
             'phone' => $validated['phone'] ?? null,
-            'is_active' => true,
+            'is_active' => false,
+            'approval_status' => User::APPROVAL_PENDING,
+            'created_by_user_id' => $user->id,
         ]);
 
+        // Notify full-access users about the pending approval
+        $reviewers = User::whereIn('role', [
+            User::ROLE_MINISTER,
+            User::ROLE_ADMIN_ASSISTANT,
+            User::ROLE_TECH_ASSISTANT,
+        ])->where('is_active', true)->get();
+
+        foreach ($reviewers as $reviewer) {
+            BureauNotification::send(
+                $reviewer->id,
+                'approval',
+                'Staff Approval Required',
+                "{$user->name} ({$user->division?->name}) has created a new staff member \"{$newStaff->name}\" ({$newStaff->role_label}) that requires your approval.",
+                route('admin.staff-approvals.index')
+            );
+        }
+
         return redirect()->route('staff.index')
-            ->with('success', 'Staff member created successfully.');
+            ->with('success', 'Staff member created and submitted for approval. They will be able to log in once approved by an administrator.');
     }
 
     /**
@@ -106,13 +131,12 @@ class StaffController extends Controller
             abort(403);
         }
 
-        // Must belong to director's division and be an assignable role
         if ($staff_user->division_id !== $user->division_id ||
-            !in_array($staff_user->role, array_keys(User::directorAssignableRoles()))) {
+            !in_array($staff_user->role, array_keys(User::directorAssignableRoles($user->division_id)))) {
             abort(403, 'You can only manage staff in your own division.');
         }
 
-        $roles = User::directorAssignableRoles();
+        $roles = User::directorAssignableRoles($user->division_id);
 
         return view('staff.edit', ['staff' => $staff_user, 'roles' => $roles, 'user' => $user]);
     }
@@ -129,11 +153,11 @@ class StaffController extends Controller
         }
 
         if ($staff_user->division_id !== $user->division_id ||
-            !in_array($staff_user->role, array_keys(User::directorAssignableRoles()))) {
+            !in_array($staff_user->role, array_keys(User::directorAssignableRoles($user->division_id)))) {
             abort(403);
         }
 
-        $allowedRoles = array_keys(User::directorAssignableRoles());
+        $allowedRoles = array_keys(User::directorAssignableRoles($user->division_id));
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -142,7 +166,6 @@ class StaffController extends Controller
             'role' => ['required', Rule::in($allowedRoles)],
             'position' => 'nullable|string|max:255',
             'phone' => 'nullable|string|max:20',
-            'is_active' => 'boolean',
         ]);
 
         $data = [
@@ -151,7 +174,6 @@ class StaffController extends Controller
             'role' => $validated['role'],
             'position' => $validated['position'] ?? null,
             'phone' => $validated['phone'] ?? null,
-            'is_active' => $request->boolean('is_active', true),
         ];
 
         if (!empty($validated['password'])) {
@@ -176,7 +198,7 @@ class StaffController extends Controller
         }
 
         if ($staff_user->division_id !== $user->division_id ||
-            !in_array($staff_user->role, array_keys(User::directorAssignableRoles()))) {
+            !in_array($staff_user->role, array_keys(User::directorAssignableRoles($user->division_id)))) {
             abort(403, 'You can only delete staff in your own division.');
         }
 
