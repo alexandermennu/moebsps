@@ -65,7 +65,7 @@
                 data.new_messages.forEach(function (m) {
                     showToast({
                         type: 'message',
-                        icon: '✉️',
+                        icon: '<svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>',
                         title: m.sender,
                         body: m.subject + ': ' + m.preview,
                         link: m.link,
@@ -132,12 +132,12 @@
 
     function getNotificationIcon(type) {
         switch (type) {
-            case 'overdue': return '⚠️';
-            case 'escalation': return '🔺';
-            case 'approval': return '✅';
-            case 'rejection': return '❌';
-            case 'message': return '✉️';
-            default: return '🔔';
+            case 'overdue': return '<svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>';
+            case 'escalation': return '<svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>';
+            case 'approval': return '<svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>';
+            case 'rejection': return '<svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>';
+            case 'message': return '<svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>';
+            default: return '<svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>';
         }
     }
 
@@ -150,7 +150,7 @@
         toast.innerHTML = `
             <div class="p-4">
                 <div class="flex items-start gap-3">
-                    <span class="text-xl flex-shrink-0 mt-0.5">${opts.icon}</span>
+                    <div class="flex-shrink-0 mt-0.5">${opts.icon}</div>
                     <div class="flex-1 min-w-0">
                         <p class="text-sm font-semibold text-gray-900">${escapeHtml(opts.title)}</p>
                         <p class="text-sm text-gray-600 mt-0.5 line-clamp-2">${escapeHtml(opts.body)}</p>
@@ -161,7 +161,7 @@
                     </button>
                 </div>
             </div>
-            ${opts.link ? `<a href="${opts.link}" class="block px-4 py-2 bg-gray-50 text-xs text-slate-600 hover:text-slate-800 hover:bg-gray-100 border-t border-gray-100">View →</a>` : ''}
+            ${opts.link ? `<a href="${opts.link}" class="block px-4 py-2 bg-gray-50 text-xs text-slate-600 hover:text-slate-800 hover:bg-gray-100 border-t border-gray-100">View</a>` : ''}
         `;
         toast.setAttribute('data-toast', '');
 
