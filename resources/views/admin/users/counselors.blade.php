@@ -7,11 +7,11 @@
 <div class="space-y-6">
     <div class="flex items-center justify-between">
         <div>
-            <a href="{{ route('admin.users.index') }}" class="text-sm text-gray-500 hover:text-gray-700">← Back to All Users</a>
-            <h2 class="text-xl font-bold text-gray-800 mt-2">🎓 Counselors</h2>
+            <a href="{{ route('admin.users.index') }}" class="text-xs text-blue-700 hover:underline">Back to All Users</a>
+            <h2 class="text-sm font-semibold text-gray-900 uppercase tracking-wide mt-2">Counselors</h2>
             <p class="text-sm text-gray-500">CGPC Division — {{ $counselors->total() }} total counselors</p>
         </div>
-        <a href="{{ route('admin.users.create') }}?prefill_role=counselor" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700">
+        <a href="{{ route('admin.users.create') }}?prefill_role=counselor" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium hover:bg-blue-700">
             + Add Counselor
         </a>
     </div>
@@ -41,19 +41,19 @@
                 @endforeach
             </select>
         </div>
-        <button type="submit" class="px-4 py-2 bg-gray-100 border border-gray-300 text-sm rounded-md hover:bg-gray-200">Filter</button>
+        <button type="submit" class="px-4 py-2 bg-gray-100 border border-gray-300 text-sm hover:bg-gray-200">Filter</button>
         @if(request()->hasAny(['search', 'county', 'status']))
             <a href="{{ route('admin.users.counselors') }}" class="px-4 py-2 text-sm text-gray-500 hover:text-gray-700">Clear</a>
         @endif
     </form>
 
     {{-- Counselors Table --}}
-    <div class="bg-white rounded-lg border border-blue-200">
-        <div class="px-5 py-3 border-b border-blue-100 bg-blue-50 rounded-t-lg">
+    <div class="bg-white border border-blue-200">
+        <div class="px-5 py-3 border-b border-blue-100 bg-blue-50">
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-2">
                     <h3 class="text-sm font-semibold text-blue-800">Counselor List</h3>
-                    <span class="text-xs px-2 py-0.5 rounded-full bg-blue-200 text-blue-800">
+                    <span class="text-[10px] px-1.5 py-0.5 font-medium bg-blue-200 text-blue-800">
                         Showing {{ $counselors->firstItem() ?? 0 }}–{{ $counselors->lastItem() ?? 0 }} of {{ $counselors->total() }}
                     </span>
                 </div>
@@ -61,16 +61,16 @@
         </div>
         <div class="overflow-x-auto">
             <table class="w-full text-sm">
-                <thead class="bg-blue-50/50">
+                <thead class="bg-gray-50 border-b border-gray-200">
                     <tr>
-                        <th class="text-left px-5 py-3 text-gray-600 font-medium">#</th>
-                        <th class="text-left px-5 py-3 text-gray-600 font-medium">Name</th>
-                        <th class="text-left px-5 py-3 text-gray-600 font-medium">Email</th>
-                        <th class="text-left px-5 py-3 text-gray-600 font-medium">School of Assignment</th>
-                        <th class="text-left px-5 py-3 text-gray-600 font-medium">County</th>
-                        <th class="text-center px-5 py-3 text-gray-600 font-medium">Current Status</th>
-                        <th class="text-center px-5 py-3 text-gray-600 font-medium">Account</th>
-                        <th class="text-right px-5 py-3 text-gray-600 font-medium">Actions</th>
+                        <th class="text-left px-5 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium">#</th>
+                        <th class="text-left px-5 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium">Name</th>
+                        <th class="text-left px-5 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium">Email</th>
+                        <th class="text-left px-5 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium">School of Assignment</th>
+                        <th class="text-left px-5 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium">County</th>
+                        <th class="text-center px-5 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium">Current Status</th>
+                        <th class="text-center px-5 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium">Account</th>
+                        <th class="text-right px-5 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
@@ -93,12 +93,12 @@
                                     ];
                                     $color = $statusColors[$c->counselor_status] ?? 'bg-gray-100 text-gray-700';
                                 @endphp
-                                <span class="text-xs px-2 py-1 rounded-full {{ $color }}">
+                                <span class="text-[10px] px-1.5 py-0.5 font-medium {{ $color }}">
                                     {{ $c->counselor_status_label }}
                                 </span>
                             </td>
                             <td class="px-5 py-3 text-center">
-                                <span class="text-xs px-2 py-1 rounded-full {{ $c->is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
+                                <span class="text-[10px] px-1.5 py-0.5 font-medium {{ $c->is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
                                     {{ $c->is_active ? 'Active' : 'Inactive' }}
                                 </span>
                             </td>
@@ -117,22 +117,22 @@
 
         {{-- Pagination with Previous / Next --}}
         @if($counselors->hasPages())
-        <div class="px-5 py-4 border-t border-blue-100 bg-blue-50/30 rounded-b-lg">
+        <div class="px-5 py-4 border-t border-blue-100 bg-blue-50/30">
             <div class="flex items-center justify-between">
                 <div class="text-sm text-gray-600">
                     Page {{ $counselors->currentPage() }} of {{ $counselors->lastPage() }}
                 </div>
                 <div class="flex gap-2">
                     @if($counselors->onFirstPage())
-                        <span class="px-4 py-2 bg-gray-100 text-gray-400 text-sm rounded-md cursor-not-allowed">← Previous</span>
+                        <span class="px-4 py-2 bg-gray-100 text-gray-400 text-sm cursor-not-allowed">Previous</span>
                     @else
-                        <a href="{{ $counselors->previousPageUrl() }}" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm rounded-md hover:bg-gray-50">← Previous</a>
+                        <a href="{{ $counselors->previousPageUrl() }}" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm hover:bg-gray-50">Previous</a>
                     @endif
 
                     @if($counselors->hasMorePages())
-                        <a href="{{ $counselors->nextPageUrl() }}" class="px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700">Next →</a>
+                        <a href="{{ $counselors->nextPageUrl() }}" class="px-4 py-2 bg-blue-600 text-white text-sm hover:bg-blue-700">Next</a>
                     @else
-                        <span class="px-4 py-2 bg-gray-100 text-gray-400 text-sm rounded-md cursor-not-allowed">Next →</span>
+                        <span class="px-4 py-2 bg-gray-100 text-gray-400 text-sm cursor-not-allowed">Next</span>
                     @endif
                 </div>
             </div>

@@ -6,52 +6,52 @@
 @section('content')
 <div class="space-y-6">
     <div>
-        <h2 class="text-xl font-bold text-gray-800">Bureau Overview</h2>
+        <h2 class="text-sm font-semibold text-gray-900 uppercase tracking-wide">Bureau Overview</h2>
         <p class="text-sm text-gray-500">Welcome back, {{ $user->name }}</p>
     </div>
 
     {{-- Stats Grid --}}
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <div class="bg-white rounded-lg border border-gray-200 p-5">
+        <div class="bg-white border border-gray-200 p-5">
             <p class="text-sm text-gray-500">Active Divisions</p>
             <p class="text-2xl font-bold text-gray-800 mt-1">{{ $stats['total_divisions'] }}</p>
         </div>
-        <div class="bg-white rounded-lg border border-gray-200 p-5">
+        <div class="bg-white border border-gray-200 p-5">
             <p class="text-sm text-gray-500">Total Assignments</p>
             <p class="text-2xl font-bold text-gray-800 mt-1">{{ $stats['total_activities'] }}</p>
         </div>
-        <div class="bg-white rounded-lg border border-gray-200 p-5">
+        <div class="bg-white border border-gray-200 p-5">
             <p class="text-sm text-gray-500">Overdue Assignments</p>
             <p class="text-2xl font-bold text-red-600 mt-1">{{ $stats['overdue_activities'] }}</p>
         </div>
-        <div class="bg-white rounded-lg border border-gray-200 p-5">
+        <div class="bg-white border border-gray-200 p-5">
             <p class="text-sm text-gray-500">Escalated Assignments</p>
             <p class="text-2xl font-bold text-orange-600 mt-1">{{ $stats['escalated_activities'] }}</p>
         </div>
-        <div class="bg-white rounded-lg border border-gray-200 p-5">
+        <div class="bg-white border border-gray-200 p-5">
             <p class="text-sm text-gray-500">Pending Update Reviews</p>
             <p class="text-2xl font-bold text-blue-600 mt-1">{{ $stats['pending_updates'] }}</p>
         </div>
-        <div class="bg-white rounded-lg border border-gray-200 p-5">
+        <div class="bg-white border border-gray-200 p-5">
             <p class="text-sm text-gray-500">Pending Plan Reviews</p>
             <p class="text-2xl font-bold text-purple-600 mt-1">{{ $stats['pending_plans'] }}</p>
         </div>
     </div>
 
     {{-- Division Performance --}}
-    <div class="bg-white rounded-lg border border-gray-200">
+    <div class="bg-white border border-gray-200">
         <div class="px-5 py-4 border-b border-gray-200">
-            <h3 class="font-semibold text-gray-800">Division Performance</h3>
+            <h3 class="text-sm font-semibold text-gray-900 uppercase tracking-wide">Division Performance</h3>
         </div>
         <div class="overflow-x-auto">
             <table class="w-full text-sm">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="text-left px-5 py-3 text-gray-600 font-medium">Division</th>
-                        <th class="text-center px-5 py-3 text-gray-600 font-medium">Assignments</th>
-                        <th class="text-center px-5 py-3 text-gray-600 font-medium">Completed</th>
-                        <th class="text-center px-5 py-3 text-gray-600 font-medium">Overdue</th>
-                        <th class="text-center px-5 py-3 text-gray-600 font-medium">Completion Rate</th>
+                        <th class="text-left px-5 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium">Division</th>
+                        <th class="text-center px-5 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium">Assignments</th>
+                        <th class="text-center px-5 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium">Completed</th>
+                        <th class="text-center px-5 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium">Overdue</th>
+                        <th class="text-center px-5 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium">Completion Rate</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
@@ -85,9 +85,9 @@
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {{-- Escalated Assignments --}}
-        <div class="bg-white rounded-lg border border-orange-200">
+        <div class="bg-white border border-orange-200">
             <div class="px-5 py-4 border-b border-orange-200 bg-orange-50">
-                <h3 class="font-semibold text-orange-800">🔺 Escalated Assignments</h3>
+                <h3 class="text-sm font-semibold text-orange-800 uppercase tracking-wide">Escalated Assignments</h3>
             </div>
             <div class="divide-y divide-gray-100">
                 @forelse($escalatedActivities as $activity)
@@ -102,9 +102,9 @@
         </div>
 
         {{-- Pending Reviews --}}
-        <div class="bg-white rounded-lg border border-blue-200">
+        <div class="bg-white border border-blue-200">
             <div class="px-5 py-4 border-b border-blue-200 bg-blue-50">
-                <h3 class="font-semibold text-blue-800">📋 Pending Reviews</h3>
+                <h3 class="text-sm font-semibold text-blue-800 uppercase tracking-wide">Pending Reviews</h3>
             </div>
             <div class="divide-y divide-gray-100">
                 @forelse($pendingReviews as $update)

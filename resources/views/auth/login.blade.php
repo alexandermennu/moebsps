@@ -16,11 +16,11 @@
             <p class="text-slate-500 mt-2">Bureau Activity Tracking System</p>
         </div>
 
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+        <div class="bg-white shadow-sm border border-gray-200 p-8">
             <h2 class="text-xl font-semibold text-gray-800 mb-6">Sign in to your account</h2>
 
             @if($errors->any())
-                <div class="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md text-sm">
+                <div class="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 text-sm">
                     @foreach($errors->all() as $error)
                         <p>{{ $error }}</p>
                     @endforeach
@@ -49,7 +49,7 @@
                 </div>
 
                 <button type="submit"
-                        class="w-full bg-slate-800 text-white py-2 px-4 rounded-md text-sm font-medium hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 transition">
+                        class="w-full bg-slate-800 text-white py-2 px-4 text-sm font-medium hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 transition">
                     Sign In
                 </button>
             </form>

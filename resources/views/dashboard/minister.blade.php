@@ -6,48 +6,48 @@
 @section('content')
 <div class="space-y-6">
     <div>
-        <h2 class="text-xl font-bold text-gray-800">Ministry Overview</h2>
+        <h2 class="text-sm font-semibold text-gray-900 uppercase tracking-wide">Ministry Overview</h2>
         <p class="text-sm text-gray-500">Welcome back, {{ $user->name }}</p>
     </div>
 
     {{-- Stats Grid --}}
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-        <div class="bg-white rounded-lg border border-gray-200 p-5">
+        <div class="bg-white border border-gray-200 p-5">
             <p class="text-sm text-gray-500">Divisions</p>
             <p class="text-2xl font-bold text-gray-800 mt-1">{{ $stats['total_divisions'] }}</p>
         </div>
-        <div class="bg-white rounded-lg border border-gray-200 p-5">
+        <div class="bg-white border border-gray-200 p-5">
             <p class="text-sm text-gray-500">Total Assignments</p>
             <p class="text-2xl font-bold text-gray-800 mt-1">{{ $stats['total_activities'] }}</p>
         </div>
-        <div class="bg-white rounded-lg border border-gray-200 p-5">
+        <div class="bg-white border border-gray-200 p-5">
             <p class="text-sm text-gray-500">Completion Rate</p>
             <p class="text-2xl font-bold text-green-600 mt-1">{{ $stats['completion_rate'] }}%</p>
         </div>
-        <div class="bg-white rounded-lg border border-gray-200 p-5">
+        <div class="bg-white border border-gray-200 p-5">
             <p class="text-sm text-gray-500">Overdue</p>
             <p class="text-2xl font-bold text-red-600 mt-1">{{ $stats['overdue_activities'] }}</p>
         </div>
-        <div class="bg-white rounded-lg border border-gray-200 p-5">
+        <div class="bg-white border border-gray-200 p-5">
             <p class="text-sm text-gray-500">Escalated to You</p>
             <p class="text-2xl font-bold text-orange-600 mt-1">{{ $stats['escalated_to_minister'] }}</p>
         </div>
     </div>
 
     {{-- Division Performance --}}
-    <div class="bg-white rounded-lg border border-gray-200">
+    <div class="bg-white border border-gray-200">
         <div class="px-5 py-4 border-b border-gray-200">
-            <h3 class="font-semibold text-gray-800">Division Performance Overview</h3>
+            <h3 class="text-sm font-semibold text-gray-900 uppercase tracking-wide">Division Performance Overview</h3>
         </div>
         <div class="overflow-x-auto">
             <table class="w-full text-sm">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="text-left px-5 py-3 text-gray-600 font-medium">Division</th>
-                        <th class="text-center px-5 py-3 text-gray-600 font-medium">Total</th>
-                        <th class="text-center px-5 py-3 text-gray-600 font-medium">Completed</th>
-                        <th class="text-center px-5 py-3 text-gray-600 font-medium">Overdue</th>
-                        <th class="text-center px-5 py-3 text-gray-600 font-medium">Performance</th>
+                        <th class="text-left px-5 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium">Division</th>
+                        <th class="text-center px-5 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium">Total</th>
+                        <th class="text-center px-5 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium">Completed</th>
+                        <th class="text-center px-5 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium">Overdue</th>
+                        <th class="text-center px-5 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium">Performance</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
@@ -76,9 +76,9 @@
     </div>
 
     {{-- Critical Assignments Escalated to Minister --}}
-    <div class="bg-white rounded-lg border border-red-200">
+    <div class="bg-white border border-red-200">
         <div class="px-5 py-4 border-b border-red-200 bg-red-50">
-            <h3 class="font-semibold text-red-800">🚨 Assignments Escalated to Minister</h3>
+            <h3 class="text-sm font-semibold text-red-800 uppercase tracking-wide">Assignments Escalated to Minister</h3>
         </div>
         <div class="divide-y divide-gray-100">
             @forelse($criticalActivities as $activity)
@@ -88,7 +88,7 @@
                             <p class="text-sm font-medium text-gray-800">{{ $activity->title }}</p>
                             <p class="text-xs text-gray-500 mt-1">{{ $activity->division->name }} · Escalated {{ $activity->escalated_at?->diffForHumans() }}</p>
                         </div>
-                        <span class="text-xs px-2 py-1 rounded-full bg-red-100 text-red-700">
+                        <span class="text-[10px] px-1.5 py-0.5 bg-red-100 text-red-700">
                             Due: {{ $activity->due_date->format('M d, Y') }}
                         </span>
                     </div>

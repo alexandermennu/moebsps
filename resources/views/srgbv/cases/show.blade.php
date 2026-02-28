@@ -7,24 +7,24 @@
 <div class="space-y-6">
     {{-- Back & Actions Bar --}}
     <div class="flex items-center justify-between">
-        <a href="{{ route('srgbv.cases.index') }}" class="text-sm text-gray-500 hover:text-gray-700">← Back to Cases</a>
+        <a href="{{ route('srgbv.cases.index') }}" class="text-xs text-blue-700 hover:underline">Back to Cases</a>
         <div class="flex gap-2">
             @if($canManage)
-                <a href="{{ route('srgbv.cases.edit', $case) }}" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-50">
-                    ✏ Edit Case
+                <a href="{{ route('srgbv.cases.edit', $case) }}" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50">
+                    Edit Case
                 </a>
             @endif
         </div>
     </div>
 
     {{-- Case Header --}}
-    <div class="bg-white rounded-lg border border-gray-200 p-6">
+    <div class="bg-white border border-gray-200 p-6">
         <div class="flex items-start justify-between mb-4">
             <div>
                 <div class="flex items-center gap-3 mb-2">
                     <span class="text-sm font-mono text-gray-400">{{ $case->case_number }}</span>
                     {{-- Priority --}}
-                    <span class="text-xs px-2.5 py-1 rounded-full font-medium
+                    <span class="text-[10px] px-1.5 py-0.5 font-medium
                         @switch($case->priority)
                             @case('critical') bg-red-100 text-red-700 @break
                             @case('high') bg-amber-100 text-amber-700 @break
@@ -33,7 +33,7 @@
                         @endswitch
                     ">{{ $case->priority_label }} Priority</span>
                     {{-- Status --}}
-                    <span class="text-xs px-2.5 py-1 rounded-full font-medium
+                    <span class="text-[10px] px-1.5 py-0.5 font-medium
                         @switch($case->status)
                             @case('reported') bg-red-100 text-red-700 @break
                             @case('under_investigation') bg-amber-100 text-amber-700 @break
@@ -44,15 +44,15 @@
                         @endswitch
                     ">{{ $case->status_label }}</span>
                     @if($case->is_confidential)
-                        <span class="text-xs px-2.5 py-1 rounded-full bg-gray-100 text-gray-600">🔒 Confidential</span>
+                        <span class="text-[10px] px-1.5 py-0.5 bg-gray-100 text-gray-600">Confidential</span>
                     @endif
                     @if($case->immediate_action_required)
-                        <span class="text-xs px-2.5 py-1 rounded-full bg-red-600 text-white animate-pulse">⚠ URGENT</span>
+                        <span class="text-[10px] px-1.5 py-0.5 bg-red-600 text-white animate-pulse">URGENT</span>
                     @endif
                 </div>
-                <h2 class="text-xl font-bold text-gray-800">{{ $case->title }}</h2>
+                <h2 class="text-sm font-semibold text-gray-900 uppercase tracking-wide">{{ $case->title }}</h2>
                 <p class="text-sm text-gray-500 mt-1">
-                    📂 {{ $case->category_label }} · 📅 Incident: {{ $case->incident_date->format('M d, Y') }} · Reported {{ $case->created_at->diffForHumans() }}
+                    {{ $case->category_label }} · Incident: {{ $case->incident_date->format('M d, Y') }} · Reported {{ $case->created_at->diffForHumans() }}
                 </p>
             </div>
 
@@ -65,7 +65,7 @@
                             <option value="{{ $key }}" {{ $case->status === $key ? 'selected' : '' }}>{{ $label }}</option>
                         @endforeach
                     </select>
-                    <button type="submit" class="px-3 py-1.5 bg-slate-800 text-white text-sm rounded-md hover:bg-slate-700">Update</button>
+                    <button type="submit" class="px-3 py-1.5 bg-slate-800 text-white text-sm hover:bg-slate-700">Update</button>
                 </form>
             @endif
         </div>
@@ -78,9 +78,8 @@
         <div class="lg:col-span-2 space-y-6">
 
             {{-- Victim Information --}}
-            <div class="bg-white rounded-lg border border-gray-200 p-6">
-                <h3 class="text-sm font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                    <span class="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center text-xs">👤</span>
+            <div class="bg-white border border-gray-200 p-6">
+                <h3 class="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-4">
                     Victim Information
                 </h3>
                 <div class="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
@@ -121,9 +120,8 @@
 
             {{-- Perpetrator Information --}}
             @if($case->perpetrator_name || $case->perpetrator_type || $case->perpetrator_description)
-            <div class="bg-white rounded-lg border border-gray-200 p-6">
-                <h3 class="text-sm font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                    <span class="w-6 h-6 bg-red-100 rounded-full flex items-center justify-center text-xs">⚠</span>
+            <div class="bg-white border border-gray-200 p-6">
+                <h3 class="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-4">
                     Perpetrator Information
                 </h3>
                 <div class="grid grid-cols-2 gap-4 text-sm">
@@ -147,9 +145,8 @@
 
             {{-- Incident Details --}}
             @if($case->incident_description || $case->incident_location || $case->witnesses)
-            <div class="bg-white rounded-lg border border-gray-200 p-6">
-                <h3 class="text-sm font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                    <span class="w-6 h-6 bg-amber-100 rounded-full flex items-center justify-center text-xs">📋</span>
+            <div class="bg-white border border-gray-200 p-6">
+                <h3 class="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-4">
                     Incident Details
                 </h3>
                 <div class="space-y-3 text-sm">
@@ -161,7 +158,7 @@
                     @endif
                     @if($case->is_recurring)
                     <div>
-                        <span class="text-xs px-2 py-1 rounded-full bg-orange-100 text-orange-700">🔄 Recurring Incident</span>
+                        <span class="text-[10px] px-1.5 py-0.5 bg-orange-100 text-orange-700">Recurring Incident</span>
                     </div>
                     @endif
                     @if($case->incident_description)
@@ -182,16 +179,15 @@
 
             {{-- Risk Assessment & Safety --}}
             @if($case->risk_level || $case->safety_plan || $case->immediate_action_required)
-            <div class="bg-white rounded-lg border {{ $case->immediate_action_required ? 'border-red-300' : 'border-gray-200' }} p-6">
-                <h3 class="text-sm font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                    <span class="w-6 h-6 bg-red-100 rounded-full flex items-center justify-center text-xs">🛡</span>
+            <div class="bg-white border {{ $case->immediate_action_required ? 'border-red-300' : 'border-gray-200' }} p-6">
+                <h3 class="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-4">
                     Risk Assessment & Safety
                 </h3>
                 <div class="space-y-3 text-sm">
                     @if($case->risk_level)
                     <div>
                         <span class="text-gray-500">Risk Level:</span>
-                        <span class="ml-1 px-2 py-0.5 rounded-full text-xs font-medium
+                        <span class="ml-1 text-[10px] px-1.5 py-0.5 font-medium
                             @switch($case->risk_level)
                                 @case('immediate_danger') bg-red-100 text-red-700 @break
                                 @case('high') bg-amber-100 text-amber-700 @break
@@ -213,9 +209,8 @@
 
             {{-- Resolution --}}
             @if($case->resolution || $case->referral_agency)
-            <div class="bg-white rounded-lg border border-green-200 p-6">
-                <h3 class="text-sm font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                    <span class="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center text-xs">✓</span>
+            <div class="bg-white border border-green-200 p-6">
+                <h3 class="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-4">
                     Resolution & Referral
                 </h3>
                 <div class="space-y-3 text-sm">
@@ -248,10 +243,9 @@
             @endif
 
             {{-- Files & Evidence --}}
-            <div class="bg-white rounded-lg border border-gray-200 p-6">
+            <div class="bg-white border border-gray-200 p-6">
                 <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-sm font-semibold text-gray-800 flex items-center gap-2">
-                        <span class="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center text-xs">📎</span>
+                    <h3 class="text-sm font-semibold text-gray-900 uppercase tracking-wide flex items-center gap-2">
                         Files & Evidence
                         <span class="text-xs text-gray-400">({{ $case->files->count() }})</span>
                     </h3>
@@ -260,7 +254,7 @@
                 </div>
 
                 {{-- Upload Form (hidden by default) --}}
-                <form id="upload-form" method="POST" action="{{ route('srgbv.cases.files', $case) }}" enctype="multipart/form-data" class="hidden mb-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <form id="upload-form" method="POST" action="{{ route('srgbv.cases.files', $case) }}" enctype="multipart/form-data" class="hidden mb-4 p-4 bg-gray-50 border border-gray-200">
                     @csrf
                     <div class="flex flex-wrap gap-3 items-end">
                         <div class="flex-1">
@@ -281,7 +275,7 @@
                             <input type="text" name="file_description" placeholder="Describe the file..."
                                    class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm">
                         </div>
-                        <button type="submit" class="px-4 py-2 bg-red-700 text-white text-sm rounded-md hover:bg-red-800">Upload</button>
+                        <button type="submit" class="px-4 py-2 bg-red-700 text-white text-sm hover:bg-red-800">Upload</button>
                     </div>
                 </form>
 
@@ -290,12 +284,12 @@
                 @else
                     <div class="space-y-2">
                         @foreach($case->files as $file)
-                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
+                            <div class="flex items-center justify-between p-3 bg-gray-50 border border-gray-100">
                                 <div class="flex items-center gap-3">
                                     @if($file->isImage())
-                                        <div class="w-10 h-10 bg-purple-100 rounded-md flex items-center justify-center text-sm">🖼</div>
+                                        <div class="w-10 h-10 bg-purple-100 flex items-center justify-center text-sm"></div>
                                     @else
-                                        <div class="w-10 h-10 bg-blue-100 rounded-md flex items-center justify-center text-sm">📄</div>
+                                        <div class="w-10 h-10 bg-blue-100 flex items-center justify-center text-sm"></div>
                                     @endif
                                     <div>
                                         <a href="{{ $file->getFileUrl() }}" target="_blank" class="text-sm font-medium text-gray-800 hover:text-red-700">{{ $file->file_name }}</a>
@@ -336,15 +330,14 @@
             </div>
 
             {{-- Case Notes / Timeline --}}
-            <div class="bg-white rounded-lg border border-gray-200 p-6">
-                <h3 class="text-sm font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                    <span class="w-6 h-6 bg-teal-100 rounded-full flex items-center justify-center text-xs">📝</span>
+            <div class="bg-white border border-gray-200 p-6">
+                <h3 class="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-4 flex items-center gap-2">
                     Case Notes & Timeline
                     <span class="text-xs text-gray-400">({{ $notes->count() }})</span>
                 </h3>
 
                 {{-- Add Note Form --}}
-                <form method="POST" action="{{ route('srgbv.cases.notes', $case) }}" class="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <form method="POST" action="{{ route('srgbv.cases.notes', $case) }}" class="mb-6 p-4 bg-gray-50 border border-gray-200">
                     @csrf
                     <div class="flex gap-3 mb-3">
                         <div class="flex-1">
@@ -363,7 +356,7 @@
                     </div>
                     <textarea name="note" rows="3" required placeholder="Add a case note, progress update, or follow-up..."
                               class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-red-500"></textarea>
-                    <button type="submit" class="px-4 py-2 bg-red-700 text-white text-sm rounded-md hover:bg-red-800">Add Note</button>
+                    <button type="submit" class="px-4 py-2 bg-red-700 text-white text-sm hover:bg-red-800">Add Note</button>
                 </form>
 
                 {{-- Notes Timeline --}}
@@ -376,7 +369,7 @@
                                 <div class="absolute -left-1.5 top-1 w-3 h-3 rounded-full {{ $note->is_private ? 'bg-amber-400' : 'bg-gray-400' }}"></div>
                                 <div class="pb-4">
                                     <div class="flex items-center gap-2 mb-1">
-                                        <span class="text-xs px-2 py-0.5 rounded-full
+                                        <span class="text-[10px] px-1.5 py-0.5
                                             @switch($note->note_type)
                                                 @case('progress_update') bg-blue-100 text-blue-700 @break
                                                 @case('follow_up') bg-teal-100 text-teal-700 @break
@@ -388,7 +381,7 @@
                                             @endswitch
                                         ">{{ $note->note_type_label }}</span>
                                         @if($note->is_private)
-                                            <span class="text-xs text-amber-600">🔒 Private</span>
+                                            <span class="text-xs text-amber-600">Private</span>
                                         @endif
                                         <span class="text-xs text-gray-400">{{ $note->created_at->format('M d, Y \a\t g:ia') }}</span>
                                     </div>
@@ -405,8 +398,8 @@
         {{-- Sidebar (Right col) --}}
         <div class="space-y-4">
             {{-- Case Details Card --}}
-            <div class="bg-white rounded-lg border border-gray-200 p-5">
-                <h3 class="text-sm font-semibold text-gray-800 mb-4">Case Details</h3>
+            <div class="bg-white border border-gray-200 p-5">
+                <h3 class="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-4">Case Details</h3>
                 <div class="space-y-3 text-sm">
                     <div>
                         <span class="text-gray-500">Case Number</span>
@@ -437,8 +430,8 @@
 
             {{-- Follow-up Card --}}
             @if($case->follow_up_required)
-            <div class="bg-amber-50 rounded-lg border border-amber-200 p-5">
-                <h3 class="text-sm font-semibold text-amber-800 mb-2">⏰ Follow-up Required</h3>
+            <div class="bg-amber-50 border border-amber-200 p-5">
+                <h3 class="text-sm font-semibold text-amber-800 mb-2">Follow-up Required</h3>
                 @if($case->follow_up_date)
                     <p class="text-sm text-amber-700">
                         Due: <strong>{{ $case->follow_up_date->format('M d, Y') }}</strong>
@@ -456,8 +449,8 @@
 
             {{-- Assign Counselor (Managers) --}}
             @if($canManage)
-            <div class="bg-white rounded-lg border border-gray-200 p-5">
-                <h3 class="text-sm font-semibold text-gray-800 mb-3">Quick Assign</h3>
+            <div class="bg-white border border-gray-200 p-5">
+                <h3 class="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-3">Quick Assign</h3>
                 <form method="POST" action="{{ route('srgbv.cases.update', $case) }}">
                     @csrf @method('PUT')
                     <input type="hidden" name="title" value="{{ $case->title }}">
@@ -473,14 +466,14 @@
                             <option value="{{ $counselor->id }}" {{ $case->assigned_to == $counselor->id ? 'selected' : '' }}>{{ $counselor->name }}</option>
                         @endforeach
                     </select>
-                    <button type="submit" class="w-full px-3 py-2 bg-slate-800 text-white text-sm rounded-md hover:bg-slate-700">Assign</button>
+                    <button type="submit" class="w-full px-3 py-2 bg-slate-800 text-white text-sm hover:bg-slate-700">Assign</button>
                 </form>
             </div>
             @endif
 
             {{-- Status Progress --}}
-            <div class="bg-white rounded-lg border border-gray-200 p-5">
-                <h3 class="text-sm font-semibold text-gray-800 mb-4">Status Progress</h3>
+            <div class="bg-white border border-gray-200 p-5">
+                <h3 class="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-4">Status Progress</h3>
                 <div class="space-y-2">
                     @php
                         $statusOrder = ['reported', 'under_investigation', 'action_taken', 'referred', 'resolved', 'closed'];
