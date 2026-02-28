@@ -58,15 +58,16 @@ class WeeklyUpdateController extends Controller
                 ->map(function ($division) {
                     $latest = $division->weeklyUpdates->first();
                     $division->latest_update = $latest;
-                    $division->activity_stats = ['completed' => 0, 'ongoing' => 0, 'not_started' => 0];
+                    $activityStats = ['completed' => 0, 'ongoing' => 0, 'not_started' => 0];
                     if ($latest && $latest->activities->count()) {
                         foreach ($latest->activities as $act) {
                             $flag = $act->status_flag ?? 'na';
-                            if (isset($division->activity_stats[$flag])) {
-                                $division->activity_stats[$flag]++;
+                            if (isset($activityStats[$flag])) {
+                                $activityStats[$flag]++;
                             }
                         }
                     }
+                    $division->activity_stats = $activityStats;
                     return $division;
                 });
         }

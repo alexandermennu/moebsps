@@ -16,32 +16,22 @@ class DashboardController extends Controller
 {
     public function index(Request $request)
     {
-        try {
-            $user = $request->user();
+        $user = $request->user();
 
-            if ($user->hasFullAccess()) {
-                return $this->fullAccessDashboard($user);
-            }
-
-            if ($user->isDirector()) {
-                return $this->directorDashboard($user);
-            }
-
-            if (in_array($user->role, ['supervisor', 'coordinator', 'counselor'])) {
-                return $this->limitedDivisionDashboard($user);
-            }
-
-            // Record Clerk, Secretary - personal access
-            return $this->personalDashboard($user);
-        } catch (\Throwable $e) {
-            // Temporary debug — remove after fixing
-            return response()->json([
-                'error' => $e->getMessage(),
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
-                'trace' => collect(explode("\n", $e->getTraceAsString()))->take(15)->toArray(),
-            ], 500);
+        if ($user->hasFullAccess()) {
+            return $this->fullAccessDashboard($user);
         }
+
+        if ($user->isDirector()) {
+            return $this->directorDashboard($user);
+        }
+
+        if (in_array($user->role, ['supervisor', 'coordinator', 'counselor'])) {
+            return $this->limitedDivisionDashboard($user);
+        }
+
+        // Record Clerk, Secretary - personal access
+        return $this->personalDashboard($user);
     }
 
     private function directorDashboard(User $user)
@@ -235,15 +225,16 @@ class DashboardController extends Controller
                 // Calculate activity status breakdown from latest approved update
                 $latestApproved = $division->weeklyUpdates->where('status', 'approved')->first();
                 $division->latest_update = $latestApproved ?? $division->weeklyUpdates->first();
-                $division->activity_stats = ['completed' => 0, 'ongoing' => 0, 'not_started' => 0, 'na' => 0];
+                $activityStats = ['completed' => 0, 'ongoing' => 0, 'not_started' => 0, 'na' => 0];
                 if ($division->latest_update && $division->latest_update->activities->count()) {
                     foreach ($division->latest_update->activities as $act) {
                         $flag = $act->status_flag ?? 'na';
-                        if (isset($division->activity_stats[$flag])) {
-                            $division->activity_stats[$flag]++;
+                        if (isset($activityStats[$flag])) {
+                            $activityStats[$flag]++;
                         }
                     }
                 }
+                $division->activity_stats = $activityStats;
                 $division->submission_rate = $division->total_updates_count > 0
                     ? round(($division->approved_updates_count / $division->total_updates_count) * 100)
                     : 0;
