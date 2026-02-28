@@ -29,6 +29,92 @@ Route::get('/', function () {
     return redirect()->route('login');
 });
 
+// Temporary diagnostic route — remove after fixing dashboard
+Route::get('/debug-dashboard', function () {
+    try {
+        $checks = [];
+
+        // 1. Database connection
+        $checks['db_connection'] = \Illuminate\Support\Facades\DB::select('SELECT 1 as ok')[0]->ok === 1 ? '✅' : '❌';
+
+        // 2. Division count
+        $checks['divisions'] = \App\Models\Division::count() . ' divisions';
+
+        // 3. WeeklyUpdate count
+        $checks['weekly_updates'] = \App\Models\WeeklyUpdate::count() . ' updates';
+
+        // 4. TrackedActivity count
+        $checks['tracked_activities'] = \App\Models\TrackedActivity::count() . ' tracked';
+
+        // 5. Test divisionUpdateSummaries query (the likely culprit)
+        try {
+            $summaries = \App\Models\Division::where('is_active', true)
+                ->with(['weeklyUpdates' => function ($q) {
+                    $q->with('activities')
+                        ->whereIn('status', ['submitted', 'approved'])
+                        ->latest()
+                        ->take(5);
+                }])
+                ->withCount([
+                    'weeklyUpdates as total_updates_count',
+                    'weeklyUpdates as approved_updates_count' => fn($q) => $q->where('status', 'approved'),
+                ])
+                ->get();
+            $checks['division_summaries_query'] = '✅ ' . $summaries->count() . ' results';
+        } catch (\Throwable $e) {
+            $checks['division_summaries_query'] = '❌ ' . $e->getMessage();
+        }
+
+        // 6. Test view compilation
+        try {
+            $user = \App\Models\User::first();
+            $checks['first_user'] = $user ? '✅ ' . $user->name . ' (role: ' . $user->role . ')' : '❌ No users';
+        } catch (\Throwable $e) {
+            $checks['first_user'] = '❌ ' . $e->getMessage();
+        }
+
+        // 7. Test fullAccessDashboard (simulated)
+        try {
+            $user = \App\Models\User::whereIn('role', ['minister', 'admin_assistant', 'tech_assistant'])->first();
+            if ($user) {
+                $controller = new \App\Http\Controllers\DashboardController();
+                $request = \Illuminate\Http\Request::create('/dashboard');
+                $request->setUserResolver(fn() => $user);
+                $response = $controller->index($request);
+                $checks['full_access_dashboard'] = '✅ Status: ' . $response->getStatusCode();
+            } else {
+                $checks['full_access_dashboard'] = '⚠️ No full-access user found';
+            }
+        } catch (\Throwable $e) {
+            $checks['full_access_dashboard'] = '❌ ' . $e->getMessage() . ' at ' . basename($e->getFile()) . ':' . $e->getLine();
+        }
+
+        // 8. Test directorDashboard
+        try {
+            $user = \App\Models\User::where('role', 'director')->first();
+            if ($user) {
+                $controller = new \App\Http\Controllers\DashboardController();
+                $request = \Illuminate\Http\Request::create('/dashboard');
+                $request->setUserResolver(fn() => $user);
+                $response = $controller->index($request);
+                $checks['director_dashboard'] = '✅ Status: ' . $response->getStatusCode();
+            } else {
+                $checks['director_dashboard'] = '⚠️ No director user found';
+            }
+        } catch (\Throwable $e) {
+            $checks['director_dashboard'] = '❌ ' . $e->getMessage() . ' at ' . basename($e->getFile()) . ':' . $e->getLine();
+        }
+
+        return response()->json($checks, 200, [], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+    } catch (\Throwable $e) {
+        return response()->json([
+            'fatal' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine(),
+        ], 500);
+    }
+});
+
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login']);
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');

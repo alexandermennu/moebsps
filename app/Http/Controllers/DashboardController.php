@@ -16,22 +16,32 @@ class DashboardController extends Controller
 {
     public function index(Request $request)
     {
-        $user = $request->user();
+        try {
+            $user = $request->user();
 
-        if ($user->hasFullAccess()) {
-            return $this->fullAccessDashboard($user);
+            if ($user->hasFullAccess()) {
+                return $this->fullAccessDashboard($user);
+            }
+
+            if ($user->isDirector()) {
+                return $this->directorDashboard($user);
+            }
+
+            if (in_array($user->role, ['supervisor', 'coordinator', 'counselor'])) {
+                return $this->limitedDivisionDashboard($user);
+            }
+
+            // Record Clerk, Secretary - personal access
+            return $this->personalDashboard($user);
+        } catch (\Throwable $e) {
+            // Temporary debug — remove after fixing
+            return response()->json([
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => collect(explode("\n", $e->getTraceAsString()))->take(15)->toArray(),
+            ], 500);
         }
-
-        if ($user->isDirector()) {
-            return $this->directorDashboard($user);
-        }
-
-        if (in_array($user->role, ['supervisor', 'coordinator', 'counselor'])) {
-            return $this->limitedDivisionDashboard($user);
-        }
-
-        // Record Clerk, Secretary - personal access
-        return $this->personalDashboard($user);
     }
 
     private function directorDashboard(User $user)
