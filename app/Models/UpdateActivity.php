@@ -9,10 +9,17 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable([
     'weekly_update_id', 'sort_order', 'activity',
-    'responsible_persons', 'status_flag', 'status_comment', 'challenges'
+    'responsible_persons', 'status_flag', 'status_comment', 'challenges', 'track_this'
 ])]
 class UpdateActivity extends Model
 {
+    protected function casts(): array
+    {
+        return [
+            'track_this' => 'boolean',
+        ];
+    }
+
     public const STATUS_NOT_STARTED = 'not_started';
     public const STATUS_ONGOING = 'ongoing';
     public const STATUS_COMPLETED = 'completed';

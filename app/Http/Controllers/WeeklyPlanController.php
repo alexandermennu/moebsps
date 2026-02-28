@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\BureauNotification;
 use App\Models\WeeklyPlan;
+use App\Services\ActivitySyncService;
 use Illuminate\Http\Request;
 
 class WeeklyPlanController extends Controller
@@ -65,6 +66,7 @@ class WeeklyPlanController extends Controller
             'activities.*.activity' => 'required|string',
             'activities.*.responsible_persons' => 'nullable|string|max:255',
             'activities.*.status_comment' => 'nullable|string',
+            'activities.*.track_this' => 'nullable',
         ]);
 
         $plan = WeeklyPlan::create([
@@ -85,6 +87,7 @@ class WeeklyPlanController extends Controller
                 'activity' => $activityData['activity'],
                 'responsible_persons' => $activityData['responsible_persons'] ?? null,
                 'status_comment' => $activityData['status_comment'] ?? null,
+                'track_this' => !empty($activityData['track_this']),
             ]);
         }
 
@@ -146,6 +149,7 @@ class WeeklyPlanController extends Controller
             'activities.*.activity' => 'required|string',
             'activities.*.responsible_persons' => 'nullable|string|max:255',
             'activities.*.status_comment' => 'nullable|string',
+            'activities.*.track_this' => 'nullable',
         ]);
 
         $weeklyPlan->update([
@@ -165,6 +169,7 @@ class WeeklyPlanController extends Controller
                 'activity' => $activityData['activity'],
                 'responsible_persons' => $activityData['responsible_persons'] ?? null,
                 'status_comment' => $activityData['status_comment'] ?? null,
+                'track_this' => !empty($activityData['track_this']),
             ]);
         }
 
@@ -204,8 +209,9 @@ class WeeklyPlanController extends Controller
             route('weekly-plans.show', $weeklyPlan)
         );
 
-        // If approved, notify the Minister
+        // If approved, sync tracked activities and notify the Minister
         if ($validated['action'] === 'approved') {
+            app(ActivitySyncService::class)->syncFromWeeklyPlan($weeklyPlan);
             $this->notifyMinister($weeklyPlan);
         }
 

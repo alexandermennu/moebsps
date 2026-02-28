@@ -66,6 +66,7 @@
                             <th class="text-left px-4 py-3 text-gray-600 font-medium w-36">Status *</th>
                             <th class="text-left px-4 py-3 text-gray-600 font-medium" style="min-width: 180px;">Status Comment</th>
                             <th class="text-left px-4 py-3 text-gray-600 font-medium" style="min-width: 180px;">Challenges</th>
+                            <th class="text-center px-4 py-3 text-gray-600 font-medium w-16" title="Track this activity in the Activity Tracker">📌</th>
                             <th class="text-center px-4 py-3 text-gray-600 font-medium w-16"></th>
                         </tr>
                     </thead>
@@ -145,6 +146,7 @@
         const statusFlag = data.status_flag || 'not_started';
         const statusComment = data.status_comment || '';
         const challenges = data.challenges || '';
+        const trackThis = data.track_this ? 'checked' : '';
 
         row.innerHTML = `
             <td class="px-4 py-3 text-gray-400 font-medium text-center align-top row-number">${rowCount}</td>
@@ -177,6 +179,12 @@
                 <textarea name="activities[${rowCount}][challenges]" rows="2"
                     class="w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-slate-500 resize-y"
                     placeholder="Any challenges...">${challenges}</textarea>
+            </td>
+            <td class="px-4 py-2 text-center align-top">
+                <input type="hidden" name="activities[${rowCount}][track_this]" value="0">
+                <input type="checkbox" name="activities[${rowCount}][track_this]" value="1" ${trackThis}
+                    class="w-4 h-4 text-slate-600 border-gray-300 rounded focus:ring-slate-500 mt-1"
+                    title="Track this activity">
             </td>
             <td class="px-4 py-2 text-center align-top">
                 <button type="button" onclick="removeActivityRow(${rowCount})"
@@ -232,6 +240,7 @@
                     status_flag: @json($act['status_flag'] ?? 'not_started'),
                     status_comment: @json($act['status_comment'] ?? ''),
                     challenges: @json($act['challenges'] ?? ''),
+                    track_this: @json(!empty($act['track_this'])),
                 });
             @endforeach
         @elseif($weeklyUpdate->activities->count() > 0)
@@ -242,6 +251,7 @@
                     status_flag: @json($act->status_flag),
                     status_comment: @json($act->status_comment ?? ''),
                     challenges: @json($act->challenges ?? ''),
+                    track_this: @json((bool) $act->track_this),
                 });
             @endforeach
         @else

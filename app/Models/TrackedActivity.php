@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'first_reported_at', 'last_reported_at', 'times_reported',
     'weeks_unchanged', 'is_stale', 'is_repeated', 'source_type',
     'latest_update_activity_id', 'latest_weekly_update_id',
+    'latest_plan_activity_id', 'latest_weekly_plan_id',
 ])]
 class TrackedActivity extends Model
 {
@@ -43,6 +44,16 @@ class TrackedActivity extends Model
     public function latestWeeklyUpdate(): BelongsTo
     {
         return $this->belongsTo(WeeklyUpdate::class, 'latest_weekly_update_id');
+    }
+
+    public function latestPlanActivity(): BelongsTo
+    {
+        return $this->belongsTo(PlanActivity::class, 'latest_plan_activity_id');
+    }
+
+    public function latestWeeklyPlan(): BelongsTo
+    {
+        return $this->belongsTo(WeeklyPlan::class, 'latest_weekly_plan_id');
     }
 
     // ─── Scopes ───

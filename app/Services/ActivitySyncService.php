@@ -4,12 +4,14 @@ namespace App\Services;
 
 use App\Models\SystemSetting;
 use App\Models\TrackedActivity;
+use App\Models\WeeklyPlan;
 use App\Models\WeeklyUpdate;
 
 class ActivitySyncService
 {
     /**
      * Sync activities from an approved weekly update into the tracked activities table.
+     * Only syncs activities where track_this is checked.
      * Matches activities by normalized text hash within the same division.
      */
     public function syncFromWeeklyUpdate(WeeklyUpdate $weeklyUpdate): int
@@ -20,6 +22,11 @@ class ActivitySyncService
         $synced = 0;
 
         foreach ($weeklyUpdate->activities as $updateActivity) {
+            // Only sync activities that the user marked for tracking
+            if (!$updateActivity->track_this) {
+                continue;
+            }
+
             $hash = TrackedActivity::generateHash($updateActivity->activity);
 
             $existing = TrackedActivity::where('division_id', $divisionId)
@@ -39,6 +46,7 @@ class ActivitySyncService
                     'weeks_unchanged' => $statusChanged ? 1 : $existing->weeks_unchanged + 1,
                     'latest_update_activity_id' => $updateActivity->id,
                     'latest_weekly_update_id' => $weeklyUpdate->id,
+                    'source_type' => 'update',
                     'activity_text' => $updateActivity->activity, // keep latest text
                 ]);
             } else {
@@ -64,7 +72,73 @@ class ActivitySyncService
         }
 
         // Run stale & repeat detection after sync
-        $this->detectFlags($divisionId);
+        if ($synced > 0) {
+            $this->detectFlags($divisionId);
+        }
+
+        return $synced;
+    }
+
+    /**
+     * Sync activities from an approved weekly plan into the tracked activities table.
+     * Only syncs activities where track_this is checked.
+     * Plans create entries with 'not_started' status since they are forward-looking.
+     */
+    public function syncFromWeeklyPlan(WeeklyPlan $weeklyPlan): int
+    {
+        $weeklyPlan->loadMissing('activities');
+        $divisionId = $weeklyPlan->division_id;
+        $reportDate = $weeklyPlan->week_start; // Plans look forward, use week_start
+        $synced = 0;
+
+        foreach ($weeklyPlan->activities as $planActivity) {
+            // Only sync activities that the user marked for tracking
+            if (!$planActivity->track_this) {
+                continue;
+            }
+
+            $hash = TrackedActivity::generateHash($planActivity->activity);
+
+            $existing = TrackedActivity::where('division_id', $divisionId)
+                ->where('activity_hash', $hash)
+                ->first();
+
+            if ($existing) {
+                // Plan doesn't overwrite status — just update the plan reference and text
+                $existing->update([
+                    'responsible_persons' => $planActivity->responsible_persons ?? $existing->responsible_persons,
+                    'status_comment' => $planActivity->status_comment ?? $existing->status_comment,
+                    'last_reported_at' => $reportDate,
+                    'times_reported' => $existing->times_reported + 1,
+                    'latest_plan_activity_id' => $planActivity->id,
+                    'latest_weekly_plan_id' => $weeklyPlan->id,
+                    'activity_text' => $planActivity->activity,
+                ]);
+            } else {
+                TrackedActivity::create([
+                    'division_id' => $divisionId,
+                    'activity_hash' => $hash,
+                    'activity_text' => $planActivity->activity,
+                    'current_status' => 'not_started', // Plans are forward-looking
+                    'responsible_persons' => $planActivity->responsible_persons,
+                    'status_comment' => $planActivity->status_comment,
+                    'challenges' => null,
+                    'first_reported_at' => $reportDate,
+                    'last_reported_at' => $reportDate,
+                    'times_reported' => 1,
+                    'weeks_unchanged' => 1,
+                    'source_type' => 'plan',
+                    'latest_plan_activity_id' => $planActivity->id,
+                    'latest_weekly_plan_id' => $weeklyPlan->id,
+                ]);
+            }
+
+            $synced++;
+        }
+
+        if ($synced > 0) {
+            $this->detectFlags($divisionId);
+        }
 
         return $synced;
     }

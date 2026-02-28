@@ -52,6 +52,7 @@
                             <th class="text-left px-4 py-3 text-gray-600 font-medium" style="min-width: 320px;">Activities *</th>
                             <th class="text-left px-4 py-3 text-gray-600 font-medium" style="min-width: 180px;">Responsible Persons</th>
                             <th class="text-left px-4 py-3 text-gray-600 font-medium" style="min-width: 200px;">Status / Comment</th>
+                            <th class="text-center px-4 py-3 text-gray-600 font-medium w-16" title="Track this activity in the Activity Tracker">📌</th>
                             <th class="text-center px-4 py-3 text-gray-600 font-medium w-16"></th>
                         </tr>
                     </thead>
@@ -130,6 +131,7 @@
         const activity = data.activity || '';
         const responsible = data.responsible_persons || '';
         const statusComment = data.status_comment || '';
+        const trackThis = data.track_this ? 'checked' : '';
 
         row.innerHTML = `
             <td class="px-4 py-3 text-gray-400 font-medium text-center align-top row-number">${rowCount}</td>
@@ -147,6 +149,12 @@
                 <textarea name="activities[${rowCount}][status_comment]" rows="2"
                     class="w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-slate-500 resize-y"
                     placeholder="Status or comments...">${statusComment}</textarea>
+            </td>
+            <td class="px-4 py-2 text-center align-top">
+                <input type="hidden" name="activities[${rowCount}][track_this]" value="0">
+                <input type="checkbox" name="activities[${rowCount}][track_this]" value="1" ${trackThis}
+                    class="w-4 h-4 text-slate-600 border-gray-300 rounded focus:ring-slate-500 mt-1"
+                    title="Track this activity">
             </td>
             <td class="px-4 py-2 text-center align-top">
                 <button type="button" onclick="removeActivityRow(${rowCount})"
@@ -187,6 +195,7 @@
                     activity: @json($act['activity'] ?? ''),
                     responsible_persons: @json($act['responsible_persons'] ?? ''),
                     status_comment: @json($act['status_comment'] ?? ''),
+                    track_this: @json(!empty($act['track_this'])),
                 });
             @endforeach
         @else

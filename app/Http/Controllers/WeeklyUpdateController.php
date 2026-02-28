@@ -108,6 +108,7 @@ class WeeklyUpdateController extends Controller
             'activities.*.status_flag' => 'required|in:not_started,ongoing,completed,na',
             'activities.*.status_comment' => 'nullable|string',
             'activities.*.challenges' => 'nullable|string',
+            'activities.*.track_this' => 'nullable',
         ]);
 
         $update = WeeklyUpdate::create([
@@ -130,6 +131,7 @@ class WeeklyUpdateController extends Controller
                 'status_flag' => $activityData['status_flag'],
                 'status_comment' => $activityData['status_comment'] ?? null,
                 'challenges' => $activityData['challenges'] ?? null,
+                'track_this' => !empty($activityData['track_this']),
             ]);
         }
 
@@ -194,6 +196,7 @@ class WeeklyUpdateController extends Controller
             'activities.*.status_flag' => 'required|in:not_started,ongoing,completed,na',
             'activities.*.status_comment' => 'nullable|string',
             'activities.*.challenges' => 'nullable|string',
+            'activities.*.track_this' => 'nullable',
         ]);
 
         $weeklyUpdate->update([
@@ -216,6 +219,7 @@ class WeeklyUpdateController extends Controller
                 'status_flag' => $activityData['status_flag'],
                 'status_comment' => $activityData['status_comment'] ?? null,
                 'challenges' => $activityData['challenges'] ?? null,
+                'track_this' => !empty($activityData['track_this']),
             ]);
         }
 
