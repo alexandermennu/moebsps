@@ -12,6 +12,7 @@
 <body class="bg-slate-100 min-h-screen flex items-center justify-center">
     <div class="w-full max-w-md">
         <div class="text-center mb-8">
+            <img src="/images/logo.png" alt="MOEBSPS" class="w-20 h-20 object-contain mx-auto mb-4">
             <h1 class="text-3xl font-bold text-slate-800">MOEBSPS</h1>
             <p class="text-slate-500 mt-2">Bureau Activity Tracking System</p>
         </div>
