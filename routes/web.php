@@ -81,7 +81,16 @@ Route::get('/debug-dashboard', function () {
                 $request = \Illuminate\Http\Request::create('/dashboard');
                 $request->setUserResolver(fn() => $user);
                 $response = $controller->index($request);
-                $checks['full_access_dashboard'] = '✅ Status: ' . $response->getStatusCode();
+                $statusCode = method_exists($response, 'getStatusCode') ? $response->getStatusCode() : 'view';
+                $content = method_exists($response, 'getContent') ? $response->getContent() : '';
+                if ($statusCode === 500) {
+                    $decoded = json_decode($content, true);
+                    $checks['full_access_dashboard'] = '❌ ' . ($decoded['error'] ?? $content);
+                    $checks['full_access_file'] = ($decoded['file'] ?? '') . ':' . ($decoded['line'] ?? '');
+                    $checks['full_access_trace'] = $decoded['trace'] ?? [];
+                } else {
+                    $checks['full_access_dashboard'] = '✅ Status: ' . $statusCode;
+                }
             } else {
                 $checks['full_access_dashboard'] = '⚠️ No full-access user found';
             }
