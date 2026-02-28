@@ -5,27 +5,25 @@
 
 @section('content')
 <div class="space-y-4">
-    <div class="flex items-center justify-between">
+    <div class="flex items-center justify-between border-b border-gray-300 pb-4">
         <div>
-            <h2 class="text-xl font-bold text-gray-800">Assignments</h2>
-            <p class="text-sm text-gray-500">Track and manage all bureau assignments</p>
+            <h2 class="text-sm font-semibold text-gray-900 uppercase tracking-wide">Assignments</h2>
+            <p class="text-xs text-gray-500 mt-1">Track and manage all bureau assignments</p>
         </div>
         @if($user->canManageDivision())
-            <a href="{{ route('activities.create') }}" class="inline-flex items-center px-4 py-2 bg-slate-800 text-white text-sm font-medium rounded-md hover:bg-slate-700">
-                + New Assignment
-            </a>
+            <a href="{{ route('activities.create') }}" class="px-4 py-2 bg-gray-800 text-white text-sm font-medium hover:bg-gray-700">+ New Assignment</a>
         @endif
     </div>
 
     {{-- Filters --}}
     <form method="GET" class="flex flex-wrap gap-3 items-end">
         <div>
-            <label class="block text-xs text-gray-500 mb-1">Search</label>
+            <label class="block text-[11px] text-gray-500 uppercase tracking-wide mb-1">Search</label>
             <input type="text" name="search" value="{{ request('search') }}" placeholder="Search assignments..."
                    class="px-3 py-2 border border-gray-300 rounded-md text-sm w-48">
         </div>
         <div>
-            <label class="block text-xs text-gray-500 mb-1">Status</label>
+            <label class="block text-[11px] text-gray-500 uppercase tracking-wide mb-1">Status</label>
             <select name="status" class="px-3 py-2 border border-gray-300 rounded-md text-sm">
                 <option value="">All Statuses</option>
                 <option value="not_started" {{ request('status') === 'not_started' ? 'selected' : '' }}>Not Started</option>
@@ -35,7 +33,7 @@
             </select>
         </div>
         <div>
-            <label class="block text-xs text-gray-500 mb-1">Priority</label>
+            <label class="block text-[11px] text-gray-500 uppercase tracking-wide mb-1">Priority</label>
             <select name="priority" class="px-3 py-2 border border-gray-300 rounded-md text-sm">
                 <option value="">All Priorities</option>
                 <option value="low" {{ request('priority') === 'low' ? 'selected' : '' }}>Low</option>
@@ -46,7 +44,7 @@
         </div>
         @if(!$user->isDirector())
             <div>
-                <label class="block text-xs text-gray-500 mb-1">Division</label>
+                <label class="block text-[11px] text-gray-500 uppercase tracking-wide mb-1">Division</label>
                 <select name="division_id" class="px-3 py-2 border border-gray-300 rounded-md text-sm">
                     <option value="">All Divisions</option>
                     @foreach($divisions as $division)
@@ -55,26 +53,26 @@
                 </select>
             </div>
         @endif
-        <button type="submit" class="px-4 py-2 bg-gray-100 border border-gray-300 text-sm rounded-md hover:bg-gray-200">Filter</button>
+        <button type="submit" class="px-4 py-2 bg-gray-100 border border-gray-300 text-sm hover:bg-gray-200">Filter</button>
         @if(request()->hasAny(['search', 'status', 'priority', 'division_id']))
-            <a href="{{ route('activities.index') }}" class="px-4 py-2 text-sm text-gray-500 hover:text-gray-700">Clear</a>
+            <a href="{{ route('activities.index') }}" class="text-xs text-blue-700 hover:underline py-2">Clear</a>
         @endif
     </form>
 
     {{-- Activities Table --}}
-    <div class="bg-white rounded-lg border border-gray-200">
+    <div class="bg-white border border-gray-200">
         <div class="overflow-x-auto">
             <table class="w-full text-sm">
-                <thead class="bg-gray-50">
+                <thead class="bg-gray-50 border-b border-gray-200">
                     <tr>
-                        <th class="text-left px-5 py-3 text-gray-600 font-medium">Assignment</th>
-                        <th class="text-left px-5 py-3 text-gray-600 font-medium">Division</th>
-                        <th class="text-left px-5 py-3 text-gray-600 font-medium">Assigned To</th>
-                        <th class="text-center px-5 py-3 text-gray-600 font-medium">Priority</th>
-                        <th class="text-center px-5 py-3 text-gray-600 font-medium">Status</th>
-                        <th class="text-center px-5 py-3 text-gray-600 font-medium">Progress</th>
-                        <th class="text-left px-5 py-3 text-gray-600 font-medium">Due Date</th>
-                        <th class="text-right px-5 py-3 text-gray-600 font-medium">Action</th>
+                        <th class="text-left px-5 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium">Assignment</th>
+                        <th class="text-left px-5 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium">Division</th>
+                        <th class="text-left px-5 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium">Assigned To</th>
+                        <th class="text-center px-5 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium">Priority</th>
+                        <th class="text-center px-5 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium">Status</th>
+                        <th class="text-center px-5 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium">Progress</th>
+                        <th class="text-left px-5 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium">Due Date</th>
+                        <th class="text-right px-5 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium">Action</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
@@ -83,33 +81,33 @@
                             <td class="px-5 py-3">
                                 <p class="font-medium text-gray-800">{{ $activity->title }}</p>
                                 @if($activity->is_escalated)
-                                    <span class="text-xs text-orange-600">🔺 Escalated</span>
+                                    <span class="text-[10px] text-orange-700 font-medium uppercase">Escalated</span>
                                 @endif
                             </td>
                             <td class="px-5 py-3 text-gray-600">{{ $activity->division->name }}</td>
                             <td class="px-5 py-3 text-gray-600">{{ $activity->assignee?->name ?? '—' }}</td>
                             <td class="px-5 py-3 text-center">
-                                <span class="text-xs px-2 py-1 rounded-full
-                                    {{ $activity->priority === 'critical' ? 'bg-red-100 text-red-700' : '' }}
-                                    {{ $activity->priority === 'high' ? 'bg-orange-100 text-orange-700' : '' }}
-                                    {{ $activity->priority === 'medium' ? 'bg-yellow-100 text-yellow-700' : '' }}
+                                <span class="text-[10px] px-1.5 py-0.5 font-medium
+                                    {{ $activity->priority === 'critical' ? 'bg-red-50 text-red-700' : '' }}
+                                    {{ $activity->priority === 'high' ? 'bg-orange-50 text-orange-700' : '' }}
+                                    {{ $activity->priority === 'medium' ? 'bg-yellow-50 text-yellow-700' : '' }}
                                     {{ $activity->priority === 'low' ? 'bg-gray-100 text-gray-600' : '' }}">
                                     {{ ucfirst($activity->priority) }}
                                 </span>
                             </td>
                             <td class="px-5 py-3 text-center">
-                                <span class="text-xs px-2 py-1 rounded-full
-                                    {{ $activity->status === 'completed' ? 'bg-green-100 text-green-700' : '' }}
-                                    {{ $activity->status === 'in_progress' ? 'bg-blue-100 text-blue-700' : '' }}
-                                    {{ $activity->status === 'overdue' ? 'bg-red-100 text-red-700' : '' }}
+                                <span class="text-[10px] px-1.5 py-0.5 font-medium
+                                    {{ $activity->status === 'completed' ? 'bg-green-50 text-green-700' : '' }}
+                                    {{ $activity->status === 'in_progress' ? 'bg-blue-50 text-blue-700' : '' }}
+                                    {{ $activity->status === 'overdue' ? 'bg-red-50 text-red-700' : '' }}
                                     {{ $activity->status === 'not_started' ? 'bg-gray-100 text-gray-600' : '' }}">
                                     {{ str_replace('_', ' ', ucfirst($activity->status)) }}
                                 </span>
                             </td>
                             <td class="px-5 py-3 text-center">
                                 <div class="flex items-center justify-center gap-2">
-                                    <div class="w-16 bg-gray-200 rounded-full h-1.5">
-                                        <div class="bg-slate-600 h-1.5 rounded-full" style="width: {{ $activity->progress_percentage }}%"></div>
+                                    <div class="w-16 bg-gray-200 h-1.5">
+                                        <div class="bg-gray-600 h-1.5" style="width: {{ $activity->progress_percentage }}%"></div>
                                     </div>
                                     <span class="text-xs text-gray-500">{{ $activity->progress_percentage }}%</span>
                                 </div>
@@ -118,7 +116,7 @@
                                 {{ $activity->due_date->format('M d, Y') }}
                             </td>
                             <td class="px-5 py-3 text-right">
-                                <a href="{{ route('activities.show', $activity) }}" class="text-slate-600 hover:text-slate-800 text-sm">View →</a>
+                                <a href="{{ route('activities.show', $activity) }}" class="text-xs text-blue-700 hover:underline">View</a>
                             </td>
                         </tr>
                     @empty
