@@ -6,15 +6,15 @@
 @section('content')
 <div class="max-w-2xl">
     <div class="mb-6">
-        <a href="{{ route('staff.index') }}" class="text-sm text-gray-500 hover:text-gray-700">← Back to Staff</a>
+        <a href="{{ route('staff.index') }}" class="text-xs text-blue-700 hover:underline">Back to Staff</a>
     </div>
 
-    <div class="bg-white rounded-lg border border-gray-200 p-6">
-        <h2 class="text-lg font-semibold text-gray-800 mb-2">Edit: {{ $staff->name }}</h2>
+    <div class="bg-white border border-gray-200 p-6">
+        <h2 class="text-sm font-semibold text-gray-900 uppercase tracking-wide border-b border-gray-200 pb-2 mb-6">Edit: {{ $staff->name }}</h2>
         <p class="text-sm text-gray-500 mb-6">Update staff member details and access level.</p>
 
         @if($errors->any())
-            <div class="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
+            <div class="mb-4 p-3 bg-red-50 border border-red-200">
                 <ul class="text-sm text-red-600 list-disc list-inside">
                     @foreach($errors->all() as $error)
                         <li>{{ $error }}</li>
@@ -80,8 +80,8 @@
             </div>
 
             {{-- Counselor-specific Fields --}}
-            <div id="counselor-fields" class="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-md" style="display: none;">
-                <h3 class="text-sm font-semibold text-blue-800 mb-3">📋 Counselor Details</h3>
+            <div id="counselor-fields" class="mb-4 p-4 bg-blue-50 border border-blue-200" style="display: none;">
+                <h3 class="text-sm font-semibold text-blue-800 mb-3">Counselor Details</h3>
                 <div class="grid grid-cols-2 gap-4 mb-3">
                     <div>
                         <label for="counselor_school" class="block text-sm font-medium text-gray-700 mb-1">School of Assignment *</label>
@@ -111,18 +111,18 @@
             </div>
 
             @if($staff->isPending())
-                <div class="mb-6 p-3 bg-amber-50 border border-amber-200 rounded-md text-sm text-amber-700">
-                    <strong>⏳ Pending Approval</strong> — This account is awaiting administrator approval. Active status cannot be changed until approved.
+                <div class="mb-6 p-3 bg-amber-50 border border-amber-200 text-sm text-amber-700">
+                    <strong>Pending Approval</strong> — This account is awaiting administrator approval. Active status cannot be changed until approved.
                 </div>
             @elseif($staff->isRejected())
-                <div class="mb-6 p-3 bg-red-50 border border-red-200 rounded-md text-sm text-red-700">
-                    <strong>✗ Rejected</strong> — {{ $staff->rejection_reason ?? 'This account was rejected by an administrator.' }}
+                <div class="mb-6 p-3 bg-red-50 border border-red-200 text-sm text-red-700">
+                    <strong>Rejected</strong> — {{ $staff->rejection_reason ?? 'This account was rejected by an administrator.' }}
                 </div>
             @endif
 
             <div class="flex gap-3">
-                <button type="submit" class="px-4 py-2 bg-slate-800 text-white text-sm font-medium rounded-md hover:bg-slate-700">Update Staff</button>
-                <a href="{{ route('staff.index') }}" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-50">Cancel</a>
+                <button type="submit" class="px-4 py-2 bg-slate-800 text-white text-sm font-medium hover:bg-slate-700">Update Staff</button>
+                <a href="{{ route('staff.index') }}" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50">Cancel</a>
             </div>
         </form>
     </div>

@@ -5,8 +5,8 @@
 
 @section('content')
 <div class="max-w-3xl">
-    <div class="mb-6">
-        <h2 class="text-xl font-bold text-gray-800">System Settings</h2>
+    <div class="mb-6 border-b border-gray-300 pb-4">
+        <h2 class="text-sm font-semibold text-gray-900 uppercase tracking-wide">System Settings</h2>
         <p class="text-sm text-gray-500">Configure bureau tracking system parameters</p>
     </div>
 
@@ -15,7 +15,7 @@
         @method('PUT')
 
         @foreach($settings as $group => $items)
-            <div class="bg-white rounded-lg border border-gray-200 p-6 mb-6">
+            <div class="bg-white border border-gray-200 p-6 mb-6">
                 <h3 class="text-md font-semibold text-gray-800 mb-4 capitalize">{{ $group }} Settings</h3>
 
                 <div class="space-y-4">
@@ -48,7 +48,7 @@
             </div>
         @endforeach
 
-        <button type="submit" class="px-4 py-2 bg-slate-800 text-white text-sm font-medium rounded-md hover:bg-slate-700">Save Settings</button>
+        <button type="submit" class="px-4 py-2 bg-slate-800 text-white text-sm font-medium hover:bg-slate-700">Save Settings</button>
     </form>
 </div>
 @endsection
