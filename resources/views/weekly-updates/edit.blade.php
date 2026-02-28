@@ -66,7 +66,7 @@
                             <th class="text-left px-4 py-3 text-gray-600 font-medium w-36">Status *</th>
                             <th class="text-left px-4 py-3 text-gray-600 font-medium" style="min-width: 180px;">Status Comment</th>
                             <th class="text-left px-4 py-3 text-gray-600 font-medium" style="min-width: 180px;">Challenges</th>
-                            <th class="text-center px-4 py-3 text-gray-600 font-medium w-16" title="Track this activity in the Activity Tracker">📌</th>
+                            <th class="text-center px-4 py-3 text-gray-600 font-medium w-20">Track This</th>
                             <th class="text-center px-4 py-3 text-gray-600 font-medium w-16"></th>
                         </tr>
                     </thead>
