@@ -50,6 +50,10 @@ class DashboardController extends Controller
                 : 0,
             'pending_updates' => WeeklyUpdate::where('division_id', $divisionId)->where('status', 'draft')->count(),
             'pending_plans' => WeeklyPlan::where('division_id', $divisionId)->where('status', 'draft')->count(),
+            'submitted_updates' => WeeklyUpdate::where('division_id', $divisionId)->where('status', 'submitted')->count(),
+            'submitted_plans' => WeeklyPlan::where('division_id', $divisionId)->where('status', 'submitted')->count(),
+            'approved_updates' => WeeklyUpdate::where('division_id', $divisionId)->where('status', 'approved')->count(),
+            'approved_plans' => WeeklyPlan::where('division_id', $divisionId)->where('status', 'approved')->count(),
             'total_updates' => WeeklyUpdate::where('division_id', $divisionId)->count(),
             'total_plans' => WeeklyPlan::where('division_id', $divisionId)->count(),
             'total_staff' => User::where('division_id', $divisionId)->where('is_active', true)->count(),
@@ -133,6 +137,7 @@ class DashboardController extends Controller
             'total_activities' => $totalActivities,
             'in_progress' => Activity::where('status', 'in_progress')->count(),
             'completed' => Activity::where('status', 'completed')->count(),
+            'not_started' => Activity::where('status', 'not_started')->count(),
             'overdue_activities' => Activity::overdue()->count(),
             'escalated_activities' => Activity::escalated()->count(),
             'pending_updates' => WeeklyUpdate::where('status', 'submitted')->count(),
@@ -147,6 +152,8 @@ class DashboardController extends Controller
             'srgbv_total' => SrgbvCase::count(),
             'srgbv_open' => SrgbvCase::open()->count(),
             'srgbv_critical' => SrgbvCase::critical()->open()->count(),
+            'approved_updates' => WeeklyUpdate::where('status', 'approved')->count(),
+            'approved_plans' => WeeklyPlan::where('status', 'approved')->count(),
         ];
 
         $escalatedActivities = Activity::escalated()
@@ -219,6 +226,9 @@ class DashboardController extends Controller
                 'weeklyUpdates as submitted_updates_count' => fn($q) => $q->where('status', 'submitted'),
                 'weeklyUpdates as rejected_updates_count' => fn($q) => $q->where('status', 'rejected'),
                 'weeklyUpdates as draft_updates_count' => fn($q) => $q->where('status', 'draft'),
+                'weeklyPlans as total_plans_count',
+                'weeklyPlans as approved_plans_count' => fn($q) => $q->where('status', 'approved'),
+                'weeklyPlans as submitted_plans_count' => fn($q) => $q->where('status', 'submitted'),
             ])
             ->get()
             ->map(function ($division) {

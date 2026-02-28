@@ -84,7 +84,7 @@
         @endif
 
         {{-- Page Content --}}
-        <main class="p-6">
+        <main class="p-6 max-w-7xl mx-auto">
             @yield('content')
         </main>
     </div>
