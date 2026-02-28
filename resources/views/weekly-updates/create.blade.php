@@ -6,19 +6,19 @@
 @section('content')
 <div class="max-w-6xl">
     <div class="mb-6">
-        <a href="{{ route('weekly-updates.index') }}" class="text-sm text-gray-500 hover:text-gray-700">← Back to Weekly Updates</a>
+        <a href="{{ route('weekly-updates.index') }}" class="text-xs text-blue-700 hover:underline">Back to Weekly Updates</a>
     </div>
 
     <form method="POST" action="{{ route('weekly-updates.store') }}" id="weeklyUpdateForm">
         @csrf
 
         {{-- Header Section --}}
-        <div class="bg-white rounded-lg border border-gray-200 p-6 mb-6">
-            <h2 class="text-lg font-semibold text-gray-800 mb-1">New Weekly Update</h2>
+        <div class="bg-white border border-gray-200 p-6 mb-6">
+            <h2 class="text-sm font-semibold text-gray-900 uppercase tracking-wide border-b border-gray-200 pb-2 mb-6">New Weekly Update</h2>
             <p class="text-sm text-gray-500 mb-6">{{ $user->division?->name }} · Submitted by {{ $user->name }} ({{ $user->role_label }})</p>
 
             {{-- Status Legend --}}
-            <div class="mb-5 p-3 bg-gray-50 rounded-lg border border-gray-200">
+            <div class="mb-5 p-3 bg-gray-50 border border-gray-200">
                 <p class="text-xs font-semibold text-gray-600 mb-2">Legend: Status</p>
                 <div class="flex flex-wrap gap-4 text-xs">
                     <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-red-500 inline-block"></span> Red = Not Started</span>
@@ -43,30 +43,30 @@
         </div>
 
         {{-- Activities Table --}}
-        <div class="bg-white rounded-lg border border-gray-200 mb-6">
+        <div class="bg-white border border-gray-200 mb-6">
             <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
                 <div>
                     <h3 class="text-sm font-semibold text-gray-800">Activities / Tasks</h3>
                     <p class="text-xs text-gray-500 mt-0.5">Add each activity or task performed during the week</p>
                 </div>
                 <button type="button" onclick="addActivityRow()"
-                        class="inline-flex items-center gap-1 px-3 py-1.5 bg-slate-800 text-white text-xs font-medium rounded-md hover:bg-slate-700">
+                        class="inline-flex items-center gap-1 px-3 py-1.5 bg-gray-800 text-white text-xs font-medium hover:bg-gray-700">
                     + Add Row
                 </button>
             </div>
 
             <div class="overflow-x-auto">
                 <table class="w-full text-sm" id="activitiesTable">
-                    <thead class="bg-gray-50">
+                    <thead class="bg-gray-50 border-b border-gray-200">
                         <tr>
-                            <th class="text-left px-4 py-3 text-gray-600 font-medium w-10">No.</th>
-                            <th class="text-left px-4 py-3 text-gray-600 font-medium" style="min-width: 280px;">Activities/Task *</th>
-                            <th class="text-left px-4 py-3 text-gray-600 font-medium" style="min-width: 160px;">Responsible Persons</th>
-                            <th class="text-left px-4 py-3 text-gray-600 font-medium w-36">Status *</th>
-                            <th class="text-left px-4 py-3 text-gray-600 font-medium" style="min-width: 180px;">Status Comment</th>
-                            <th class="text-left px-4 py-3 text-gray-600 font-medium" style="min-width: 180px;">Challenges</th>
-                            <th class="text-center px-4 py-3 text-gray-600 font-medium w-20">Track This</th>
-                            <th class="text-center px-4 py-3 text-gray-600 font-medium w-16"></th>
+                            <th class="text-left px-4 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium w-10">No.</th>
+                            <th class="text-left px-4 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium" style="min-width: 280px;">Activities/Task *</th>
+                            <th class="text-left px-4 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium" style="min-width: 160px;">Responsible Persons</th>
+                            <th class="text-left px-4 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium w-36">Status *</th>
+                            <th class="text-left px-4 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium" style="min-width: 180px;">Status Comment</th>
+                            <th class="text-left px-4 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium" style="min-width: 180px;">Challenges</th>
+                            <th class="text-center px-4 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium w-20">Track This</th>
+                            <th class="text-center px-4 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium w-16"></th>
                         </tr>
                     </thead>
                     <tbody id="activitiesBody" class="divide-y divide-gray-100">
@@ -75,14 +75,14 @@
                 </table>
             </div>
 
-            <div class="px-6 py-3 bg-gray-50 border-t border-gray-200 rounded-b-lg">
+            <div class="px-6 py-3 bg-gray-50 border-t border-gray-200">
                 <button type="button" onclick="addActivityRow()"
                         class="text-sm text-slate-600 hover:text-slate-800 font-medium">+ Add another activity</button>
             </div>
         </div>
 
         {{-- Additional Notes (optional) --}}
-        <div class="bg-white rounded-lg border border-gray-200 p-6 mb-6">
+        <div class="bg-white border border-gray-200 p-6 mb-6">
             <h3 class="text-sm font-semibold text-gray-800 mb-3">Additional Notes (Optional)</h3>
 
             <div class="mb-4">
@@ -102,7 +102,7 @@
 
         {{-- Validation Errors --}}
         @if($errors->any())
-            <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <div class="mb-6 p-4 bg-red-50 border border-red-200">
                 <p class="text-sm font-medium text-red-800 mb-2">Please fix the following errors:</p>
                 <ul class="list-disc list-inside text-sm text-red-600">
                     @foreach($errors->all() as $error)
@@ -114,10 +114,10 @@
 
         {{-- Submit Buttons --}}
         <div class="flex gap-3">
-            <button type="submit" name="status" value="submitted" class="px-5 py-2.5 bg-slate-800 text-white text-sm font-medium rounded-md hover:bg-slate-700">
+            <button type="submit" name="status" value="submitted" class="px-5 py-2.5 bg-gray-800 text-white text-sm font-medium hover:bg-gray-700">
                 Submit for Review
             </button>
-            <button type="submit" name="status" value="draft" class="px-5 py-2.5 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-50">
+            <button type="submit" name="status" value="draft" class="px-5 py-2.5 bg-white border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50">
                 Save as Draft
             </button>
         </div>
@@ -164,10 +164,10 @@
                 <select name="activities[${rowCount}][status_flag]" required
                     class="w-full px-2 py-1.5 border rounded text-sm focus:outline-none focus:ring-1 focus:ring-slate-500 status-select ${statusColors[statusFlag] || ''}"
                     onchange="updateStatusColor(this)">
-                    <option value="not_started" ${statusFlag === 'not_started' ? 'selected' : ''}>🔴 Not Started</option>
-                    <option value="ongoing" ${statusFlag === 'ongoing' ? 'selected' : ''}>🟡 Ongoing</option>
-                    <option value="completed" ${statusFlag === 'completed' ? 'selected' : ''}>🟢 Completed</option>
-                    <option value="na" ${statusFlag === 'na' ? 'selected' : ''}>⚪ N/A</option>
+                    <option value="not_started" ${statusFlag === 'not_started' ? 'selected' : ''}>Not Started</option>
+                    <option value="ongoing" ${statusFlag === 'ongoing' ? 'selected' : ''}>Ongoing</option>
+                    <option value="completed" ${statusFlag === 'completed' ? 'selected' : ''}>Completed</option>
+                    <option value="na" ${statusFlag === 'na' ? 'selected' : ''}>N/A</option>
                 </select>
             </td>
             <td class="px-4 py-2 align-top">

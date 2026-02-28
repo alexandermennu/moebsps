@@ -8,23 +8,23 @@
     <div class="flex items-center justify-between">
         <div class="flex items-center gap-4">
             <a href="{{ route('messages.index', ['folder' => 'inbox']) }}"
-               class="px-4 py-2 text-sm font-medium rounded-md {{ $folder === 'inbox' ? 'bg-slate-800 text-white' : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50' }}">
-                📥 Inbox
+               class="px-4 py-2 text-sm font-medium {{ $folder === 'inbox' ? 'bg-slate-800 text-white' : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50' }}">
+                Inbox
                 @if($unreadCount > 0)
-                    <span class="ml-1 inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold leading-none text-white bg-red-500 rounded-full">{{ $unreadCount }}</span>
+                    <span class="ml-1 inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold leading-none text-white bg-red-500">{{ $unreadCount }}</span>
                 @endif
             </a>
             <a href="{{ route('messages.index', ['folder' => 'sent']) }}"
-               class="px-4 py-2 text-sm font-medium rounded-md {{ $folder === 'sent' ? 'bg-slate-800 text-white' : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50' }}">
-                📤 Sent
+               class="px-4 py-2 text-sm font-medium {{ $folder === 'sent' ? 'bg-slate-800 text-white' : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50' }}">
+                Sent
             </a>
         </div>
-        <a href="{{ route('messages.create') }}" class="inline-flex items-center px-4 py-2 bg-slate-800 text-white text-sm font-medium rounded-md hover:bg-slate-700">
-            ✉️ Compose
+        <a href="{{ route('messages.create') }}" class="inline-flex items-center px-4 py-2 bg-slate-800 text-white text-sm font-medium hover:bg-slate-700">
+            Compose
         </a>
     </div>
 
-    <div class="bg-white rounded-lg border border-gray-200">
+    <div class="bg-white border border-gray-200">
         <div class="divide-y divide-gray-100">
             @forelse($messages as $message)
                 <a href="{{ route('messages.show', $message) }}"
@@ -38,7 +38,7 @@
                         </div>
 
                         {{-- Avatar --}}
-                        <div class="w-9 h-9 bg-slate-200 rounded-full flex items-center justify-center flex-shrink-0">
+                        <div class="w-9 h-9 bg-slate-200 flex items-center justify-center flex-shrink-0">
                             <span class="text-sm font-medium text-slate-600">
                                 {{ strtoupper(substr($folder === 'inbox' ? $message->sender->name : $message->receiver->name, 0, 1)) }}
                             </span>
@@ -60,7 +60,7 @@
 
                         {{-- Reply count --}}
                         @if($message->replies_count ?? $message->replies->count() > 0)
-                            <span class="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full flex-shrink-0">
+                            <span class="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 flex-shrink-0">
                                 {{ $message->replies->count() }} {{ Str::plural('reply', $message->replies->count()) }}
                             </span>
                         @endif
@@ -68,7 +68,6 @@
                 </a>
             @empty
                 <div class="px-5 py-12 text-center text-sm text-gray-500">
-                    <p class="text-2xl mb-2">✉️</p>
                     <p>No messages in your {{ $folder }}.</p>
                 </div>
             @endforelse

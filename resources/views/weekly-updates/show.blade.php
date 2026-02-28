@@ -6,11 +6,11 @@
 @section('content')
 <div class="max-w-6xl">
     <div class="mb-6">
-        <a href="{{ route('weekly-updates.index') }}" class="text-sm text-gray-500 hover:text-gray-700">← Back to Weekly Updates</a>
+        <a href="{{ route('weekly-updates.index') }}" class="text-xs text-blue-700 hover:underline">Back to Weekly Updates</a>
     </div>
 
     {{-- Header --}}
-    <div class="bg-white rounded-lg border border-gray-200 p-6 mb-6">
+    <div class="bg-white border border-gray-200 p-6 mb-6">
         <div class="flex items-center justify-between mb-2">
             <div>
                 <h2 class="text-lg font-semibold text-gray-800">
@@ -21,17 +21,15 @@
             <div class="flex items-center gap-3">
                 {{-- Download Buttons --}}
                 <a href="{{ route('weekly-updates.download', [$weeklyUpdate, 'format' => 'pdf']) }}" target="_blank"
-                   class="inline-flex items-center gap-1 px-3 py-1.5 bg-red-600 text-white text-xs font-medium rounded-md hover:bg-red-700" title="Download as PDF">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                   class="inline-flex items-center gap-1 px-3 py-1.5 bg-red-600 text-white text-xs font-medium hover:bg-red-700" title="Download as PDF">
                     PDF
                 </a>
                 <a href="{{ route('weekly-updates.download', [$weeklyUpdate, 'format' => 'word']) }}"
-                   class="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded-md hover:bg-blue-700" title="Download as Word">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                   class="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-600 text-white text-xs font-medium hover:bg-blue-700" title="Download as Word">
                     Word
                 </a>
 
-                <span class="text-xs px-3 py-1 rounded-full font-medium
+                <span class="text-[10px] px-1.5 py-0.5 font-medium
                     {{ $weeklyUpdate->status === 'approved' ? 'bg-green-100 text-green-700' : '' }}
                     {{ $weeklyUpdate->status === 'submitted' ? 'bg-blue-100 text-blue-700' : '' }}
                     {{ $weeklyUpdate->status === 'rejected' ? 'bg-red-100 text-red-700' : '' }}
@@ -80,7 +78,7 @@
         @endif
 
         {{-- Status Legend --}}
-        <div class="mt-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
+        <div class="mt-4 p-3 bg-gray-50 border border-gray-200">
             <p class="text-xs font-semibold text-gray-600 mb-2">Legend: Status</p>
             <div class="flex flex-wrap gap-4 text-xs">
                 <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-red-500 inline-block"></span> Red = Not Started</span>
@@ -93,7 +91,7 @@
 
     {{-- Activities Table --}}
     @if($weeklyUpdate->activities->count() > 0)
-        <div class="bg-white rounded-lg border border-gray-200 mb-6">
+        <div class="bg-white border border-gray-200 mb-6">
             <div class="px-6 py-4 border-b border-gray-200">
                 <h3 class="text-sm font-semibold text-gray-800">Activities / Tasks</h3>
                 <p class="text-xs text-gray-500 mt-0.5">{{ $weeklyUpdate->activities->count() }} {{ Str::plural('activity', $weeklyUpdate->activities->count()) }} recorded</p>
@@ -101,15 +99,15 @@
 
             <div class="overflow-x-auto">
                 <table class="w-full text-sm">
-                    <thead class="bg-gray-50">
+                    <thead class="bg-gray-50 border-b border-gray-200">
                         <tr>
-                            <th class="text-left px-4 py-3 text-gray-600 font-medium w-12">No.</th>
-                            <th class="text-left px-4 py-3 text-gray-600 font-medium" style="min-width: 280px;">Activities/Task</th>
-                            <th class="text-left px-4 py-3 text-gray-600 font-medium" style="min-width: 150px;">Responsible Persons</th>
-                            <th class="text-left px-4 py-3 text-gray-600 font-medium w-40">Status</th>
-                            <th class="text-left px-4 py-3 text-gray-600 font-medium" style="min-width: 180px;">Status Comment</th>
-                            <th class="text-left px-4 py-3 text-gray-600 font-medium" style="min-width: 180px;">Challenges</th>
-                            <th class="text-center px-4 py-3 text-gray-600 font-medium w-16">💬</th>
+                            <th class="text-left px-4 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium w-12">No.</th>
+                            <th class="text-left px-4 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium" style="min-width: 280px;">Activities/Task</th>
+                            <th class="text-left px-4 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium" style="min-width: 150px;">Responsible Persons</th>
+                            <th class="text-left px-4 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium w-40">Status</th>
+                            <th class="text-left px-4 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium" style="min-width: 180px;">Status Comment</th>
+                            <th class="text-left px-4 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium" style="min-width: 180px;">Challenges</th>
+                            <th class="text-center px-4 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium w-16">Comments</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100">
@@ -139,7 +137,7 @@
                                             'na'          => 'N/A',
                                         ];
                                     @endphp
-                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border {{ $colors[$activity->status_flag] ?? $colors['na'] }}">
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium border {{ $colors[$activity->status_flag] ?? $colors['na'] }}">
                                         <span class="w-2 h-2 rounded-full {{ $dots[$activity->status_flag] ?? $dots['na'] }}"></span>
                                         {{ $labels[$activity->status_flag] ?? 'N/A' }}
                                     </span>
@@ -149,7 +147,7 @@
                                 <td class="px-4 py-3 text-center align-top">
                                     <button type="button" onclick="toggleComments({{ $activity->id }})"
                                             class="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-slate-700 {{ $activity->comments->count() > 0 ? 'font-semibold text-blue-600' : '' }}">
-                                        💬 {{ $activity->comments->count() ?: '' }}
+                                        {{ $activity->comments->count() ?: '' }}
                                     </button>
                                 </td>
                             </tr>
@@ -163,9 +161,9 @@
                                         @if($activity->comments->count() > 0)
                                             <div class="space-y-3 mb-4">
                                                 @foreach($activity->comments as $comment)
-                                                    <div class="bg-white rounded-lg border border-gray-200 p-3">
+                                                    <div class="bg-white border border-gray-200 p-3">
                                                         <div class="flex items-center gap-2 mb-1">
-                                                            <div class="w-6 h-6 bg-slate-200 rounded-full flex items-center justify-center text-[10px] font-bold text-slate-600">
+                                                            <div class="w-6 h-6 bg-slate-200 flex items-center justify-center text-[10px] font-bold text-slate-600">
                                                                 {{ strtoupper(substr($comment->user->name, 0, 1)) }}
                                                             </div>
                                                             <span class="text-xs font-medium text-gray-800">{{ $comment->user->name }}</span>
@@ -187,7 +185,7 @@
                                                 <input type="text" name="body" required
                                                        class="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-slate-500"
                                                        placeholder="Add a comment on this activity...">
-                                                <button type="submit" class="px-3 py-2 bg-slate-800 text-white text-xs font-medium rounded-md hover:bg-slate-700 whitespace-nowrap">
+                                                <button type="submit" class="px-3 py-2 bg-gray-800 text-white text-xs font-medium hover:bg-gray-700 whitespace-nowrap">
                                                     Comment
                                                 </button>
                                             </form>
@@ -204,34 +202,34 @@
 
     {{-- Legacy fields / Additional Notes --}}
     @if($weeklyUpdate->accomplishments || $weeklyUpdate->support_needed || $weeklyUpdate->key_metrics || $weeklyUpdate->challenges)
-        <div class="bg-white rounded-lg border border-gray-200 p-6 mb-6">
+        <div class="bg-white border border-gray-200 p-6 mb-6">
             <h3 class="text-sm font-semibold text-gray-800 mb-4">Additional Notes</h3>
             <div class="space-y-4">
                 @if($weeklyUpdate->accomplishments)
                     <div>
                         <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Accomplishments</h4>
-                        <div class="text-sm text-gray-600 whitespace-pre-line bg-gray-50 rounded-md p-4">{{ $weeklyUpdate->accomplishments }}</div>
+                        <div class="text-sm text-gray-600 whitespace-pre-line bg-gray-50 p-4">{{ $weeklyUpdate->accomplishments }}</div>
                     </div>
                 @endif
 
                 @if($weeklyUpdate->challenges && $weeklyUpdate->activities->count() === 0)
                     <div>
                         <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Challenges</h4>
-                        <div class="text-sm text-gray-600 whitespace-pre-line bg-gray-50 rounded-md p-4">{{ $weeklyUpdate->challenges }}</div>
+                        <div class="text-sm text-gray-600 whitespace-pre-line bg-gray-50 p-4">{{ $weeklyUpdate->challenges }}</div>
                     </div>
                 @endif
 
                 @if($weeklyUpdate->support_needed)
                     <div>
                         <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Support Needed</h4>
-                        <div class="text-sm text-gray-600 whitespace-pre-line bg-gray-50 rounded-md p-4">{{ $weeklyUpdate->support_needed }}</div>
+                        <div class="text-sm text-gray-600 whitespace-pre-line bg-gray-50 p-4">{{ $weeklyUpdate->support_needed }}</div>
                     </div>
                 @endif
 
                 @if($weeklyUpdate->key_metrics)
                     <div>
                         <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Key Metrics</h4>
-                        <div class="text-sm text-gray-600 whitespace-pre-line bg-gray-50 rounded-md p-4">{{ $weeklyUpdate->key_metrics }}</div>
+                        <div class="text-sm text-gray-600 whitespace-pre-line bg-gray-50 p-4">{{ $weeklyUpdate->key_metrics }}</div>
                     </div>
                 @endif
             </div>
@@ -240,11 +238,11 @@
 
     {{-- Review Info --}}
     @if($weeklyUpdate->reviewed_by)
-        <div class="bg-white rounded-lg border border-gray-200 p-6 mb-6">
+        <div class="bg-white border border-gray-200 p-6 mb-6">
             <h3 class="text-sm font-semibold text-gray-800 mb-2">Review</h3>
             <p class="text-sm text-gray-500">Reviewed by <span class="font-medium text-gray-700">{{ $weeklyUpdate->reviewer->name }}</span> on {{ $weeklyUpdate->reviewed_at->format('M d, Y \a\t H:i') }}</p>
             @if($weeklyUpdate->review_comments)
-                <div class="mt-3 text-sm text-gray-600 bg-yellow-50 border border-yellow-200 rounded-md p-3">
+                <div class="mt-3 text-sm text-gray-600 bg-yellow-50 border border-yellow-200 p-3">
                     <span class="font-medium">Comments:</span> {{ $weeklyUpdate->review_comments }}
                 </div>
             @endif
@@ -254,7 +252,7 @@
     {{-- Actions --}}
     <div class="flex gap-3">
         @if($user->canManageDivision() && in_array($weeklyUpdate->status, ['draft', 'rejected']))
-            <a href="{{ route('weekly-updates.edit', $weeklyUpdate) }}" class="px-4 py-2 bg-slate-800 text-white text-sm font-medium rounded-md hover:bg-slate-700">Edit</a>
+            <a href="{{ route('weekly-updates.edit', $weeklyUpdate) }}" class="px-4 py-2 bg-gray-800 text-white text-sm font-medium hover:bg-gray-700">Edit</a>
         @endif
 
         @if($user->canReviewSubmissions() && $weeklyUpdate->status === 'submitted')
@@ -263,8 +261,8 @@
                 <div class="flex-1">
                     <input type="text" name="review_comments" placeholder="Review comments (optional)" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm">
                 </div>
-                <button type="submit" name="action" value="approved" class="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700">Approve</button>
-                <button type="submit" name="action" value="rejected" class="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-md hover:bg-red-700">Reject</button>
+                <button type="submit" name="action" value="approved" class="px-4 py-2 bg-green-600 text-white text-sm font-medium hover:bg-green-700">Approve</button>
+                <button type="submit" name="action" value="rejected" class="px-4 py-2 bg-red-600 text-white text-sm font-medium hover:bg-red-700">Reject</button>
             </form>
         @endif
     </div>

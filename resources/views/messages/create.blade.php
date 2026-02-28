@@ -6,10 +6,10 @@
 @section('content')
 <div class="max-w-2xl">
     <div class="mb-6">
-        <a href="{{ route('messages.index') }}" class="text-sm text-gray-500 hover:text-gray-700">← Back to Messages</a>
+        <a href="{{ route('messages.index') }}" class="text-xs text-blue-700 hover:underline">Back to Messages</a>
     </div>
 
-    <div class="bg-white rounded-lg border border-gray-200 p-6">
+    <div class="bg-white border border-gray-200 p-6">
         <h2 class="text-lg font-semibold text-gray-800 mb-6">
             @if($replyTo)
                 Reply to: {{ $replyTo->subject }}
@@ -26,7 +26,7 @@
                 <input type="hidden" name="receiver_id" value="{{ $replyTo->sender_id === auth()->id() ? $replyTo->receiver_id : $replyTo->sender_id }}">
                 <input type="hidden" name="subject" value="Re: {{ $replyTo->subject }}">
 
-                <div class="mb-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <div class="mb-4 p-4 bg-gray-50 border border-gray-200">
                     <p class="text-xs text-gray-400 mb-1">Replying to {{ $replyTo->sender_id === auth()->id() ? $replyTo->receiver->name : $replyTo->sender->name }}</p>
                     <p class="text-sm text-gray-600">{{ Str::limit($replyTo->body, 200) }}</p>
                 </div>
@@ -62,10 +62,10 @@
             </div>
 
             <div class="flex gap-3">
-                <button type="submit" class="px-4 py-2 bg-slate-800 text-white text-sm font-medium rounded-md hover:bg-slate-700">
+                <button type="submit" class="px-4 py-2 bg-slate-800 text-white text-sm font-medium hover:bg-slate-700">
                     Send Message
                 </button>
-                <a href="{{ route('messages.index') }}" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-50">Cancel</a>
+                <a href="{{ route('messages.index') }}" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50">Cancel</a>
             </div>
         </form>
     </div>

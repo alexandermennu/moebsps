@@ -6,15 +6,15 @@
 @section('content')
 <div class="max-w-6xl">
     <div class="mb-6">
-        <a href="{{ route('weekly-plans.index') }}" class="text-sm text-gray-500 hover:text-gray-700">← Back to Weekly Plans</a>
+        <a href="{{ route('weekly-plans.index') }}" class="text-xs text-blue-700 hover:underline">Back to Weekly Plans</a>
     </div>
 
     <form method="POST" action="{{ route('weekly-plans.store') }}" id="weeklyPlanForm">
         @csrf
 
         {{-- Header Section --}}
-        <div class="bg-white rounded-lg border border-gray-200 p-6 mb-6">
-            <h2 class="text-lg font-semibold text-gray-800 mb-1">New Weekly Plan</h2>
+        <div class="bg-white border border-gray-200 p-6 mb-6">
+            <h2 class="text-sm font-semibold text-gray-900 uppercase tracking-wide border-b border-gray-200 pb-2 mb-6">New Weekly Plan</h2>
             <p class="text-sm text-gray-500 mb-6">{{ $user->division?->name }} · Submitted by {{ $user->name }} ({{ $user->role_label }})</p>
 
             <div class="grid grid-cols-2 gap-4">
@@ -32,28 +32,28 @@
         </div>
 
         {{-- Activities Table --}}
-        <div class="bg-white rounded-lg border border-gray-200 mb-6">
+        <div class="bg-white border border-gray-200 mb-6">
             <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
                 <div>
                     <h3 class="text-sm font-semibold text-gray-800">Planned Activities</h3>
                     <p class="text-xs text-gray-500 mt-0.5">Add each activity planned for the coming week</p>
                 </div>
                 <button type="button" onclick="addActivityRow()"
-                        class="inline-flex items-center gap-1 px-3 py-1.5 bg-slate-800 text-white text-xs font-medium rounded-md hover:bg-slate-700">
+                        class="inline-flex items-center gap-1 px-3 py-1.5 bg-gray-800 text-white text-xs font-medium hover:bg-gray-700">
                     + Add Row
                 </button>
             </div>
 
             <div class="overflow-x-auto">
                 <table class="w-full text-sm" id="activitiesTable">
-                    <thead class="bg-gray-50">
+                    <thead class="bg-gray-50 border-b border-gray-200">
                         <tr>
-                            <th class="text-left px-4 py-3 text-gray-600 font-medium w-10">No.</th>
-                            <th class="text-left px-4 py-3 text-gray-600 font-medium" style="min-width: 320px;">Activities *</th>
-                            <th class="text-left px-4 py-3 text-gray-600 font-medium" style="min-width: 180px;">Responsible Persons</th>
-                            <th class="text-left px-4 py-3 text-gray-600 font-medium" style="min-width: 200px;">Status / Comment</th>
-                            <th class="text-center px-4 py-3 text-gray-600 font-medium w-20">Track This</th>
-                            <th class="text-center px-4 py-3 text-gray-600 font-medium w-16"></th>
+                            <th class="text-left px-4 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium w-10">No.</th>
+                            <th class="text-left px-4 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium" style="min-width: 320px;">Activities *</th>
+                            <th class="text-left px-4 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium" style="min-width: 180px;">Responsible Persons</th>
+                            <th class="text-left px-4 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium" style="min-width: 200px;">Status / Comment</th>
+                            <th class="text-center px-4 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium w-20">Track This</th>
+                            <th class="text-center px-4 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium w-16"></th>
                         </tr>
                     </thead>
                     <tbody id="activitiesBody" class="divide-y divide-gray-100">
@@ -62,14 +62,14 @@
                 </table>
             </div>
 
-            <div class="px-6 py-3 bg-gray-50 border-t border-gray-200 rounded-b-lg">
+            <div class="px-6 py-3 bg-gray-50 border-t border-gray-200">
                 <button type="button" onclick="addActivityRow()"
                         class="text-sm text-slate-600 hover:text-slate-800 font-medium">+ Add another activity</button>
             </div>
         </div>
 
         {{-- Additional Notes (optional) --}}
-        <div class="bg-white rounded-lg border border-gray-200 p-6 mb-6">
+        <div class="bg-white border border-gray-200 p-6 mb-6">
             <h3 class="text-sm font-semibold text-gray-800 mb-3">Additional Notes (Optional)</h3>
 
             <div class="mb-4">
@@ -96,7 +96,7 @@
 
         {{-- Validation Errors --}}
         @if($errors->any())
-            <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <div class="mb-6 p-4 bg-red-50 border border-red-200">
                 <p class="text-sm font-medium text-red-800 mb-2">Please fix the following errors:</p>
                 <ul class="list-disc list-inside text-sm text-red-600">
                     @foreach($errors->all() as $error)
@@ -108,10 +108,10 @@
 
         {{-- Submit Buttons --}}
         <div class="flex gap-3">
-            <button type="submit" name="status" value="submitted" class="px-5 py-2.5 bg-slate-800 text-white text-sm font-medium rounded-md hover:bg-slate-700">
+            <button type="submit" name="status" value="submitted" class="px-5 py-2.5 bg-gray-800 text-white text-sm font-medium hover:bg-gray-700">
                 Submit for Review
             </button>
-            <button type="submit" name="status" value="draft" class="px-5 py-2.5 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-50">
+            <button type="submit" name="status" value="draft" class="px-5 py-2.5 bg-white border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50">
                 Save as Draft
             </button>
         </div>

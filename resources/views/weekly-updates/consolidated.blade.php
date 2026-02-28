@@ -6,11 +6,11 @@
 @section('content')
 <div class="max-w-7xl">
     <div class="mb-6">
-        <a href="{{ route('dashboard') }}" class="text-sm text-gray-500 hover:text-gray-700">← Back to Dashboard</a>
+        <a href="{{ route('dashboard') }}" class="text-xs text-blue-700 hover:underline">Back to Dashboard</a>
     </div>
 
     {{-- Header --}}
-    <div class="bg-white rounded-lg border border-gray-200 p-6 mb-6">
+    <div class="bg-white border border-gray-200 p-6 mb-6">
         <div class="flex items-center justify-between mb-4">
             <div>
                 <h2 class="text-lg font-semibold text-gray-800">Consolidated Weekly Updates</h2>
@@ -21,13 +21,11 @@
             <div class="flex items-center gap-2">
                 <a href="{{ route('weekly-updates.download-consolidated', ['week_start' => $weekStart, 'week_end' => $weekEnd, 'format' => 'pdf']) }}"
                    target="_blank"
-                   class="inline-flex items-center gap-1.5 px-3 py-2 bg-red-600 text-white text-xs font-medium rounded-md hover:bg-red-700">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                   class="inline-flex items-center gap-1.5 px-3 py-2 bg-red-600 text-white text-xs font-medium hover:bg-red-700">
                     Download PDF
                 </a>
                 <a href="{{ route('weekly-updates.download-consolidated', ['week_start' => $weekStart, 'week_end' => $weekEnd, 'format' => 'word']) }}"
-                   class="inline-flex items-center gap-1.5 px-3 py-2 bg-blue-600 text-white text-xs font-medium rounded-md hover:bg-blue-700">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                   class="inline-flex items-center gap-1.5 px-3 py-2 bg-blue-600 text-white text-xs font-medium hover:bg-blue-700">
                     Download Word
                 </a>
             </div>
@@ -55,7 +53,7 @@
                     <option value="rejected" {{ $statusFilter === 'rejected' ? 'selected' : '' }}>Rejected</option>
                 </select>
             </div>
-            <button type="submit" class="px-4 py-2 bg-slate-800 text-white text-sm font-medium rounded-md hover:bg-slate-700">
+            <button type="submit" class="px-4 py-2 bg-gray-800 text-white text-sm font-medium hover:bg-gray-700">
                 Filter
             </button>
         </form>
@@ -63,28 +61,28 @@
 
     {{-- Division Analytics Overview --}}
     @if(count($divisionAnalytics) > 0)
-    <div class="bg-white rounded-lg border border-gray-200 mb-6">
+    <div class="bg-white border border-gray-200 mb-6">
         <div class="px-6 py-4 border-b border-gray-200">
             <h3 class="text-sm font-semibold text-gray-800">Division Summary</h3>
             <p class="text-xs text-gray-500 mt-0.5">Quick analytics across all divisions for the selected period</p>
         </div>
         <div class="overflow-x-auto">
             <table class="w-full text-sm">
-                <thead class="bg-gray-50">
+                <thead class="bg-gray-50 border-b border-gray-200">
                     <tr>
-                        <th class="text-left px-4 py-3 text-gray-600 font-medium">Division</th>
-                        <th class="text-center px-4 py-3 text-gray-600 font-medium">Updates</th>
-                        <th class="text-center px-4 py-3 text-gray-600 font-medium">Activities</th>
-                        <th class="text-center px-4 py-3 text-gray-600 font-medium">
+                        <th class="text-left px-4 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium">Division</th>
+                        <th class="text-center px-4 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium">Updates</th>
+                        <th class="text-center px-4 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium">Activities</th>
+                        <th class="text-center px-4 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium">
                             <span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-green-500"></span>Done</span>
                         </th>
-                        <th class="text-center px-4 py-3 text-gray-600 font-medium">
+                        <th class="text-center px-4 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium">
                             <span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-yellow-400"></span>Ongoing</span>
                         </th>
-                        <th class="text-center px-4 py-3 text-gray-600 font-medium">
+                        <th class="text-center px-4 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium">
                             <span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-red-500"></span>Not Started</span>
                         </th>
-                        <th class="text-center px-4 py-3 text-gray-600 font-medium">Progress</th>
+                        <th class="text-center px-4 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium">Progress</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
@@ -100,8 +98,8 @@
                             <td class="px-4 py-3 text-center text-red-600 font-medium">{{ $analytics['not_started'] }}</td>
                             <td class="px-4 py-3">
                                 <div class="flex items-center gap-2">
-                                    <div class="w-full bg-gray-100 rounded-full h-2 min-w-[60px]">
-                                        <div class="h-2 rounded-full {{ $rate >= 70 ? 'bg-green-500' : ($rate >= 40 ? 'bg-yellow-500' : 'bg-red-500') }}" style="width: {{ $rate }}%"></div>
+                                    <div class="w-full bg-gray-100 h-2 min-w-[60px]">
+                                        <div class="h-2 {{ $rate >= 70 ? 'bg-green-500' : ($rate >= 40 ? 'bg-yellow-500' : 'bg-red-500') }}" style="width: {{ $rate }}%"></div>
                                     </div>
                                     <span class="text-xs text-gray-500 w-8">{{ $rate }}%</span>
                                 </div>
@@ -120,11 +118,11 @@
         <div class="mb-8">
             <div class="flex items-center gap-3 mb-4">
                 <h3 class="text-md font-bold text-gray-800">{{ $divisionName }}</h3>
-                <span class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">{{ $updates->count() }} {{ Str::plural('report', $updates->count()) }}</span>
+                <span class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5">{{ $updates->count() }} {{ Str::plural('report', $updates->count()) }}</span>
             </div>
 
             @foreach($updates as $update)
-                <div class="bg-white rounded-lg border border-gray-200 mb-4">
+                <div class="bg-white border border-gray-200 mb-4">
                     {{-- Update Header --}}
                     <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
                         <div>
@@ -132,7 +130,7 @@
                                 <h4 class="text-sm font-semibold text-gray-800">
                                     Week of {{ $update->week_start->format('M d') }} – {{ $update->week_end->format('M d, Y') }}
                                 </h4>
-                                <span class="text-xs px-2 py-0.5 rounded-full
+                                <span class="text-[10px] px-1.5 py-0.5 font-medium
                                     {{ $update->status === 'approved' ? 'bg-green-100 text-green-700' : '' }}
                                     {{ $update->status === 'submitted' ? 'bg-blue-100 text-blue-700' : '' }}
                                     {{ $update->status === 'rejected' ? 'bg-red-100 text-red-700' : '' }}
@@ -146,11 +144,11 @@
                         </div>
                         <div class="flex items-center gap-2">
                             <a href="{{ route('weekly-updates.download', [$update, 'format' => 'pdf']) }}" target="_blank"
-                               class="text-xs text-red-600 hover:text-red-800 font-medium" title="Download PDF">📄 PDF</a>
+                               class="text-xs text-red-600 hover:text-red-800 font-medium" title="Download PDF">PDF</a>
                             <a href="{{ route('weekly-updates.download', [$update, 'format' => 'word']) }}"
-                               class="text-xs text-blue-600 hover:text-blue-800 font-medium" title="Download Word">📝 Word</a>
+                               class="text-xs text-blue-600 hover:text-blue-800 font-medium" title="Download Word">Word</a>
                             <a href="{{ route('weekly-updates.show', $update) }}"
-                               class="text-xs text-slate-600 hover:text-slate-800 font-medium">View →</a>
+                               class="text-xs text-blue-700 hover:underline">View</a>
                         </div>
                     </div>
 
@@ -158,14 +156,14 @@
                     @if($update->activities->count() > 0)
                         <div class="overflow-x-auto">
                             <table class="w-full text-sm">
-                                <thead class="bg-gray-50">
+                                <thead class="bg-gray-50 border-b border-gray-200">
                                     <tr>
-                                        <th class="text-left px-4 py-2 text-gray-600 font-medium w-10">No.</th>
-                                        <th class="text-left px-4 py-2 text-gray-600 font-medium" style="min-width: 250px;">Activities/Task</th>
-                                        <th class="text-left px-4 py-2 text-gray-600 font-medium" style="min-width: 130px;">Responsible</th>
-                                        <th class="text-left px-4 py-2 text-gray-600 font-medium w-32">Status</th>
-                                        <th class="text-left px-4 py-2 text-gray-600 font-medium" style="min-width: 160px;">Comment</th>
-                                        <th class="text-left px-4 py-2 text-gray-600 font-medium" style="min-width: 160px;">Challenges</th>
+                                        <th class="text-left px-4 py-2 text-[11px] text-gray-500 uppercase tracking-wide font-medium w-10">No.</th>
+                                        <th class="text-left px-4 py-2 text-[11px] text-gray-500 uppercase tracking-wide font-medium" style="min-width: 250px;">Activities/Task</th>
+                                        <th class="text-left px-4 py-2 text-[11px] text-gray-500 uppercase tracking-wide font-medium" style="min-width: 130px;">Responsible</th>
+                                        <th class="text-left px-4 py-2 text-[11px] text-gray-500 uppercase tracking-wide font-medium w-32">Status</th>
+                                        <th class="text-left px-4 py-2 text-[11px] text-gray-500 uppercase tracking-wide font-medium" style="min-width: 160px;">Comment</th>
+                                        <th class="text-left px-4 py-2 text-[11px] text-gray-500 uppercase tracking-wide font-medium" style="min-width: 160px;">Challenges</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-gray-100">
@@ -195,7 +193,7 @@
                                                         'na'          => 'N/A',
                                                     ];
                                                 @endphp
-                                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium {{ $statusColors[$activity->status_flag] ?? $statusColors['na'] }}">
+                                                <span class="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-medium {{ $statusColors[$activity->status_flag] ?? $statusColors['na'] }}">
                                                     <span class="w-1.5 h-1.5 rounded-full {{ $statusDots[$activity->status_flag] ?? $statusDots['na'] }}"></span>
                                                     {{ $statusLabels[$activity->status_flag] ?? 'N/A' }}
                                                 </span>
@@ -237,8 +235,7 @@
             @endforeach
         </div>
     @empty
-        <div class="bg-white rounded-lg border border-gray-200 p-12 text-center">
-            <svg class="w-12 h-12 mx-auto text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        <div class="bg-white border border-gray-200 p-12 text-center">
             <p class="text-sm text-gray-500">No weekly updates found for the selected period.</p>
             <p class="text-xs text-gray-400 mt-1">Try adjusting the date range or status filter.</p>
         </div>

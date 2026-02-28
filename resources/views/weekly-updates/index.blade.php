@@ -5,20 +5,19 @@
 
 @section('content')
 <div class="space-y-4">
-    <div class="flex items-center justify-between">
+    <div class="flex items-center justify-between border-b border-gray-300 pb-4">
         <div>
-            <h2 class="text-xl font-bold text-gray-800">Weekly Updates</h2>
+            <h2 class="text-sm font-semibold text-gray-900 uppercase tracking-wide">Weekly Updates</h2>
             <p class="text-sm text-gray-500">Review and manage weekly activity reports</p>
         </div>
         <div class="flex items-center gap-2">
             @if($user->hasFullAccess() || $user->isDirector())
-                <a href="{{ route('weekly-updates.consolidated') }}" class="inline-flex items-center gap-1.5 px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-50">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                <a href="{{ route('weekly-updates.consolidated') }}" class="inline-flex items-center gap-1.5 px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50">
                     Consolidated Reports
                 </a>
             @endif
             @if($user->canManageDivision())
-                <a href="{{ route('weekly-updates.create') }}" class="inline-flex items-center px-4 py-2 bg-slate-800 text-white text-sm font-medium rounded-md hover:bg-slate-700">
+                <a href="{{ route('weekly-updates.create') }}" class="inline-flex items-center px-4 py-2 bg-gray-800 text-white text-sm font-medium hover:bg-gray-700">
                     + New Update
                 </a>
             @endif
@@ -37,21 +36,21 @@
                 <option value="rejected" {{ request('status') === 'rejected' ? 'selected' : '' }}>Rejected</option>
             </select>
         </div>
-        <button type="submit" class="px-4 py-2 bg-gray-100 border border-gray-300 text-sm rounded-md hover:bg-gray-200">Filter</button>
+        <button type="submit" class="px-4 py-2 bg-gray-100 border border-gray-300 text-sm hover:bg-gray-200">Filter</button>
     </form>
 
     {{-- Updates Table --}}
-    <div class="bg-white rounded-lg border border-gray-200">
+    <div class="bg-white border border-gray-200">
         <div class="overflow-x-auto">
             <table class="w-full text-sm">
-                <thead class="bg-gray-50">
+                <thead class="bg-gray-50 border-b border-gray-200">
                     <tr>
-                        <th class="text-left px-5 py-3 text-gray-600 font-medium">Week</th>
-                        <th class="text-left px-5 py-3 text-gray-600 font-medium">Division</th>
-                        <th class="text-left px-5 py-3 text-gray-600 font-medium">Submitted By</th>
-                        <th class="text-center px-5 py-3 text-gray-600 font-medium">Status</th>
-                        <th class="text-left px-5 py-3 text-gray-600 font-medium">Submitted</th>
-                        <th class="text-right px-5 py-3 text-gray-600 font-medium">Action</th>
+                        <th class="text-left px-5 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium">Week</th>
+                        <th class="text-left px-5 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium">Division</th>
+                        <th class="text-left px-5 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium">Submitted By</th>
+                        <th class="text-center px-5 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium">Status</th>
+                        <th class="text-left px-5 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium">Submitted</th>
+                        <th class="text-right px-5 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium">Action</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
@@ -63,7 +62,7 @@
                             <td class="px-5 py-3 text-gray-600">{{ $update->division->name }}</td>
                             <td class="px-5 py-3 text-gray-600">{{ $update->submitter->name }}</td>
                             <td class="px-5 py-3 text-center">
-                                <span class="text-xs px-2 py-1 rounded-full
+                                <span class="text-[10px] px-1.5 py-0.5 font-medium
                                     {{ $update->status === 'approved' ? 'bg-green-100 text-green-700' : '' }}
                                     {{ $update->status === 'submitted' ? 'bg-blue-100 text-blue-700' : '' }}
                                     {{ $update->status === 'rejected' ? 'bg-red-100 text-red-700' : '' }}
@@ -73,7 +72,7 @@
                             </td>
                             <td class="px-5 py-3 text-gray-500">{{ $update->created_at->format('M d, Y') }}</td>
                             <td class="px-5 py-3 text-right">
-                                <a href="{{ route('weekly-updates.show', $update) }}" class="text-slate-600 hover:text-slate-800 text-sm">View →</a>
+                                <a href="{{ route('weekly-updates.show', $update) }}" class="text-xs text-blue-700 hover:underline">View</a>
                             </td>
                         </tr>
                     @empty
@@ -93,23 +92,23 @@
     <div class="mt-8">
         <div class="flex items-center justify-between mb-4">
             <div>
-                <h3 class="text-lg font-bold text-gray-800">📊 Division Reports</h3>
-                <p class="text-sm text-gray-500">Click a division to view its full reports</p>
+                <h3 class="text-sm font-semibold text-gray-900 uppercase tracking-wide border-b border-gray-200 pb-2">Division Reports</h3>
+                <p class="text-sm text-gray-500 mt-2">Click a division to view its full reports</p>
             </div>
-            <a href="{{ route('weekly-updates.consolidated') }}" class="text-sm text-blue-600 hover:text-blue-800 font-medium">View all consolidated →</a>
+            <a href="{{ route('weekly-updates.consolidated') }}" class="text-xs text-blue-700 hover:underline">View all consolidated</a>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
             @foreach($divisionSummaries as $divSummary)
                 <a href="{{ route('weekly-updates.consolidated', ['division_id' => $divSummary->id]) }}"
-                   class="bg-white rounded-lg border border-gray-200 p-5 hover:border-blue-400 hover:shadow-md transition group block">
+                   class="bg-white border border-gray-200 p-5 hover:border-blue-400 transition group block">
                     <div class="flex items-center justify-between mb-3">
                         <div>
                             <h4 class="text-sm font-semibold text-gray-800 group-hover:text-blue-700">{{ $divSummary->name }}</h4>
                             <p class="text-xs text-gray-400">{{ $divSummary->code }}</p>
                         </div>
                         @if($divSummary->latest_update)
-                            <span class="text-xs px-2 py-0.5 rounded-full
+                            <span class="text-[10px] px-1.5 py-0.5 font-medium
                                 {{ $divSummary->latest_update->status === 'approved' ? 'bg-green-100 text-green-700' : '' }}
                                 {{ $divSummary->latest_update->status === 'submitted' ? 'bg-blue-100 text-blue-700' : '' }}
                                 {{ $divSummary->latest_update->status === 'rejected' ? 'bg-red-100 text-red-700' : '' }}
@@ -121,19 +120,19 @@
 
                     {{-- Quick stats --}}
                     <div class="grid grid-cols-4 gap-2 mb-3">
-                        <div class="text-center p-1.5 bg-gray-50 rounded">
+                        <div class="text-center p-1.5 bg-gray-50">
                             <p class="text-sm font-bold text-gray-800">{{ $divSummary->total_updates }}</p>
                             <p class="text-[10px] text-gray-400">Total</p>
                         </div>
-                        <div class="text-center p-1.5 bg-green-50 rounded">
+                        <div class="text-center p-1.5 bg-green-50">
                             <p class="text-sm font-bold text-green-700">{{ $divSummary->approved_updates }}</p>
                             <p class="text-[10px] text-green-500">Approved</p>
                         </div>
-                        <div class="text-center p-1.5 bg-blue-50 rounded">
+                        <div class="text-center p-1.5 bg-blue-50">
                             <p class="text-sm font-bold text-blue-700">{{ $divSummary->submitted_updates }}</p>
                             <p class="text-[10px] text-blue-500">Pending</p>
                         </div>
-                        <div class="text-center p-1.5 bg-red-50 rounded">
+                        <div class="text-center p-1.5 bg-red-50">
                             <p class="text-sm font-bold text-red-700">{{ $divSummary->rejected_updates }}</p>
                             <p class="text-[10px] text-red-500">Rejected</p>
                         </div>
@@ -165,7 +164,7 @@
                         <p class="text-xs text-gray-400 italic">No updates submitted yet.</p>
                     @endif
 
-                    <p class="text-xs text-blue-500 mt-3 group-hover:text-blue-700 font-medium">View division reports →</p>
+                    <p class="text-xs text-blue-700 mt-3 group-hover:underline font-medium">View division reports</p>
                 </a>
             @endforeach
         </div>
