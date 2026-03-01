@@ -7,6 +7,7 @@ use App\Models\Division;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 
 class UserController extends Controller
@@ -124,6 +125,7 @@ class UserController extends Controller
             'position' => 'nullable|string|max:255',
             'phone' => 'nullable|string|max:20',
             'is_active' => 'boolean',
+            'profile_photo' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             'counselor_school' => 'required_if:role,counselor|nullable|string|max:255',
             'counselor_county' => 'required_if:role,counselor|nullable|in:' . implode(',', User::COUNTIES),
             'counselor_status' => 'required_if:role,counselor|nullable|in:' . implode(',', array_keys(User::COUNSELOR_STATUSES)),
@@ -131,6 +133,7 @@ class UserController extends Controller
 
         $validated['password'] = Hash::make($validated['password']);
         $validated['is_active'] = $request->boolean('is_active', true);
+        unset($validated['profile_photo']);
 
         // Clear counselor fields if role is not counselor
         if ($validated['role'] !== User::ROLE_COUNSELOR) {
@@ -139,7 +142,16 @@ class UserController extends Controller
             $validated['counselor_status'] = null;
         }
 
-        User::create($validated);
+        $user = User::create($validated);
+
+        // Handle profile photo upload
+        if ($request->hasFile('profile_photo')) {
+            $path = $request->file('profile_photo')->store(
+                'profile-photos/' . $user->id,
+                config('filesystems.uploads', 'public')
+            );
+            $user->update(['profile_photo' => $path]);
+        }
 
         return redirect()->route('admin.users.index')
             ->with('success', 'User created successfully.');
@@ -164,6 +176,8 @@ class UserController extends Controller
             'position' => 'nullable|string|max:255',
             'phone' => 'nullable|string|max:20',
             'is_active' => 'boolean',
+            'profile_photo' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'remove_photo' => 'nullable|boolean',
             'counselor_school' => 'required_if:role,counselor|nullable|string|max:255',
             'counselor_county' => 'required_if:role,counselor|nullable|in:' . implode(',', User::COUNTIES),
             'counselor_status' => 'required_if:role,counselor|nullable|in:' . implode(',', array_keys(User::COUNSELOR_STATUSES)),
@@ -176,6 +190,7 @@ class UserController extends Controller
         }
 
         $validated['is_active'] = $request->boolean('is_active');
+        unset($validated['profile_photo'], $validated['remove_photo']);
 
         // Clear counselor fields if role is not counselor
         if ($validated['role'] !== User::ROLE_COUNSELOR) {
@@ -185,6 +200,21 @@ class UserController extends Controller
         }
 
         $user->update($validated);
+
+        // Handle profile photo
+        if ($request->boolean('remove_photo')) {
+            $user->deleteProfilePhoto();
+        } elseif ($request->hasFile('profile_photo')) {
+            // Delete old photo
+            if ($user->profile_photo) {
+                Storage::disk(config('filesystems.uploads', 'public'))->delete($user->profile_photo);
+            }
+            $path = $request->file('profile_photo')->store(
+                'profile-photos/' . $user->id,
+                config('filesystems.uploads', 'public')
+            );
+            $user->update(['profile_photo' => $path]);
+        }
 
         return redirect()->route('admin.users.index')
             ->with('success', 'User updated successfully.');

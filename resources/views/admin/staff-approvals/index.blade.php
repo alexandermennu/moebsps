@@ -46,9 +46,7 @@
                     <div class="flex items-start justify-between">
                         <div class="flex-1">
                             <div class="flex items-center gap-3 mb-2">
-                                <div class="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center text-amber-700 font-bold">
-                                    {{ strtoupper(substr($staff->name, 0, 1)) }}
-                                </div>
+                                <x-user-avatar :user="$staff" size="md" />
                                 <div>
                                     <h3 class="text-sm font-semibold text-gray-800">{{ $staff->name }}</h3>
                                     <p class="text-xs text-gray-500">{{ $staff->email }}</p>

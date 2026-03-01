@@ -23,7 +23,7 @@
             </div>
         @endif
 
-        <form method="POST" action="{{ route('staff.update', $staff) }}">
+        <form method="POST" action="{{ route('staff.update', $staff) }}" enctype="multipart/form-data">
             @csrf
             @method('PUT')
 
@@ -76,6 +76,25 @@
                     <label for="phone" class="block text-sm font-medium text-gray-700 mb-1">Phone</label>
                     <input type="text" name="phone" id="phone" value="{{ old('phone', $staff->phone) }}"
                            class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-slate-500">
+                </div>
+            </div>
+
+            {{-- Profile Photo --}}
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Profile Photo</label>
+                <div class="flex items-center gap-4">
+                    <x-user-avatar :user="$staff" size="lg" />
+                    <div class="flex-1">
+                        <input type="file" name="profile_photo" id="profile_photo" accept="image/jpeg,image/png,image/webp"
+                               class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:border file:border-gray-300 file:text-sm file:font-medium file:bg-gray-50 file:text-gray-700 hover:file:bg-gray-100">
+                        <p class="mt-1 text-xs text-gray-400">JPG, PNG or WebP. Max 2MB.</p>
+                        @if($staff->hasProfilePhoto())
+                            <label class="flex items-center gap-2 mt-2">
+                                <input type="checkbox" name="remove_photo" value="1" class="h-4 w-4 text-red-600 border-gray-300 rounded focus:ring-red-500">
+                                <span class="text-xs text-red-600">Remove current photo</span>
+                            </label>
+                        @endif
+                    </div>
                 </div>
             </div>
 

@@ -67,7 +67,12 @@
                 <tbody class="divide-y divide-gray-100">
                     @forelse($staff as $member)
                         <tr class="hover:bg-gray-50">
-                            <td class="px-5 py-3 font-medium text-gray-800">{{ $member->name }}</td>
+                            <td class="px-5 py-3">
+                                <div class="flex items-center gap-3">
+                                    <x-user-avatar :user="$member" size="xs" />
+                                    <span class="font-medium text-gray-800">{{ $member->name }}</span>
+                                </div>
+                            </td>
                             <td class="px-5 py-3 text-gray-600">{{ $member->email }}</td>
                             <td class="px-5 py-3">
                                 <span class="text-[10px] px-1.5 py-0.5 font-medium

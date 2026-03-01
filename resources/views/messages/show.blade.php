@@ -28,9 +28,7 @@
         <div class="bg-white border border-gray-200 p-5 {{ $message->sender_id === auth()->id() ? 'border-l-4 border-l-slate-400' : 'border-l-4 border-l-blue-400' }}">
             <div class="flex items-center justify-between mb-3">
                 <div class="flex items-center gap-3">
-                    <div class="w-8 h-8 bg-slate-200 flex items-center justify-center">
-                        <span class="text-xs font-medium text-slate-600">{{ strtoupper(substr($message->sender->name, 0, 1)) }}</span>
-                    </div>
+                    <x-user-avatar :user="$message->sender" size="sm" />
                     <div>
                         <p class="text-sm font-medium text-gray-800">{{ $message->sender->name }}</p>
                         <p class="text-xs text-gray-400">{{ $message->sender->role_label }}</p>
@@ -46,9 +44,7 @@
             <div class="bg-white border border-gray-200 p-5 {{ $reply->sender_id === auth()->id() ? 'border-l-4 border-l-slate-400' : 'border-l-4 border-l-blue-400' }}">
                 <div class="flex items-center justify-between mb-3">
                     <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 bg-slate-200 flex items-center justify-center">
-                            <span class="text-xs font-medium text-slate-600">{{ strtoupper(substr($reply->sender->name, 0, 1)) }}</span>
-                        </div>
+                        <x-user-avatar :user="$reply->sender" size="sm" />
                         <div>
                             <p class="text-sm font-medium text-gray-800">{{ $reply->sender->name }}</p>
                             <p class="text-xs text-gray-400">{{ $reply->sender->role_label }}</p>

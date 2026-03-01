@@ -27,7 +27,7 @@
             </div>
         @endif
 
-        <form method="POST" action="{{ route('staff.store') }}">
+        <form method="POST" action="{{ route('staff.store') }}" enctype="multipart/form-data">
             @csrf
 
             <div class="mb-4">
@@ -80,6 +80,14 @@
                     <input type="text" name="phone" id="phone" value="{{ old('phone') }}"
                            class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-slate-500">
                 </div>
+            </div>
+
+            {{-- Profile Photo --}}
+            <div class="mb-4">
+                <label for="profile_photo" class="block text-sm font-medium text-gray-700 mb-1">Profile Photo</label>
+                <input type="file" name="profile_photo" id="profile_photo" accept="image/jpeg,image/png,image/webp"
+                       class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:border file:border-gray-300 file:text-sm file:font-medium file:bg-gray-50 file:text-gray-700 hover:file:bg-gray-100">
+                <p class="mt-1 text-xs text-gray-400">JPG, PNG or WebP. Max 2MB.</p>
             </div>
 
             {{-- Counselor-specific Fields --}}

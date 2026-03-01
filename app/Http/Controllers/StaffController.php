@@ -6,6 +6,7 @@ use App\Models\BureauNotification;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 
 class StaffController extends Controller
@@ -84,6 +85,7 @@ class StaffController extends Controller
             'role' => ['required', Rule::in($allowedRoles)],
             'position' => 'nullable|string|max:255',
             'phone' => 'nullable|string|max:20',
+            'profile_photo' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             'counselor_school' => 'required_if:role,counselor|nullable|string|max:255',
             'counselor_county' => 'required_if:role,counselor|nullable|in:' . implode(',', User::COUNTIES),
             'counselor_status' => 'required_if:role,counselor|nullable|in:' . implode(',', array_keys(User::COUNSELOR_STATUSES)),
@@ -104,6 +106,15 @@ class StaffController extends Controller
             'counselor_county' => $validated['role'] === User::ROLE_COUNSELOR ? ($validated['counselor_county'] ?? null) : null,
             'counselor_status' => $validated['role'] === User::ROLE_COUNSELOR ? ($validated['counselor_status'] ?? 'active') : null,
         ]);
+
+        // Handle profile photo upload
+        if ($request->hasFile('profile_photo')) {
+            $path = $request->file('profile_photo')->store(
+                'profile-photos/' . $newStaff->id,
+                config('filesystems.uploads', 'public')
+            );
+            $newStaff->update(['profile_photo' => $path]);
+        }
 
         // Notify full-access users about the pending approval
         $reviewers = User::whereIn('role', [
@@ -172,6 +183,8 @@ class StaffController extends Controller
             'role' => ['required', Rule::in($allowedRoles)],
             'position' => 'nullable|string|max:255',
             'phone' => 'nullable|string|max:20',
+            'profile_photo' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'remove_photo' => 'nullable|boolean',
             'counselor_school' => 'required_if:role,counselor|nullable|string|max:255',
             'counselor_county' => 'required_if:role,counselor|nullable|in:' . implode(',', User::COUNTIES),
             'counselor_status' => 'required_if:role,counselor|nullable|in:' . implode(',', array_keys(User::COUNSELOR_STATUSES)),
@@ -193,6 +206,20 @@ class StaffController extends Controller
         }
 
         $staff_user->update($data);
+
+        // Handle profile photo
+        if ($request->boolean('remove_photo')) {
+            $staff_user->deleteProfilePhoto();
+        } elseif ($request->hasFile('profile_photo')) {
+            if ($staff_user->profile_photo) {
+                Storage::disk(config('filesystems.uploads', 'public'))->delete($staff_user->profile_photo);
+            }
+            $path = $request->file('profile_photo')->store(
+                'profile-photos/' . $staff_user->id,
+                config('filesystems.uploads', 'public')
+            );
+            $staff_user->update(['profile_photo' => $path]);
+        }
 
         return redirect()->route('staff.index')
             ->with('success', 'Staff member updated successfully.');

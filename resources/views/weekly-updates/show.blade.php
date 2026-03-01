@@ -163,9 +163,7 @@
                                                 @foreach($activity->comments as $comment)
                                                     <div class="bg-white border border-gray-200 p-3">
                                                         <div class="flex items-center gap-2 mb-1">
-                                                            <div class="w-6 h-6 bg-slate-200 flex items-center justify-center text-[10px] font-bold text-slate-600">
-                                                                {{ strtoupper(substr($comment->user->name, 0, 1)) }}
-                                                            </div>
+                                                            <x-user-avatar :user="$comment->user" size="xs" />
                                                             <span class="text-xs font-medium text-gray-800">{{ $comment->user->name }}</span>
                                                             <span class="text-xs text-gray-400">{{ $comment->user->role_label }}</span>
                                                             <span class="text-xs text-gray-400 ml-auto">{{ $comment->created_at->diffForHumans() }}</span>

@@ -77,7 +77,12 @@
                     @forelse($counselors as $c)
                         <tr class="hover:bg-blue-50/30">
                             <td class="px-5 py-3 text-gray-400 text-xs">{{ $counselors->firstItem() + $loop->index }}</td>
-                            <td class="px-5 py-3 font-medium text-gray-800">{{ $c->name }}</td>
+                            <td class="px-5 py-3">
+                                <div class="flex items-center gap-3">
+                                    <x-user-avatar :user="$c" size="xs" />
+                                    <span class="font-medium text-gray-800">{{ $c->name }}</span>
+                                </div>
+                            </td>
                             <td class="px-5 py-3 text-gray-600">{{ $c->email }}</td>
                             <td class="px-5 py-3 text-gray-700">{{ $c->counselor_school ?? '—' }}</td>
                             <td class="px-5 py-3 text-gray-700">{{ $c->counselor_county ?? '—' }}</td>

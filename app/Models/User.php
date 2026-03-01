@@ -9,8 +9,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Storage;
 
-#[Fillable(['name', 'email', 'password', 'role', 'division_id', 'position', 'phone', 'is_active', 'approval_status', 'created_by_user_id', 'approved_at', 'approved_by', 'rejection_reason', 'counselor_school', 'counselor_county', 'counselor_status'])]
+#[Fillable(['name', 'email', 'password', 'role', 'division_id', 'position', 'phone', 'profile_photo', 'is_active', 'approval_status', 'created_by_user_id', 'approved_at', 'approved_by', 'rejection_reason', 'counselor_school', 'counselor_county', 'counselor_status'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -152,6 +153,51 @@ class User extends Authenticatable
     public function scopePendingApproval($query)
     {
         return $query->where('approval_status', self::APPROVAL_PENDING);
+    }
+
+    // ── Profile Photo Helpers ──────────────────────────────
+
+    /**
+     * Get the URL for the user's profile photo.
+     */
+    public function getProfilePhotoUrlAttribute(): ?string
+    {
+        if (!$this->profile_photo) {
+            return null;
+        }
+
+        return Storage::disk(config('filesystems.uploads', 'public'))->url($this->profile_photo);
+    }
+
+    /**
+     * Get the user's initials (first letter of first and last name).
+     */
+    public function getInitialsAttribute(): string
+    {
+        $parts = explode(' ', trim($this->name));
+        if (count($parts) >= 2) {
+            return strtoupper(substr($parts[0], 0, 1) . substr(end($parts), 0, 1));
+        }
+        return strtoupper(substr($this->name, 0, 1));
+    }
+
+    /**
+     * Check if user has a profile photo.
+     */
+    public function hasProfilePhoto(): bool
+    {
+        return !empty($this->profile_photo);
+    }
+
+    /**
+     * Delete the user's profile photo from storage.
+     */
+    public function deleteProfilePhoto(): void
+    {
+        if ($this->profile_photo) {
+            Storage::disk(config('filesystems.uploads', 'public'))->delete($this->profile_photo);
+            $this->update(['profile_photo' => null]);
+        }
     }
 
     // ── Role Helpers ───────────────────────────────────────

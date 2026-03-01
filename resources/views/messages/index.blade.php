@@ -38,11 +38,7 @@
                         </div>
 
                         {{-- Avatar --}}
-                        <div class="w-9 h-9 bg-slate-200 flex items-center justify-center flex-shrink-0">
-                            <span class="text-sm font-medium text-slate-600">
-                                {{ strtoupper(substr($folder === 'inbox' ? $message->sender->name : $message->receiver->name, 0, 1)) }}
-                            </span>
-                        </div>
+                        <x-user-avatar :user="$folder === 'inbox' ? $message->sender : $message->receiver" size="sm" />
 
                         {{-- Content --}}
                         <div class="flex-1 min-w-0">

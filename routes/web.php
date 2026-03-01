@@ -18,6 +18,7 @@ use App\Http\Controllers\SrgbvCaseController;
 use App\Http\Controllers\SrgbvDashboardController;
 use App\Http\Controllers\CasesReportController;
 use App\Http\Controllers\TrackedActivityController;
+use App\Http\Controllers\ProfileController;
 
 /*
 |--------------------------------------------------------------------------
@@ -43,6 +44,13 @@ Route::middleware(['auth', 'active'])->group(function () {
 
     // Live Polling
     Route::get('/live/poll', [LivePollController::class, 'poll'])->name('live.poll');
+
+    // Profile
+    Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
+    Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::post('/profile/photo', [ProfileController::class, 'updatePhoto'])->name('profile.photo.update');
+    Route::delete('/profile/photo', [ProfileController::class, 'removePhoto'])->name('profile.photo.remove');
 
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');

@@ -44,11 +44,14 @@
                         </span>
                     </a>
                     {{-- User Menu --}}
-                    <div class="flex items-center gap-2">
-                        <div class="text-right">
-                            <p class="text-sm font-medium text-gray-700">{{ auth()->user()->name }}</p>
-                            <p class="text-xs text-gray-500">{{ auth()->user()->role_label }}</p>
-                        </div>
+                    <div class="flex items-center gap-3">
+                        <a href="{{ route('profile.show') }}" class="flex items-center gap-2 hover:opacity-80" title="My Profile">
+                            <x-user-avatar :user="auth()->user()" size="sm" />
+                            <div class="text-right">
+                                <p class="text-sm font-medium text-gray-700">{{ auth()->user()->name }}</p>
+                                <p class="text-xs text-gray-500">{{ auth()->user()->role_label }}</p>
+                            </div>
+                        </a>
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
                             <button type="submit" class="text-sm text-gray-500 hover:text-red-600 ml-2" title="Logout">

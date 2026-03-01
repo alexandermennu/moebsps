@@ -160,14 +160,12 @@
 
     {{-- User Info at Bottom --}}
     <div class="px-4 py-3 border-t border-slate-700">
-        <div class="flex items-center gap-3">
-            <div class="w-8 h-8 bg-slate-600 rounded-full flex items-center justify-center text-sm font-bold">
-                {{ strtoupper(substr($user->name, 0, 1)) }}
-            </div>
+        <a href="{{ route('profile.show') }}" class="flex items-center gap-3 group">
+            <x-user-avatar :user="$user" size="sm" class="ring-2 ring-slate-600 group-hover:ring-slate-400" />
             <div class="flex-1 min-w-0">
-                <p class="text-sm font-medium truncate">{{ $user->name }}</p>
+                <p class="text-sm font-medium truncate group-hover:text-slate-200">{{ $user->name }}</p>
                 <p class="text-xs text-slate-400 truncate">{{ $user->division?->name ?? $user->role_label }}</p>
             </div>
-        </div>
+        </a>
     </div>
 </aside>

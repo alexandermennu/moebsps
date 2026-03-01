@@ -52,7 +52,12 @@
                 <tbody class="divide-y divide-gray-100">
                     @forelse($officeUsers as $u)
                         <tr class="hover:bg-amber-50/30">
-                            <td class="px-5 py-3 font-medium text-gray-800">{{ $u->name }}</td>
+                            <td class="px-5 py-3">
+                                <div class="flex items-center gap-3">
+                                    <x-user-avatar :user="$u" size="xs" />
+                                    <span class="font-medium text-gray-800">{{ $u->name }}</span>
+                                </div>
+                            </td>
                             <td class="px-5 py-3 text-gray-600">{{ $u->email }}</td>
                             <td class="px-5 py-3">
                                 <span class="text-[10px] px-1.5 py-0.5 font-medium bg-amber-100 text-amber-700">{{ $u->role_label }}</span>
@@ -120,7 +125,12 @@
                     <tbody class="divide-y divide-gray-100">
                         @foreach($staff as $u)
                         <tr class="hover:bg-gray-50">
-                            <td class="px-5 py-3 font-medium text-gray-800">{{ $u->name }}</td>
+                            <td class="px-5 py-3">
+                                <div class="flex items-center gap-3">
+                                    <x-user-avatar :user="$u" size="xs" />
+                                    <span class="font-medium text-gray-800">{{ $u->name }}</span>
+                                </div>
+                            </td>
                             <td class="px-5 py-3 text-gray-600">{{ $u->email }}</td>
                             <td class="px-5 py-3">
                                 <span class="text-[10px] px-1.5 py-0.5 font-medium bg-slate-100 text-slate-700">{{ $u->role_label }}</span>
@@ -172,7 +182,12 @@
                 <tbody class="divide-y divide-gray-100">
                     @foreach($noDivisionUsers as $u)
                     <tr class="hover:bg-gray-50">
-                        <td class="px-5 py-3 font-medium text-gray-800">{{ $u->name }}</td>
+                        <td class="px-5 py-3">
+                            <div class="flex items-center gap-3">
+                                <x-user-avatar :user="$u" size="xs" />
+                                <span class="font-medium text-gray-800">{{ $u->name }}</span>
+                            </div>
+                        </td>
                         <td class="px-5 py-3 text-gray-600">{{ $u->email }}</td>
                         <td class="px-5 py-3">
                             <span class="text-[10px] px-1.5 py-0.5 font-medium bg-slate-100 text-slate-700">{{ $u->role_label }}</span>
