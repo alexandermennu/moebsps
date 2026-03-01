@@ -166,7 +166,15 @@ class User extends Authenticatable
             return null;
         }
 
-        return Storage::disk(config('filesystems.uploads', 'public'))->url($this->profile_photo);
+        $disk = config('filesystems.uploads', 'public');
+        $storage = Storage::disk($disk);
+
+        // Use signed temporary URLs for S3 (private buckets)
+        if (config("filesystems.disks.{$disk}.driver") === 's3') {
+            return $storage->temporaryUrl($this->profile_photo, now()->addHour());
+        }
+
+        return $storage->url($this->profile_photo);
     }
 
     /**

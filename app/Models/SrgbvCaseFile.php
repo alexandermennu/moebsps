@@ -51,7 +51,15 @@ class SrgbvCaseFile extends Model
 
     public function getFileUrl(): string
     {
-        return Storage::disk(config('filesystems.uploads', 'public'))->url($this->file_path);
+        $disk = config('filesystems.uploads', 'public');
+        $storage = Storage::disk($disk);
+
+        // Use signed temporary URLs for S3 (private buckets)
+        if (config("filesystems.disks.{$disk}.driver") === 's3') {
+            return $storage->temporaryUrl($this->file_path, now()->addHour());
+        }
+
+        return $storage->url($this->file_path);
     }
 
     public function getCategoryLabelAttribute(): string
