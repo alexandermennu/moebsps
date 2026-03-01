@@ -25,7 +25,7 @@ return [
     |
     */
 
-    'uploads' => env('UPLOADS_DISK', 'public'),
+    'uploads' => env('UPLOADS_DISK', env('FILESYSTEM_DISK', 'public')),
 
     /*
     |--------------------------------------------------------------------------
