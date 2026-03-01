@@ -195,7 +195,7 @@ class SrgbvCaseController extends Controller
         // Handle file uploads
         if ($request->hasFile('files')) {
             foreach ($request->file('files') as $index => $file) {
-                $path = $file->store('srgbv-cases/' . $case->id, 'public');
+                $path = $file->store('srgbv-cases/' . $case->id, config('filesystems.uploads', 'public'));
                 SrgbvCaseFile::create([
                     'srgbv_case_id' => $case->id,
                     'uploaded_by' => $user->id,
@@ -438,7 +438,7 @@ class SrgbvCaseController extends Controller
 
         if ($request->hasFile('files')) {
             foreach ($request->file('files') as $file) {
-                $path = $file->store('srgbv-cases/' . $srgbvCase->id, 'public');
+                $path = $file->store('srgbv-cases/' . $srgbvCase->id, config('filesystems.uploads', 'public'));
                 SrgbvCaseFile::create([
                     'srgbv_case_id' => $srgbvCase->id,
                     'uploaded_by' => $user->id,
@@ -464,7 +464,7 @@ class SrgbvCaseController extends Controller
         $user = auth()->user();
         if (!$this->canManageCases($user) && $file->uploaded_by !== $user->id) abort(403);
 
-        Storage::disk('public')->delete($file->file_path);
+        Storage::disk(config('filesystems.uploads', 'public'))->delete($file->file_path);
         $file->delete();
 
         return redirect()->route('srgbv.cases.show', $srgbvCase)

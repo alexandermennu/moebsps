@@ -51,7 +51,7 @@ class SrgbvCaseFile extends Model
 
     public function getFileUrl(): string
     {
-        return Storage::url($this->file_path);
+        return Storage::disk(config('filesystems.uploads', 'public'))->url($this->file_path);
     }
 
     public function getCategoryLabelAttribute(): string
