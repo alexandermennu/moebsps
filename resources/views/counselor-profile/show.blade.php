@@ -22,9 +22,9 @@
                 @if($counselor->hasProfilePhoto())
                     <img src="{{ $counselor->profile_photo_url }}"
                          alt="{{ $counselor->name }}"
-                         class="object-cover h-full" style="width: 200px; min-height: 200px;">
+                         class="object-cover h-full" style="width: 240px; min-height: 240px;">
                 @else
-                    <div class="flex items-center justify-center text-6xl font-bold text-gray-400 bg-gray-100 h-full" style="width: 200px; min-height: 200px;">
+                    <div class="flex items-center justify-center text-6xl font-bold text-gray-400 bg-gray-100 h-full" style="width: 240px; min-height: 240px;">
                         {{ $counselor->initials }}
                     </div>
                 @endif
@@ -69,11 +69,11 @@
                         <p class="text-gray-900">{{ $counselor->email }}</p>
                     </div>
                     <div>
-                        <span class="text-gray-400 text-xs font-medium uppercase">School</span>
+                        <span class="text-gray-400 text-xs font-medium uppercase">School of Assignment</span>
                         <p class="text-gray-900 font-medium">{{ $counselor->counselor_school ?? '—' }}</p>
                     </div>
                     <div>
-                        <span class="text-gray-400 text-xs font-medium uppercase">County</span>
+                        <span class="text-gray-400 text-xs font-medium uppercase">County of Assignment</span>
                         <p class="text-gray-900">{{ $counselor->counselor_county ?? '—' }}</p>
                     </div>
                     <div>
@@ -81,7 +81,7 @@
                         <p class="text-gray-900">{{ $counselor->phone ?? '—' }}</p>
                     </div>
                     <div>
-                        <span class="text-gray-400 text-xs font-medium uppercase">Qualification</span>
+                        <span class="text-gray-400 text-xs font-medium uppercase">Highest Qualification</span>
                         <p class="text-gray-900">{{ $counselor->counselor_qualification_label }}</p>
                     </div>
                 </div>
