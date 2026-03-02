@@ -183,13 +183,39 @@
     document.addEventListener('DOMContentLoaded', function () {
         const roleSelect = document.getElementById('role');
         const counselorFields = document.getElementById('counselor-fields');
+        const divisionSelect = document.getElementById('division_id');
+
+        // Find the CGPC division option value
+        let cgpcOptionValue = null;
+        for (const opt of divisionSelect.options) {
+            if (opt.text.includes('Counseling') || opt.text.includes('CGPC')) {
+                cgpcOptionValue = opt.value;
+                break;
+            }
+        }
 
         function toggleCounselorFields() {
-            counselorFields.style.display = roleSelect.value === 'counselor' ? 'block' : 'none';
+            const isCounselor = roleSelect.value === 'counselor';
+            counselorFields.style.display = isCounselor ? 'block' : 'none';
+
+            // Lock division to CGPC for counselors
+            if (isCounselor && cgpcOptionValue) {
+                divisionSelect.value = cgpcOptionValue;
+                divisionSelect.disabled = true;
+            } else {
+                divisionSelect.disabled = false;
+            }
         }
 
         roleSelect.addEventListener('change', toggleCounselorFields);
         toggleCounselorFields();
+
+        // Ensure disabled select still submits — add hidden input
+        divisionSelect.closest('form').addEventListener('submit', function () {
+            if (divisionSelect.disabled) {
+                divisionSelect.disabled = false;
+            }
+        });
     });
 </script>
 @endsection

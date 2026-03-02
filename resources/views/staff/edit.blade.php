@@ -62,7 +62,7 @@
                 </select>
                 <p class="mt-1 text-xs text-gray-400">
                     <strong>Supervisor / Coordinator</strong> — Can view division activities (read-only).<br>
-                    <strong>Counselor</strong> — Available for CGPC division only.
+                    <strong>Counselor</strong> — School counselor (automatically assigned to CGPC).
                 </p>
             </div>
 

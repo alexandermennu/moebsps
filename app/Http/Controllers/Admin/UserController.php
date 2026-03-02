@@ -152,6 +152,12 @@ class UserController extends Controller
             $validated['counselor_training'] = null;
             $validated['counselor_school_phone'] = null;
             $validated['counselor_appointed_at'] = null;
+        } else {
+            // Counselors must always belong to CGPC division
+            $cgpc = Division::where('code', 'CGPC')->first();
+            if ($cgpc) {
+                $validated['division_id'] = $cgpc->id;
+            }
         }
 
         $user = User::create($validated);
@@ -221,6 +227,12 @@ class UserController extends Controller
             $validated['counselor_training'] = null;
             $validated['counselor_school_phone'] = null;
             $validated['counselor_appointed_at'] = null;
+        } else {
+            // Counselors must always belong to CGPC division
+            $cgpc = Division::where('code', 'CGPC')->first();
+            if ($cgpc) {
+                $validated['division_id'] = $cgpc->id;
+            }
         }
 
         $user->update($validated);

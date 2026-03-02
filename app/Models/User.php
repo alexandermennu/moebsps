@@ -394,7 +394,8 @@ class User extends Authenticatable
 
     /**
      * Roles a director is allowed to assign to staff they create.
-     * Counselor role is only available to the CGPC (Counseling) division.
+     * CGPC (Counseling) division can assign Supervisors, Coordinators, and Counselors.
+     * Other divisions can only create Supervisors and Coordinators.
      * Record Clerk and Secretary are only assignable by full-access users (admin forms).
      */
     public static function directorAssignableRoles(?int $divisionId = null): array
