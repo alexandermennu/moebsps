@@ -22,9 +22,9 @@
                 @if($counselor->hasProfilePhoto())
                     <img src="{{ $counselor->profile_photo_url }}"
                          alt="{{ $counselor->name }}"
-                         class="object-cover h-full" style="width: 240px; min-height: 240px;">
+                         class="object-cover h-full" style="width: 260px; min-height: 200px;">
                 @else
-                    <div class="flex items-center justify-center text-6xl font-bold text-gray-400 bg-gray-100 h-full" style="width: 240px; min-height: 240px;">
+                    <div class="flex items-center justify-center text-6xl font-bold text-gray-400 bg-gray-100 h-full" style="width: 260px; min-height: 200px;">
                         {{ $counselor->initials }}
                     </div>
                 @endif
