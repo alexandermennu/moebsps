@@ -508,4 +508,29 @@ class SrgbvCaseController extends Controller
         return redirect()->route('srgbv.cases.show', $srgbvCase)
             ->with('success', 'Case status updated.');
     }
+
+    /**
+     * Delete a case and all associated files, notes.
+     */
+    public function destroy(SrgbvCase $srgbvCase)
+    {
+        $user = auth()->user();
+
+        if (!$this->canManageCases($user)) {
+            abort(403);
+        }
+
+        $caseNumber = $srgbvCase->case_number;
+
+        // Delete all associated files from storage
+        foreach ($srgbvCase->files as $file) {
+            Storage::disk(config('filesystems.uploads', 'public'))->delete($file->file_path);
+        }
+
+        // Delete case (notes and files cascade via foreign key)
+        $srgbvCase->delete();
+
+        return redirect()->route('srgbv.cases.index')
+            ->with('success', "Case {$caseNumber} has been permanently deleted.");
+    }
 }

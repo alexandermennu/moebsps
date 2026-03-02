@@ -125,6 +125,7 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::post('/cases/{srgbvCase}/files', [SrgbvCaseController::class, 'uploadFiles'])->name('cases.files');
         Route::delete('/cases/{srgbvCase}/files/{file}', [SrgbvCaseController::class, 'deleteFile'])->name('cases.files.delete');
         Route::patch('/cases/{srgbvCase}/status', [SrgbvCaseController::class, 'updateStatus'])->name('cases.status');
+        Route::delete('/cases/{srgbvCase}', [SrgbvCaseController::class, 'destroy'])->name('cases.destroy');
     });
 
     /*

@@ -13,6 +13,14 @@
                 <a href="{{ route('srgbv.cases.edit', $case) }}" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50">
                     Edit Case
                 </a>
+                <form method="POST" action="{{ route('srgbv.cases.destroy', $case) }}"
+                      onsubmit="return confirm('Are you sure you want to permanently delete case {{ $case->case_number }}? This will remove all notes, files, and cannot be undone.')">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="px-4 py-2 bg-white border border-red-300 text-red-600 text-sm font-medium hover:bg-red-50">
+                        Delete Case
+                    </button>
+                </form>
             @endif
         </div>
     </div>
