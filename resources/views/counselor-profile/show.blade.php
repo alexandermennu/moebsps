@@ -399,7 +399,7 @@
             </h2>
         </div>
         <div class="p-5">
-            {{-- Qualification Summary Cards --}}
+            {{-- Summary Cards --}}
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-5">
                 <div class="bg-gray-50 border border-gray-100 p-4 text-center">
                     <p class="text-xs text-gray-500 font-medium uppercase">Highest Education</p>
@@ -415,41 +415,66 @@
                 </div>
             </div>
 
-            {{-- Primary Education Details --}}
-            @php $eduRecord = $counselor->counselorEducation->first(); @endphp
-            @if($eduRecord)
-                <div class="bg-blue-50 border border-blue-200 p-4 mb-5">
-                    <h3 class="text-xs font-semibold text-blue-800 uppercase tracking-wide mb-3 flex items-center gap-1.5">
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222"/></svg>
-                        Education — {{ $eduRecord->degree_level_label }}
-                    </h3>
-                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
-                        <div>
-                            <span class="text-blue-600 text-xs font-medium">Institution</span>
-                            <p class="text-gray-900 font-medium">{{ $eduRecord->institution }}</p>
-                        </div>
-                        <div>
-                            <span class="text-blue-600 text-xs font-medium">Program</span>
-                            <p class="text-gray-900">{{ $eduRecord->program ?: '—' }}</p>
-                        </div>
-                        <div>
-                            <span class="text-blue-600 text-xs font-medium">Period</span>
-                            <p class="text-gray-900">{{ $eduRecord->year_range }}</p>
-                        </div>
-                        @if($eduRecord->country)
-                            <div>
-                                <span class="text-blue-600 text-xs font-medium">Country</span>
-                                <p class="text-gray-900">{{ $eduRecord->country }}</p>
+            {{-- All Qualifications --}}
+            @if($counselor->counselorEducation->count() > 0)
+                <div class="mb-5">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-xs font-semibold text-blue-800 uppercase tracking-wide flex items-center gap-1.5">
+                            <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222"/></svg>
+                            Qualifications
+                        </h3>
+                        <span class="text-xs text-gray-400">{{ $counselor->counselorEducation->count() }} qualification(s)</span>
+                    </div>
+
+                    <div class="divide-y divide-gray-100">
+                        @foreach($counselor->counselorEducation as $edu)
+                            <div class="py-3">
+                                <div class="flex items-start gap-3">
+                                    <div class="w-9 h-9 bg-blue-50 border border-blue-200 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                        <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222"/></svg>
+                                    </div>
+                                    <div class="flex-1">
+                                        <p class="text-sm font-semibold text-gray-900">{{ $edu->degree_level_label }}</p>
+                                        <p class="text-xs text-gray-600 mt-0.5">{{ $edu->institution }}</p>
+                                        <div class="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1.5 text-xs text-gray-500">
+                                            @if($edu->program)
+                                                <span><strong>Program:</strong> {{ $edu->program }}</span>
+                                            @endif
+                                            @if($edu->year_obtained)
+                                                <span><strong>Year:</strong> {{ $edu->year_obtained }}</span>
+                                            @endif
+                                            @if($edu->country)
+                                                <span><strong>Country:</strong> {{ $edu->country }}</span>
+                                            @endif
+                                            @if($edu->year_started || $edu->year_graduated)
+                                                <span><strong>Period:</strong> {{ $edu->year_range }}</span>
+                                            @endif
+                                        </div>
+                                        @if($edu->notes)
+                                            <p class="text-xs text-gray-500 mt-1.5 italic">{{ $edu->notes }}</p>
+                                        @endif
+                                        {{-- Attached document --}}
+                                        @if($edu->hasDocument())
+                                            <div class="mt-2 flex items-center gap-2 text-xs">
+                                                <svg class="w-3.5 h-3.5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
+                                                <a href="{{ $edu->getDocumentUrl() }}" target="_blank" class="text-blue-700 hover:underline font-medium">{{ $edu->document_name }}</a>
+                                                <span class="text-gray-400">({{ $edu->document_size_formatted }})</span>
+                                                <span class="px-1.5 py-0.5 bg-green-50 text-green-700 font-medium text-xs">Document Attached</span>
+                                            </div>
+                                        @else
+                                            <div class="mt-2 flex items-center gap-1.5 text-xs text-gray-400">
+                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
+                                                <span class="px-1.5 py-0.5 bg-gray-50 text-gray-500 font-medium">No Document</span>
+                                            </div>
+                                        @endif
+                                    </div>
+                                </div>
                             </div>
-                        @endif
-                        @if($eduRecord->notes)
-                            <div class="col-span-2 sm:col-span-4">
-                                <span class="text-blue-600 text-xs font-medium">Notes</span>
-                                <p class="text-gray-700 text-xs">{{ $eduRecord->notes }}</p>
-                            </div>
-                        @endif
+                        @endforeach
                     </div>
                 </div>
+            @else
+                <p class="text-sm text-gray-400 italic mb-5">No qualifications added yet.</p>
             @endif
 
             {{-- Additional Certificates & Achievements --}}

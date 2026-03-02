@@ -85,19 +85,10 @@ class CounselorProfileController extends Controller
             'counselor_num_boys'             => 'nullable|integer|min:0|max:50000',
             'counselor_num_girls'            => 'nullable|integer|min:0|max:50000',
 
-            // Section 3: Education, Experience & Qualifications
-            'counselor_qualification'        => 'nullable|in:' . implode(',', array_keys(User::COUNSELOR_QUALIFICATIONS)),
+            // Section 3: Experience & Specialization
             'counselor_specialization'       => 'nullable|in:' . implode(',', array_keys(User::COUNSELOR_SPECIALIZATIONS)),
             'counselor_years_experience'     => 'nullable|integer|min:0|max:50',
             'counselor_training'             => 'nullable|string|max:2000',
-
-            // Primary education details
-            'edu_institution'   => 'nullable|string|max:255',
-            'edu_program'       => 'nullable|string|max:255',
-            'edu_year_started'  => 'nullable|digits:4|integer|min:1950|max:' . (date('Y') + 5),
-            'edu_year_graduated'=> 'nullable|digits:4|integer|min:1950|max:' . (date('Y') + 5),
-            'edu_country'       => 'nullable|string|max:100',
-            'edu_notes'         => 'nullable|string|max:1000',
         ]);
 
         $user->update(collect($validated)->only([
@@ -110,25 +101,9 @@ class CounselorProfileController extends Controller
             'counselor_school_address', 'counselor_school_principal',
             'counselor_school_level', 'counselor_school_type',
             'counselor_school_population', 'counselor_num_boys', 'counselor_num_girls',
-            // Qualifications
-            'counselor_qualification', 'counselor_specialization',
-            'counselor_years_experience', 'counselor_training',
+            // Experience & Specialization
+            'counselor_specialization', 'counselor_years_experience', 'counselor_training',
         ])->toArray());
-
-        // Save / update primary education record
-        if ($validated['counselor_qualification'] && $validated['edu_institution']) {
-            $user->counselorEducation()->updateOrCreate(
-                ['degree_level' => $validated['counselor_qualification']],
-                [
-                    'institution'    => $validated['edu_institution'],
-                    'program'        => $validated['edu_program'] ?? '',
-                    'year_started'   => $validated['edu_year_started'] ?? null,
-                    'year_graduated' => $validated['edu_year_graduated'] ?? null,
-                    'country'        => $validated['edu_country'] ?? null,
-                    'notes'          => $validated['edu_notes'] ?? null,
-                ]
-            );
-        }
 
         // Set profile status to pending review for admin approval
         $user->update(['counselor_profile_status' => User::PROFILE_PENDING_REVIEW]);
@@ -232,13 +207,13 @@ class CounselorProfileController extends Controller
             'counselor_num_girls'            => 'nullable|integer|min:0|max:50000',
 
             // Education & Qualifications
-            'counselor_qualification'        => 'nullable|in:' . implode(',', array_keys(User::COUNSELOR_QUALIFICATIONS)),
             'counselor_specialization'       => 'nullable|in:' . implode(',', array_keys(User::COUNSELOR_SPECIALIZATIONS)),
             'counselor_years_experience'     => 'nullable|integer|min:0|max:50',
             'counselor_training'             => 'nullable|string|max:2000',
         ]);
 
-        $counselor->update($validated);
+        // Remove counselor_qualification from admin update – it's now auto-synced from education records
+        $counselor->update(collect($validated)->except('counselor_qualification')->toArray());
 
         return redirect()->route('counselor-profile.show', $counselor)
             ->with('success', 'Counselor profile updated successfully.');
@@ -339,6 +314,112 @@ class CounselorProfileController extends Controller
 
         return redirect()->route('counselor-profile.show', $counselor)
             ->with('success', 'Document uploaded successfully.');
+    }
+
+    // ─────────────────────────────────────────────────────────
+    // Qualification / Education CRUD  (self-service)
+    // ─────────────────────────────────────────────────────────
+
+    /**
+     * Store a new qualification (education record) for the authenticated counselor.
+     */
+    public function storeQualification(Request $request)
+    {
+        $user = auth()->user();
+
+        if (!$user->isCounselor()) {
+            abort(403);
+        }
+
+        $validated = $request->validate([
+            'degree_level'              => 'required|in:' . implode(',', array_keys(User::COUNSELOR_QUALIFICATIONS)),
+            'institution'               => 'required|string|max:255',
+            'program'                   => 'nullable|string|max:255',
+            'year_obtained'             => 'required|digits:4|integer|min:1950|max:' . (date('Y') + 5),
+            'country'                   => 'nullable|string|max:100',
+            'notes'                     => 'nullable|string|max:1000',
+            'qualification_document'    => 'nullable|file|mimes:pdf,jpg,jpeg,png,webp,doc,docx|max:5120',
+        ]);
+
+        // Handle optional document upload
+        $documentData = [];
+        if ($request->hasFile('qualification_document')) {
+            $file = $request->file('qualification_document');
+            $path = $file->store(
+                'counselor-qualifications/' . $user->id,
+                config('filesystems.uploads', 'public')
+            );
+            $documentData = [
+                'document_path' => $path,
+                'document_name' => $file->getClientOriginalName(),
+                'document_type' => $file->getMimeType(),
+                'document_size' => $file->getSize(),
+            ];
+        }
+
+        $user->counselorEducation()->create(array_merge(
+            collect($validated)->except('qualification_document')->toArray(),
+            $documentData
+        ));
+
+        // Sync highest qualification to user record
+        $this->syncHighestQualification($user);
+
+        // Trigger pending review
+        $user->update(['counselor_profile_status' => User::PROFILE_PENDING_REVIEW]);
+
+        return redirect()->route('counselor-profile.edit')
+            ->with('success', 'Qualification added and submitted for review.');
+    }
+
+    /**
+     * Delete a qualification (education record).
+     */
+    public function deleteQualification(CounselorEducation $education)
+    {
+        $user = auth()->user();
+
+        if ($education->user_id !== $user->id && !$user->hasFullAccess()) {
+            abort(403);
+        }
+
+        $owner = User::find($education->user_id);
+
+        // Delete associated document file from storage if present
+        if ($education->hasDocument()) {
+            Storage::disk(config('filesystems.uploads', 'public'))->delete($education->document_path);
+        }
+
+        $education->delete();
+
+        // Re-sync highest qualification
+        if ($owner) {
+            $this->syncHighestQualification($owner);
+        }
+
+        return back()->with('success', 'Qualification removed successfully.');
+    }
+
+    /**
+     * Sync the user's counselor_qualification field to the highest qualification
+     * from their education records.
+     */
+    protected function syncHighestQualification(User $user): void
+    {
+        // Ordered from highest to lowest
+        $hierarchy = ['doctorate', 'masters', 'bachelors', 'associate', 'diploma', 'certificate', 'other'];
+
+        $educationLevels = $user->counselorEducation()->pluck('degree_level')->toArray();
+
+        $highest = null;
+        foreach ($hierarchy as $level) {
+            if (in_array($level, $educationLevels)) {
+                $highest = $level;
+                break;
+            }
+        }
+
+        $user->update(['counselor_qualification' => $highest]);
     }
 
     // ─────────────────────────────────────────────────────────
@@ -468,6 +549,58 @@ class CounselorProfileController extends Controller
 
         return redirect()->route('counselor-profile.show', $counselor)
             ->with('success', 'Certificate added successfully.');
+    }
+
+    /**
+     * Admin: store a qualification for a counselor.
+     */
+    public function adminStoreQualification(Request $request, User $counselor)
+    {
+        $user = auth()->user();
+
+        if (!$user->hasFullAccess()) {
+            abort(403);
+        }
+
+        if (!$counselor->isCounselor()) {
+            abort(404);
+        }
+
+        $validated = $request->validate([
+            'degree_level'              => 'required|in:' . implode(',', array_keys(User::COUNSELOR_QUALIFICATIONS)),
+            'institution'               => 'required|string|max:255',
+            'program'                   => 'nullable|string|max:255',
+            'year_obtained'             => 'required|digits:4|integer|min:1950|max:' . (date('Y') + 5),
+            'country'                   => 'nullable|string|max:100',
+            'notes'                     => 'nullable|string|max:1000',
+            'qualification_document'    => 'nullable|file|mimes:pdf,jpg,jpeg,png,webp,doc,docx|max:5120',
+        ]);
+
+        $documentData = [];
+        if ($request->hasFile('qualification_document')) {
+            $file = $request->file('qualification_document');
+            $path = $file->store(
+                'counselor-qualifications/' . $counselor->id,
+                config('filesystems.uploads', 'public')
+            );
+            $documentData = [
+                'document_path' => $path,
+                'document_name' => $file->getClientOriginalName(),
+                'document_type' => $file->getMimeType(),
+                'document_size' => $file->getSize(),
+            ];
+        }
+
+        $counselor->counselorEducation()->create(array_merge(
+            collect($validated)->except('qualification_document')->toArray(),
+            $documentData
+        ));
+
+        // Sync highest qualification
+        $this->syncHighestQualification($counselor);
+
+        return redirect()->route('counselor-profile.show', $counselor)
+            ->with('success', 'Qualification added successfully.');
     }
 
     /**

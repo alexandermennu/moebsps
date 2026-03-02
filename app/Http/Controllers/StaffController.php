@@ -90,7 +90,6 @@ class StaffController extends Controller
             'counselor_school' => 'required_if:role,counselor|nullable|string|max:255',
             'counselor_county' => 'required_if:role,counselor|nullable|in:' . implode(',', User::COUNTIES),
             'counselor_status' => 'required_if:role,counselor|nullable|in:' . implode(',', array_keys(User::COUNSELOR_STATUSES)),
-            'counselor_qualification' => 'nullable|in:' . implode(',', array_keys(User::COUNSELOR_QUALIFICATIONS)),
             'counselor_specialization' => 'nullable|in:' . implode(',', array_keys(User::COUNSELOR_SPECIALIZATIONS)),
             'counselor_years_experience' => 'nullable|integer|min:0|max:50',
             'counselor_school_phone' => 'nullable|string|max:50',
@@ -113,16 +112,7 @@ class StaffController extends Controller
             'counselor_school_population' => 'nullable|integer|min:0|max:50000',
             'counselor_num_boys' => 'nullable|integer|min:0|max:50000',
             'counselor_num_girls' => 'nullable|integer|min:0|max:50000',
-            // Education details
-            'edu_institution' => 'nullable|string|max:255',
-            'edu_program' => 'nullable|string|max:255',
-            'edu_year_started' => 'nullable|integer|min:1950|max:' . (date('Y') + 5),
-            'edu_year_graduated' => 'nullable|integer|min:1950|max:' . (date('Y') + 5),
-            'edu_country' => 'nullable|string|max:100',
-            'edu_notes' => 'nullable|string|max:1000',
         ]);
-
-        $eduFields = collect($validated)->filter(fn($v, $k) => str_starts_with($k, 'edu_'))->toArray();
 
         $isCounselor = $validated['role'] === User::ROLE_COUNSELOR;
 
@@ -140,7 +130,6 @@ class StaffController extends Controller
             'counselor_school' => $isCounselor ? ($validated['counselor_school'] ?? null) : null,
             'counselor_county' => $isCounselor ? ($validated['counselor_county'] ?? null) : null,
             'counselor_status' => $isCounselor ? ($validated['counselor_status'] ?? 'active') : null,
-            'counselor_qualification' => $isCounselor ? ($validated['counselor_qualification'] ?? null) : null,
             'counselor_specialization' => $isCounselor ? ($validated['counselor_specialization'] ?? null) : null,
             'counselor_years_experience' => $isCounselor ? ($validated['counselor_years_experience'] ?? null) : null,
             'counselor_school_phone' => $isCounselor ? ($validated['counselor_school_phone'] ?? null) : null,
@@ -164,19 +153,6 @@ class StaffController extends Controller
             'counselor_num_boys' => $isCounselor ? ($validated['counselor_num_boys'] ?? null) : null,
             'counselor_num_girls' => $isCounselor ? ($validated['counselor_num_girls'] ?? null) : null,
         ]);
-
-        // Save education record for counselors
-        if ($isCounselor && !empty($eduFields['edu_institution']) && !empty($validated['counselor_qualification'])) {
-            $newStaff->counselorEducation()->create([
-                'institution' => $eduFields['edu_institution'],
-                'program' => $eduFields['edu_program'] ?? null,
-                'degree_level' => $validated['counselor_qualification'],
-                'year_started' => $eduFields['edu_year_started'] ?? null,
-                'year_graduated' => $eduFields['edu_year_graduated'] ?? null,
-                'country' => $eduFields['edu_country'] ?? null,
-                'notes' => $eduFields['edu_notes'] ?? null,
-            ]);
-        }
 
         // Handle profile photo upload
         if ($request->hasFile('profile_photo')) {
@@ -260,7 +236,6 @@ class StaffController extends Controller
             'counselor_school' => 'required_if:role,counselor|nullable|string|max:255',
             'counselor_county' => 'required_if:role,counselor|nullable|in:' . implode(',', User::COUNTIES),
             'counselor_status' => 'required_if:role,counselor|nullable|in:' . implode(',', array_keys(User::COUNSELOR_STATUSES)),
-            'counselor_qualification' => 'nullable|in:' . implode(',', array_keys(User::COUNSELOR_QUALIFICATIONS)),
             'counselor_specialization' => 'nullable|in:' . implode(',', array_keys(User::COUNSELOR_SPECIALIZATIONS)),
             'counselor_years_experience' => 'nullable|integer|min:0|max:50',
             'counselor_school_phone' => 'nullable|string|max:50',
@@ -283,16 +258,7 @@ class StaffController extends Controller
             'counselor_school_population' => 'nullable|integer|min:0|max:50000',
             'counselor_num_boys' => 'nullable|integer|min:0|max:50000',
             'counselor_num_girls' => 'nullable|integer|min:0|max:50000',
-            // Education details
-            'edu_institution' => 'nullable|string|max:255',
-            'edu_program' => 'nullable|string|max:255',
-            'edu_year_started' => 'nullable|integer|min:1950|max:' . (date('Y') + 5),
-            'edu_year_graduated' => 'nullable|integer|min:1950|max:' . (date('Y') + 5),
-            'edu_country' => 'nullable|string|max:100',
-            'edu_notes' => 'nullable|string|max:1000',
         ]);
-
-        $eduFields = collect($validated)->filter(fn($v, $k) => str_starts_with($k, 'edu_'))->toArray();
 
         $isCounselor = $validated['role'] === User::ROLE_COUNSELOR;
 
@@ -305,7 +271,6 @@ class StaffController extends Controller
             'counselor_school' => $isCounselor ? ($validated['counselor_school'] ?? null) : null,
             'counselor_county' => $isCounselor ? ($validated['counselor_county'] ?? null) : null,
             'counselor_status' => $isCounselor ? ($validated['counselor_status'] ?? 'active') : null,
-            'counselor_qualification' => $isCounselor ? ($validated['counselor_qualification'] ?? null) : null,
             'counselor_specialization' => $isCounselor ? ($validated['counselor_specialization'] ?? null) : null,
             'counselor_years_experience' => $isCounselor ? ($validated['counselor_years_experience'] ?? null) : null,
             'counselor_school_phone' => $isCounselor ? ($validated['counselor_school_phone'] ?? null) : null,
@@ -335,21 +300,6 @@ class StaffController extends Controller
         }
 
         $staff_user->update($data);
-
-        // Save/update education record for counselors
-        if ($isCounselor && !empty($eduFields['edu_institution']) && !empty($validated['counselor_qualification'])) {
-            $staff_user->counselorEducation()->updateOrCreate(
-                ['degree_level' => $validated['counselor_qualification']],
-                [
-                    'institution' => $eduFields['edu_institution'],
-                    'program' => $eduFields['edu_program'] ?? null,
-                    'year_started' => $eduFields['edu_year_started'] ?? null,
-                    'year_graduated' => $eduFields['edu_year_graduated'] ?? null,
-                    'country' => $eduFields['edu_country'] ?? null,
-                    'notes' => $eduFields['edu_notes'] ?? null,
-                ]
-            );
-        }
 
         // Handle profile photo
         if ($request->boolean('remove_photo')) {

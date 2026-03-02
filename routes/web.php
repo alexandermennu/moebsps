@@ -103,6 +103,8 @@ Route::middleware(['auth', 'active'])->group(function () {
     Route::put('/counselor-profile', [CounselorProfileController::class, 'update'])->name('counselor-profile.update');
     Route::post('/counselor-profile/documents', [CounselorProfileController::class, 'uploadDocument'])->name('counselor-profile.documents.upload');
     Route::delete('/counselor-profile/documents/{document}', [CounselorProfileController::class, 'deleteDocument'])->name('counselor-profile.documents.delete');
+    Route::post('/counselor-profile/qualifications', [CounselorProfileController::class, 'storeQualification'])->name('counselor-profile.qualifications.store');
+    Route::delete('/counselor-profile/qualifications/{education}', [CounselorProfileController::class, 'deleteQualification'])->name('counselor-profile.qualifications.delete');
     Route::post('/counselor-profile/certificates', [CounselorProfileController::class, 'storeCertificate'])->name('counselor-profile.certificates.store');
     Route::delete('/counselor-profile/certificates/{certificate}', [CounselorProfileController::class, 'deleteCertificate'])->name('counselor-profile.certificates.delete');
     Route::get('/counselor-profile/{counselor}', [CounselorProfileController::class, 'show'])->name('counselor-profile.show');
@@ -141,6 +143,7 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::put('counselor-profile/{counselor}', [CounselorProfileController::class, 'adminUpdate'])->name('counselor-profile.update');
         Route::post('counselor-profile/{counselor}/documents', [CounselorProfileController::class, 'adminUploadDocument'])->name('counselor-profile.documents.upload');
         Route::post('counselor-profile/{counselor}/certificates', [CounselorProfileController::class, 'adminStoreCertificate'])->name('counselor-profile.certificates.store');
+        Route::post('counselor-profile/{counselor}/qualifications', [CounselorProfileController::class, 'adminStoreQualification'])->name('counselor-profile.qualifications.store');
         Route::put('counselor-profile/{counselor}/education', [CounselorProfileController::class, 'adminUpdateEducation'])->name('counselor-profile.education.update');
         Route::post('counselor-profile/{counselor}/approve', [CounselorProfileController::class, 'adminApproveProfile'])->name('counselor-profile.approve');
         Route::post('counselor-profile/{counselor}/request-changes', [CounselorProfileController::class, 'adminRequestChanges'])->name('counselor-profile.request-changes');

@@ -249,18 +249,8 @@
                     </div>
                 </div>
 
-                <h3 class="text-sm font-semibold text-blue-800 mb-3 mt-4 pt-3 border-t border-blue-200">Counselor Profile</h3>
-                <div class="grid grid-cols-3 gap-4 mb-3">
-                    <div>
-                        <label for="counselor_qualification" class="block text-sm font-medium text-gray-700 mb-1">Qualification</label>
-                        <select name="counselor_qualification" id="counselor_qualification"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-slate-500">
-                            <option value="">Select...</option>
-                            @foreach(\App\Models\User::COUNSELOR_QUALIFICATIONS as $key => $label)
-                                <option value="{{ $key }}" {{ old('counselor_qualification', $user->counselor_qualification) === $key ? 'selected' : '' }}>{{ $label }}</option>
-                            @endforeach
-                        </select>
-                    </div>
+                <h3 class="text-sm font-semibold text-blue-800 mb-3 mt-4 pt-3 border-t border-blue-200">Experience & Specialization</h3>
+                <div class="grid grid-cols-2 gap-4 mb-3">
                     <div>
                         <label for="counselor_specialization" class="block text-sm font-medium text-gray-700 mb-1">Specialization</label>
                         <select name="counselor_specialization" id="counselor_specialization"
@@ -278,45 +268,10 @@
                                class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-slate-500">
                     </div>
                 </div>
-                {{-- Education Details Panel — appears when qualification is selected --}}
-                @php $eduRecord = $user->counselorEducation->first() ?? null; @endphp
-                <div id="admin-education-details" class="p-3 bg-white border border-blue-200 mb-3" style="display: none;">
-                    <h4 class="text-xs font-semibold text-blue-700 uppercase tracking-wide mb-2">
-                        Education Details — <span id="admin-edu-level-label">Institution info</span>
-                    </h4>
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="block text-xs font-medium text-gray-600 mb-1">School / University</label>
-                            <input type="text" name="edu_institution" value="{{ old('edu_institution', $eduRecord->institution ?? '') }}" placeholder="e.g. University of Liberia"
-                                   class="w-full px-2.5 py-1.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-slate-500">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium text-gray-600 mb-1">Program / Degree</label>
-                            <input type="text" name="edu_program" value="{{ old('edu_program', $eduRecord->program ?? '') }}" placeholder="e.g. Bachelor of Education"
-                                   class="w-full px-2.5 py-1.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-slate-500">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium text-gray-600 mb-1">Year Started</label>
-                            <input type="number" name="edu_year_started" value="{{ old('edu_year_started', $eduRecord->year_started ?? '') }}" min="1950" max="{{ date('Y') + 5 }}" placeholder="e.g. 2018"
-                                   class="w-full px-2.5 py-1.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-slate-500">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium text-gray-600 mb-1">Year Graduated</label>
-                            <input type="number" name="edu_year_graduated" value="{{ old('edu_year_graduated', $eduRecord->year_graduated ?? '') }}" min="1950" max="{{ date('Y') + 5 }}" placeholder="e.g. 2022"
-                                   class="w-full px-2.5 py-1.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-slate-500">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium text-gray-600 mb-1">Country</label>
-                            <input type="text" name="edu_country" value="{{ old('edu_country', $eduRecord->country ?? 'Liberia') }}" placeholder="e.g. Liberia"
-                                   class="w-full px-2.5 py-1.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-slate-500">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium text-gray-600 mb-1">Notes</label>
-                            <input type="text" name="edu_notes" value="{{ old('edu_notes', $eduRecord->notes ?? '') }}" placeholder="e.g. Graduated with Honours"
-                                   class="w-full px-2.5 py-1.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-slate-500">
-                        </div>
-                    </div>
-                </div>
+                @if($user->counselor_qualification)
+                    <p class="text-xs text-gray-500 mb-1">Highest Qualification: <strong>{{ \App\Models\User::COUNSELOR_QUALIFICATIONS[$user->counselor_qualification] ?? ucfirst($user->counselor_qualification) }}</strong> <span class="text-gray-400">(auto-synced from profile)</span></p>
+                @endif
+                <p class="text-xs text-blue-600 italic mb-3">Qualifications & education records are managed from the counselor's own profile page.</p>
                 <div class="mb-3">
                     <label for="counselor_school_phone" class="block text-sm font-medium text-gray-700 mb-1">School Phone</label>
                     <input type="text" name="counselor_school_phone" id="counselor_school_phone" value="{{ old('counselor_school_phone', $user->counselor_school_phone) }}"
@@ -383,27 +338,6 @@
 
         roleSelect.addEventListener('change', toggleCounselorFields);
         toggleCounselorFields();
-
-        // ── Education details panel toggle ─────────────────
-        const qualSelect = document.getElementById('counselor_qualification');
-        const eduPanel   = document.getElementById('admin-education-details');
-        const eduLabel   = document.getElementById('admin-edu-level-label');
-        const qualLabels = @json(\App\Models\User::COUNSELOR_QUALIFICATIONS);
-
-        function toggleEduPanel() {
-            if (qualSelect && eduPanel) {
-                if (qualSelect.value) {
-                    eduPanel.style.display = 'block';
-                    eduLabel.textContent = qualLabels[qualSelect.value] || 'qualification';
-                } else {
-                    eduPanel.style.display = 'none';
-                }
-            }
-        }
-        if (qualSelect) {
-            qualSelect.addEventListener('change', toggleEduPanel);
-            toggleEduPanel();
-        }
 
         // Ensure disabled select still submits — add hidden input
         divisionSelect.closest('form').addEventListener('submit', function () {

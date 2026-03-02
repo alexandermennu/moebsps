@@ -343,30 +343,18 @@
         </div>
 
         {{-- ═══════════════════════════════════════════════════════════════════
-             SECTION 3: EDUCATION, EXPERIENCE & QUALIFICATIONS  (full-width)
+             SECTION 3: EXPERIENCE & SPECIALIZATION  (full-width)
              ═══════════════════════════════════════════════════════════════════ --}}
         <div class="bg-white border border-gray-200 mb-6">
             <div class="px-5 py-4 border-b border-gray-200 bg-gray-50">
                 <h3 class="text-sm font-semibold text-gray-900 uppercase tracking-wide flex items-center gap-2">
                     <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222"/></svg>
-                    Education, Experience & Qualifications
+                    Experience & Specialization
                 </h3>
-                <p class="text-xs text-gray-500 mt-1">Your highest education, years of experience, specialization, and additional certificates.</p>
+                <p class="text-xs text-gray-500 mt-1">Your area of specialization. Add your qualifications in the section below.</p>
             </div>
             <div class="p-5">
-                {{-- Highest Education & Experience --}}
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-5">
-                    <div>
-                        <label for="counselor_qualification" class="block text-xs font-medium text-gray-700 mb-1">Highest Education Level *</label>
-                        <select name="counselor_qualification" id="counselor_qualification"
-                                class="w-full px-3 py-2 border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            <option value="">Select...</option>
-                            @foreach(\App\Models\User::COUNSELOR_QUALIFICATIONS as $key => $label)
-                                <option value="{{ $key }}" {{ old('counselor_qualification', $counselor->counselor_qualification) === $key ? 'selected' : '' }}>{{ $label }}</option>
-                            @endforeach
-                        </select>
-                        @error('counselor_qualification') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
-                    </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label for="counselor_specialization" class="block text-xs font-medium text-gray-700 mb-1">Area of Specialization</label>
                         <select name="counselor_specialization" id="counselor_specialization"
@@ -379,67 +367,12 @@
                         @error('counselor_specialization') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
                     </div>
                     <div>
-                        <label for="counselor_years_experience" class="block text-xs font-medium text-gray-700 mb-1">Years of Experience</label>
+                        <label for="counselor_years_experience" class="block text-xs font-medium text-gray-700 mb-1">Total Years of Counseling Experience</label>
                         <input type="number" name="counselor_years_experience" id="counselor_years_experience"
                                value="{{ old('counselor_years_experience', $counselor->counselor_years_experience) }}"
                                min="0" max="50" placeholder="e.g. 5"
                                class="w-full px-3 py-2 border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                         @error('counselor_years_experience') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
-                    </div>
-                </div>
-
-                {{-- Education Details Panel — shown when qualification is selected --}}
-                @php $eduRecord = $counselor->counselorEducation->first(); @endphp
-                <div id="education-details" class="p-4 bg-blue-50 border border-blue-200 mb-5" style="display: none;">
-                    <h4 class="text-xs font-semibold text-blue-800 uppercase tracking-wide mb-3 flex items-center gap-1.5">
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
-                        <span id="edu-level-label">Where did you obtain this qualification?</span>
-                    </h4>
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                        <div>
-                            <label for="edu_institution" class="block text-xs font-medium text-gray-700 mb-1">School / University *</label>
-                            <input type="text" name="edu_institution" id="edu_institution"
-                                   value="{{ old('edu_institution', $eduRecord->institution ?? '') }}"
-                                   placeholder="e.g. University of Liberia"
-                                   class="w-full px-3 py-2 border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            @error('edu_institution') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
-                        </div>
-                        <div>
-                            <label for="edu_program" class="block text-xs font-medium text-gray-700 mb-1">Program / Degree *</label>
-                            <input type="text" name="edu_program" id="edu_program"
-                                   value="{{ old('edu_program', $eduRecord->program ?? '') }}"
-                                   placeholder="e.g. Bachelor of Education in Counseling"
-                                   class="w-full px-3 py-2 border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            @error('edu_program') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
-                        </div>
-                        <div>
-                            <label for="edu_country" class="block text-xs font-medium text-gray-700 mb-1">Country</label>
-                            <input type="text" name="edu_country" id="edu_country"
-                                   value="{{ old('edu_country', $eduRecord->country ?? 'Liberia') }}"
-                                   placeholder="e.g. Liberia"
-                                   class="w-full px-3 py-2 border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        </div>
-                        <div>
-                            <label for="edu_year_started" class="block text-xs font-medium text-gray-700 mb-1">Year Started</label>
-                            <input type="number" name="edu_year_started" id="edu_year_started"
-                                   value="{{ old('edu_year_started', $eduRecord->year_started ?? '') }}"
-                                   min="1950" max="{{ date('Y') + 5 }}" placeholder="e.g. 2018"
-                                   class="w-full px-3 py-2 border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        </div>
-                        <div>
-                            <label for="edu_year_graduated" class="block text-xs font-medium text-gray-700 mb-1">Year Graduated</label>
-                            <input type="number" name="edu_year_graduated" id="edu_year_graduated"
-                                   value="{{ old('edu_year_graduated', $eduRecord->year_graduated ?? '') }}"
-                                   min="1950" max="{{ date('Y') + 5 }}" placeholder="e.g. 2022"
-                                   class="w-full px-3 py-2 border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        </div>
-                        <div>
-                            <label for="edu_notes" class="block text-xs font-medium text-gray-700 mb-1">Notes</label>
-                            <input type="text" name="edu_notes" id="edu_notes"
-                                   value="{{ old('edu_notes', $eduRecord->notes ?? '') }}"
-                                   placeholder="e.g. Graduated with Honours"
-                                   class="w-full px-3 py-2 border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        </div>
                     </div>
                 </div>
             </div>
@@ -454,6 +387,148 @@
             <a href="{{ route('counselor-profile.show', $counselor) }}" class="px-5 py-2.5 bg-white border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50">Cancel</a>
         </div>
     </form>
+
+    {{-- ═══════════════════════════════════════════════════════════════════
+         QUALIFICATIONS & EDUCATION (separate card, outside main form)
+         ═══════════════════════════════════════════════════════════════════ --}}
+    <div class="bg-white border border-gray-200 mb-6">
+        <div class="px-5 py-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
+            <h3 class="text-sm font-semibold text-gray-900 uppercase tracking-wide flex items-center gap-2">
+                <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222"/></svg>
+                Qualifications & Education
+            </h3>
+            <span class="text-xs text-gray-400">{{ $counselor->counselorEducation->count() }} qualification(s)</span>
+        </div>
+        <div class="p-5">
+            <p class="text-xs text-gray-500 mb-4">Add all your academic qualifications below. Each entry requires the qualification level, institution, year obtained, and optionally a supporting document.</p>
+
+            @if($counselor->counselorEducation->count() > 0)
+                <div class="divide-y divide-gray-100 mb-5">
+                    @foreach($counselor->counselorEducation as $edu)
+                        <div class="py-3">
+                            <div class="flex items-start justify-between">
+                                <div class="flex items-start gap-3">
+                                    <div class="w-9 h-9 bg-blue-50 border border-blue-200 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                        <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222"/></svg>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-semibold text-gray-900">{{ $edu->degree_level_label }}</p>
+                                        <p class="text-xs text-gray-600 mt-0.5">{{ $edu->institution }}</p>
+                                        <div class="flex items-center gap-3 mt-1 text-xs text-gray-400">
+                                            @if($edu->program) <span>{{ $edu->program }}</span> @endif
+                                            @if($edu->year_obtained) <span class="font-medium text-gray-600">Year: {{ $edu->year_obtained }}</span> @endif
+                                            @if($edu->country) <span>{{ $edu->country }}</span> @endif
+                                        </div>
+                                        @if($edu->year_started || $edu->year_graduated)
+                                            <p class="text-xs text-gray-400 mt-0.5">Period: {{ $edu->year_range }}</p>
+                                        @endif
+                                        @if($edu->notes)
+                                            <p class="text-xs text-gray-500 mt-1">{{ $edu->notes }}</p>
+                                        @endif
+                                        {{-- Document attachment indicator --}}
+                                        @if($edu->hasDocument())
+                                            <div class="mt-1.5 flex items-center gap-1.5 text-xs">
+                                                <svg class="w-3.5 h-3.5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
+                                                <a href="{{ $edu->getDocumentUrl() }}" target="_blank" class="text-blue-700 hover:underline font-medium">{{ $edu->document_name }}</a>
+                                                <span class="text-gray-400">({{ $edu->document_size_formatted }})</span>
+                                            </div>
+                                        @else
+                                            <div class="mt-1.5 flex items-center gap-1 text-xs text-gray-400">
+                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
+                                                <span>No document attached</span>
+                                            </div>
+                                        @endif
+                                    </div>
+                                </div>
+                                <form method="POST" action="{{ route('counselor-profile.qualifications.delete', $edu) }}" onsubmit="return confirm('Remove this qualification?')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="px-2 py-1 text-xs text-red-600 hover:bg-red-50 border border-red-200">Remove</button>
+                                </form>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            @else
+                <p class="text-sm text-gray-400 italic mb-5">No qualifications added yet. Click below to add your first qualification.</p>
+            @endif
+
+            <div>
+                <button type="button" id="toggle-qual-form" class="inline-flex items-center gap-1.5 px-4 py-2 bg-blue-700 text-white text-sm font-medium hover:bg-blue-600">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Add Qualification
+                </button>
+
+                <div id="qual-form" class="mt-4 p-5 bg-gray-50 border border-gray-200" style="display: none;">
+                    <h4 class="text-xs font-semibold text-gray-700 uppercase tracking-wide mb-4">New Qualification</h4>
+                    <form method="POST" action="{{ route('counselor-profile.qualifications.store') }}" enctype="multipart/form-data">
+                        @csrf
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
+                            <div>
+                                <label class="block text-xs font-medium text-gray-600 mb-1">Qualification Level *</label>
+                                <select name="degree_level" required
+                                        class="w-full px-3 py-2 border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="">Select...</option>
+                                    @foreach(\App\Models\User::COUNSELOR_QUALIFICATIONS as $key => $label)
+                                        <option value="{{ $key }}" {{ old('degree_level') === $key ? 'selected' : '' }}>{{ $label }}</option>
+                                    @endforeach
+                                </select>
+                                @error('degree_level') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-600 mb-1">School / University *</label>
+                                <input type="text" name="institution" required placeholder="e.g. University of Liberia"
+                                       value="{{ old('institution') }}"
+                                       class="w-full px-3 py-2 border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                @error('institution') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-600 mb-1">Program / Degree</label>
+                                <input type="text" name="program" placeholder="e.g. Bachelor of Education in Counseling"
+                                       value="{{ old('program') }}"
+                                       class="w-full px-3 py-2 border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-600 mb-1">Year Obtained *</label>
+                                <input type="number" name="year_obtained" required min="1950" max="{{ date('Y') + 5 }}" placeholder="e.g. 2022"
+                                       value="{{ old('year_obtained') }}"
+                                       class="w-full px-3 py-2 border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                @error('year_obtained') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-600 mb-1">Country</label>
+                                <input type="text" name="country" placeholder="e.g. Liberia"
+                                       value="{{ old('country', 'Liberia') }}"
+                                       class="w-full px-3 py-2 border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-600 mb-1">Notes</label>
+                                <input type="text" name="notes" placeholder="e.g. Graduated with Honours"
+                                       value="{{ old('notes') }}"
+                                       class="w-full px-3 py-2 border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                        </div>
+                        <div class="mb-4 p-3 bg-white border border-gray-200">
+                            <label class="block text-xs font-medium text-gray-600 mb-1">
+                                <span class="flex items-center gap-1.5">
+                                    <svg class="w-3.5 h-3.5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
+                                    Attach Supporting Document (optional)
+                                </span>
+                            </label>
+                            <input type="file" name="qualification_document" accept=".pdf,.jpg,.jpeg,.png,.webp,.doc,.docx"
+                                   class="w-full text-sm text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:border file:border-gray-300 file:text-xs file:font-medium file:bg-gray-50 file:text-gray-700 hover:file:bg-gray-100">
+                            <p class="mt-1 text-xs text-gray-400">Upload a copy of your degree, diploma, or certificate for verification. PDF, JPG, PNG, DOC. Max 5MB.</p>
+                            @error('qualification_document') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button type="submit" class="px-4 py-2 bg-blue-700 text-white text-sm font-medium hover:bg-blue-600">Save Qualification</button>
+                            <button type="button" onclick="document.getElementById('qual-form').style.display='none'" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 
     {{-- ═══════════════════════════════════════════════════════════════════
          ADDITIONAL CERTIFICATES & ACHIEVEMENTS (separate card, outside form)
@@ -599,23 +674,19 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    const qualSelect  = document.getElementById('counselor_qualification');
-    const eduPanel    = document.getElementById('education-details');
-    const eduLabel    = document.getElementById('edu-level-label');
-    const qualLabels  = @json(\App\Models\User::COUNSELOR_QUALIFICATIONS);
+    // Qualification form toggle
+    const toggleQualBtn = document.getElementById('toggle-qual-form');
+    const qualForm  = document.getElementById('qual-form');
 
-    function toggleEducationPanel() {
-        if (qualSelect.value) {
-            eduPanel.style.display = 'block';
-            eduLabel.textContent = 'Where did you obtain your ' + (qualLabels[qualSelect.value] || 'qualification') + '?';
-        } else {
-            eduPanel.style.display = 'none';
-        }
-    }
+    toggleQualBtn.addEventListener('click', function () {
+        qualForm.style.display = qualForm.style.display === 'none' ? 'block' : 'none';
+    });
 
-    qualSelect.addEventListener('change', toggleEducationPanel);
-    toggleEducationPanel();
+    @if($errors->hasAny(['degree_level', 'institution', 'year_obtained', 'qualification_document']))
+        qualForm.style.display = 'block';
+    @endif
 
+    // Certificate form toggle
     const toggleBtn = document.getElementById('toggle-cert-form');
     const certForm  = document.getElementById('cert-form');
 
@@ -623,7 +694,7 @@ document.addEventListener('DOMContentLoaded', function () {
         certForm.style.display = certForm.style.display === 'none' ? 'block' : 'none';
     });
 
-    @if($errors->hasAny(['certificate_name', 'institution']))
+    @if($errors->hasAny(['certificate_name']))
         certForm.style.display = 'block';
     @endif
 });
