@@ -14,62 +14,94 @@
         <span class="text-gray-500">{{ $counselor->name }}</span>
     </div>
 
-    {{-- Profile Header Card --}}
+    {{-- Profile Summary Card --}}
     <div class="bg-white border border-gray-200 mb-6">
-        <div class="bg-gradient-to-r from-blue-800 to-blue-600 px-6 py-8">
-            <div class="flex items-center gap-6">
-                {{-- Square headshot --}}
+        <div class="flex items-stretch">
+            {{-- Photo (left) --}}
+            <div class="flex-shrink-0 bg-gray-100">
                 @if($counselor->hasProfilePhoto())
                     <img src="{{ $counselor->profile_photo_url }}"
                          alt="{{ $counselor->name }}"
-                         class="w-44 h-44 object-cover flex-shrink-0 shadow-lg">
+                         class="object-cover h-full" style="width: 200px; min-height: 200px;">
                 @else
-                    <div class="w-44 h-44 bg-white/10 flex items-center justify-center text-6xl font-bold text-white/70 flex-shrink-0 shadow-lg">
+                    <div class="flex items-center justify-center text-6xl font-bold text-gray-400 bg-gray-100 h-full" style="width: 200px; min-height: 200px;">
                         {{ $counselor->initials }}
                     </div>
                 @endif
+            </div>
 
-                <div>
-                    <h1 class="text-xl font-bold text-white">{{ $counselor->name }}</h1>
-                    <p class="text-blue-100 text-sm mt-1">School Counselor</p>
-                    @if($counselor->division)
-                        <p class="text-blue-200 text-xs mt-1">{{ $counselor->division->name }}</p>
-                    @endif
-                    <div class="mt-3 flex items-center gap-3">
-                        @php
-                            $statusColors = [
-                                'active' => 'bg-green-100 text-green-800',
-                                'abandoned_resigned' => 'bg-red-100 text-red-800',
-                                'transferred' => 'bg-amber-100 text-amber-800',
-                                'on_study_leave' => 'bg-purple-100 text-purple-800',
-                                'on_sick_leave' => 'bg-orange-100 text-orange-800',
-                                'returned_from_study' => 'bg-blue-100 text-blue-800',
-                            ];
-                            $statusClass = $statusColors[$counselor->counselor_status] ?? 'bg-gray-100 text-gray-800';
-                        @endphp
-                        <span class="inline-block px-2.5 py-0.5 text-xs font-semibold {{ $statusClass }}">{{ $counselor->counselor_status_label }}</span>
-                        @if(!$counselor->is_active)
-                            <span class="inline-block px-2.5 py-0.5 text-xs font-semibold bg-red-100 text-red-800">Account Inactive</span>
-                        @endif
+            {{-- Summary Details (right) --}}
+            <div class="flex-1 flex flex-col">
+                <div class="bg-gradient-to-r from-blue-800 to-blue-600 px-6 py-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h1 class="text-xl font-bold text-white">{{ $counselor->name }}</h1>
+                            <p class="text-blue-100 text-sm mt-0.5">School Counselor</p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            @php
+                                $statusColors = [
+                                    'active' => 'bg-green-100 text-green-800',
+                                    'abandoned_resigned' => 'bg-red-100 text-red-800',
+                                    'transferred' => 'bg-amber-100 text-amber-800',
+                                    'on_study_leave' => 'bg-purple-100 text-purple-800',
+                                    'on_sick_leave' => 'bg-orange-100 text-orange-800',
+                                    'returned_from_study' => 'bg-blue-100 text-blue-800',
+                                ];
+                                $statusClass = $statusColors[$counselor->counselor_status] ?? 'bg-gray-100 text-gray-800';
+                            @endphp
+                            <span class="inline-block px-2.5 py-0.5 text-xs font-semibold {{ $statusClass }}">{{ $counselor->counselor_status_label }}</span>
+                            @if(!$counselor->is_active)
+                                <span class="inline-block px-2.5 py-0.5 text-xs font-semibold bg-red-100 text-red-800">Account Inactive</span>
+                            @endif
+                        </div>
                     </div>
                 </div>
-            </div>
-        </div>
 
-        {{-- Quick Actions Bar --}}
-        <div class="px-6 py-3 border-t border-gray-200 bg-gray-50 flex items-center gap-3">
-            @if($counselor->id === auth()->id())
-                <a href="{{ route('counselor-profile.edit') }}" class="px-3 py-1.5 bg-blue-700 text-white text-xs font-medium hover:bg-blue-600">
-                    Edit Counselor Profile
-                </a>
-                <a href="{{ route('profile.edit') }}" class="px-3 py-1.5 bg-white border border-gray-300 text-gray-700 text-xs font-medium hover:bg-gray-50">
-                    Edit Account
-                </a>
-            @elseif(auth()->user()->hasFullAccess())
-                <a href="{{ route('admin.users.edit', $counselor) }}" class="px-3 py-1.5 bg-slate-800 text-white text-xs font-medium hover:bg-slate-700">
-                    Edit User Account
-                </a>
-            @endif
+                {{-- Key Details Grid --}}
+                <div class="px-6 py-4 flex-1 grid grid-cols-2 gap-x-8 gap-y-3 text-sm">
+                    <div>
+                        <span class="text-gray-400 text-xs font-medium uppercase">Division</span>
+                        <p class="text-gray-900 font-medium">{{ $counselor->division?->name ?? '—' }}</p>
+                    </div>
+                    <div>
+                        <span class="text-gray-400 text-xs font-medium uppercase">Email</span>
+                        <p class="text-gray-900">{{ $counselor->email }}</p>
+                    </div>
+                    <div>
+                        <span class="text-gray-400 text-xs font-medium uppercase">School</span>
+                        <p class="text-gray-900 font-medium">{{ $counselor->counselor_school ?? '—' }}</p>
+                    </div>
+                    <div>
+                        <span class="text-gray-400 text-xs font-medium uppercase">County</span>
+                        <p class="text-gray-900">{{ $counselor->counselor_county ?? '—' }}</p>
+                    </div>
+                    <div>
+                        <span class="text-gray-400 text-xs font-medium uppercase">Phone</span>
+                        <p class="text-gray-900">{{ $counselor->phone ?? '—' }}</p>
+                    </div>
+                    <div>
+                        <span class="text-gray-400 text-xs font-medium uppercase">Qualification</span>
+                        <p class="text-gray-900">{{ $counselor->counselor_qualification_label }}</p>
+                    </div>
+                </div>
+
+                {{-- Quick Actions Bar --}}
+                <div class="px-6 py-3 border-t border-gray-200 bg-gray-50 flex items-center gap-3">
+                    @if($counselor->id === auth()->id())
+                        <a href="{{ route('counselor-profile.edit') }}" class="px-3 py-1.5 bg-blue-700 text-white text-xs font-medium hover:bg-blue-600">
+                            Edit Counselor Profile
+                        </a>
+                        <a href="{{ route('profile.edit') }}" class="px-3 py-1.5 bg-white border border-gray-300 text-gray-700 text-xs font-medium hover:bg-gray-50">
+                            Edit Account
+                        </a>
+                    @elseif(auth()->user()->hasFullAccess())
+                        <a href="{{ route('admin.users.edit', $counselor) }}" class="px-3 py-1.5 bg-slate-800 text-white text-xs font-medium hover:bg-slate-700">
+                            Edit User Account
+                        </a>
+                    @endif
+                </div>
+            </div>
         </div>
     </div>
 
