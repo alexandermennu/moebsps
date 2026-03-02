@@ -120,6 +120,7 @@ class UserController extends Controller
 
     public function store(Request $request)
     {
+        try {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
@@ -206,6 +207,9 @@ class UserController extends Controller
 
         return redirect()->route('admin.users.index')
             ->with('success', 'User created successfully.');
+        } catch (\Throwable $e) {
+            return back()->withInput()->with('error', 'DEBUG: ' . $e->getMessage() . ' | File: ' . $e->getFile() . ':' . $e->getLine());
+        }
     }
 
     public function edit(User $user)
