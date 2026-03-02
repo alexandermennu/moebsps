@@ -168,6 +168,26 @@ class CounselorProfileController extends Controller
     }
 
     /**
+     * Admin: show the edit form for a counselor's full profile.
+     */
+    public function adminEdit(User $counselor)
+    {
+        $user = auth()->user();
+
+        if (!$user->hasFullAccess()) {
+            abort(403);
+        }
+
+        if (!$counselor->isCounselor()) {
+            abort(404);
+        }
+
+        $counselor->load(['division', 'counselorDocuments', 'counselorEducation', 'counselorCertificates']);
+
+        return view('counselor-profile.admin-edit', compact('counselor'));
+    }
+
+    /**
      * Admin: update counselor's extended profile fields.
      */
     public function adminUpdate(Request $request, User $counselor)
@@ -193,10 +213,15 @@ class CounselorProfileController extends Controller
             'emergency_contact_phone'        => 'nullable|string|max:50',
             'emergency_contact_relationship' => 'nullable|string|max:100',
 
+            // Admin-Managed Assignment Fields
+            'counselor_school'               => 'nullable|string|max:255',
+            'counselor_county'               => 'nullable|string|max:100',
+            'counselor_status'               => 'nullable|in:' . implode(',', array_keys(User::COUNSELOR_STATUSES)),
+            'counselor_appointed_at'         => 'nullable|date',
+
             // Assignment Details
             'counselor_school_phone'         => 'nullable|string|max:50',
-            'counselor_appointed_at'         => 'nullable|date',
-            'counselor_assignment_date'       => 'nullable|date',
+            'counselor_assignment_date'      => 'nullable|date',
             'counselor_school_district'      => 'nullable|string|max:255',
             'counselor_school_address'       => 'nullable|string|max:1000',
             'counselor_school_principal'     => 'nullable|string|max:255',
@@ -212,7 +237,7 @@ class CounselorProfileController extends Controller
             'counselor_training'             => 'nullable|string|max:2000',
         ]);
 
-        // Remove counselor_qualification from admin update – it's now auto-synced from education records
+        // counselor_qualification is auto-synced from education records
         $counselor->update(collect($validated)->except('counselor_qualification')->toArray());
 
         return redirect()->route('counselor-profile.show', $counselor)

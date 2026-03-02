@@ -140,6 +140,7 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::patch('users/{user}/toggle-active', [UserController::class, 'toggleActive'])->name('users.toggle-active');
 
         // Counselor Profile Management (admin)
+        Route::get('counselor-profile/{counselor}/edit', [CounselorProfileController::class, 'adminEdit'])->name('counselor-profile.edit');
         Route::put('counselor-profile/{counselor}', [CounselorProfileController::class, 'adminUpdate'])->name('counselor-profile.update');
         Route::post('counselor-profile/{counselor}/documents', [CounselorProfileController::class, 'adminUploadDocument'])->name('counselor-profile.documents.upload');
         Route::post('counselor-profile/{counselor}/certificates', [CounselorProfileController::class, 'adminStoreCertificate'])->name('counselor-profile.certificates.store');

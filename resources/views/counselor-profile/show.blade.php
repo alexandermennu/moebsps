@@ -108,6 +108,9 @@
                             Edit Account
                         </a>
                     @elseif(auth()->user()->hasFullAccess())
+                        <a href="{{ route('admin.counselor-profile.edit', $counselor) }}" class="px-3 py-1.5 bg-blue-700 text-white text-xs font-medium hover:bg-blue-600">
+                            Edit Counselor Profile
+                        </a>
                         <a href="{{ route('admin.users.edit', $counselor) }}" class="px-3 py-1.5 bg-slate-800 text-white text-xs font-medium hover:bg-slate-700">
                             Edit User Account
                         </a>
