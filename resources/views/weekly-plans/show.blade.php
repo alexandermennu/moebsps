@@ -18,13 +18,28 @@
                 </h2>
                 <p class="text-sm text-gray-500">{{ $weeklyPlan->division->name }} · By {{ $weeklyPlan->submitter->name }}</p>
             </div>
-            <span class="text-[10px] px-1.5 py-0.5 font-medium
-                {{ $weeklyPlan->status === 'approved' ? 'bg-green-100 text-green-700' : '' }}
-                {{ $weeklyPlan->status === 'submitted' ? 'bg-blue-100 text-blue-700' : '' }}
-                {{ $weeklyPlan->status === 'rejected' ? 'bg-red-100 text-red-700' : '' }}
-                {{ $weeklyPlan->status === 'draft' ? 'bg-gray-100 text-gray-700' : '' }}">
-                {{ ucfirst($weeklyPlan->status) }}
-            </span>
+            <div class="flex items-center gap-3">
+                <span class="text-[10px] px-1.5 py-0.5 font-medium
+                    {{ $weeklyPlan->status === 'approved' ? 'bg-green-100 text-green-700' : '' }}
+                    {{ $weeklyPlan->status === 'submitted' ? 'bg-blue-100 text-blue-700' : '' }}
+                    {{ $weeklyPlan->status === 'rejected' ? 'bg-red-100 text-red-700' : '' }}
+                    {{ $weeklyPlan->status === 'draft' ? 'bg-gray-100 text-gray-700' : '' }}">
+                    {{ ucfirst($weeklyPlan->status) }}
+                </span>
+
+                @php $user = auth()->user(); @endphp
+                @if($user->canManageDivision() && $weeklyPlan->submitted_by === $user->id && in_array($weeklyPlan->status, ['draft', 'rejected']))
+                    <a href="{{ route('weekly-plans.edit', $weeklyPlan) }}" class="px-3 py-1.5 bg-white border border-gray-300 text-gray-700 text-xs font-medium hover:bg-gray-50">Edit</a>
+                @endif
+                @if($user->hasFullAccess() || ($user->canManageDivision() && $weeklyPlan->submitted_by === $user->id && in_array($weeklyPlan->status, ['draft', 'rejected'])))
+                    <form method="POST" action="{{ route('weekly-plans.destroy', $weeklyPlan) }}"
+                          onsubmit="return confirm('Are you sure you want to delete this weekly plan? This cannot be undone.')">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="px-3 py-1.5 bg-white border border-red-300 text-red-600 text-xs font-medium hover:bg-red-50">Delete</button>
+                    </form>
+                @endif
+            </div>
         </div>
     </div>
 

@@ -251,4 +251,29 @@ class WeeklyPlanController extends Controller
             );
         }
     }
+
+    /**
+     * Delete a weekly plan (only drafts/rejected, by the submitter or full-access users).
+     */
+    public function destroy(WeeklyPlan $weeklyPlan)
+    {
+        $user = auth()->user();
+
+        // Full-access users can delete any plan; submitters can delete their own drafts/rejected
+        if ($user->hasFullAccess()) {
+            // allowed
+        } elseif ($user->canManageDivision() && $weeklyPlan->submitted_by === $user->id && in_array($weeklyPlan->status, ['draft', 'rejected'])) {
+            // allowed
+        } else {
+            abort(403);
+        }
+
+        $weekLabel = $weeklyPlan->week_start->format('M d') . ' – ' . $weeklyPlan->week_end->format('M d, Y');
+
+        $weeklyPlan->activities()->delete();
+        $weeklyPlan->delete();
+
+        return redirect()->route('weekly-plans.index')
+            ->with('success', "Weekly plan for {$weekLabel} has been deleted.");
+    }
 }

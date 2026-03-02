@@ -36,6 +36,19 @@
                     {{ $weeklyUpdate->status === 'draft' ? 'bg-gray-100 text-gray-700' : '' }}">
                     {{ ucfirst($weeklyUpdate->status) }}
                 </span>
+
+                @php $user = auth()->user(); @endphp
+                @if($user->canManageDivision() && $weeklyUpdate->submitted_by === $user->id && in_array($weeklyUpdate->status, ['draft', 'rejected']))
+                    <a href="{{ route('weekly-updates.edit', $weeklyUpdate) }}" class="px-3 py-1.5 bg-white border border-gray-300 text-gray-700 text-xs font-medium hover:bg-gray-50">Edit</a>
+                @endif
+                @if($user->hasFullAccess() || ($user->canManageDivision() && $weeklyUpdate->submitted_by === $user->id && in_array($weeklyUpdate->status, ['draft', 'rejected'])))
+                    <form method="POST" action="{{ route('weekly-updates.destroy', $weeklyUpdate) }}"
+                          onsubmit="return confirm('Are you sure you want to delete this weekly update? This cannot be undone.')">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="px-3 py-1.5 bg-white border border-red-300 text-red-600 text-xs font-medium hover:bg-red-50">Delete</button>
+                    </form>
+                @endif
             </div>
         </div>
 

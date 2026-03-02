@@ -464,4 +464,29 @@ class WeeklyUpdateController extends Controller
         return redirect()->route('weekly-updates.show', $weeklyUpdate)
             ->with('success', 'Comment added successfully.');
     }
+
+    /**
+     * Delete a weekly update (only drafts/rejected, by the submitter or full-access users).
+     */
+    public function destroy(WeeklyUpdate $weeklyUpdate)
+    {
+        $user = auth()->user();
+
+        // Full-access users can delete any update; submitters can delete their own drafts/rejected
+        if ($user->hasFullAccess()) {
+            // allowed
+        } elseif ($user->canManageDivision() && $weeklyUpdate->submitted_by === $user->id && in_array($weeklyUpdate->status, ['draft', 'rejected'])) {
+            // allowed
+        } else {
+            abort(403);
+        }
+
+        $weekLabel = $weeklyUpdate->week_start->format('M d') . ' – ' . $weeklyUpdate->week_end->format('M d, Y');
+
+        $weeklyUpdate->activities()->delete();
+        $weeklyUpdate->delete();
+
+        return redirect()->route('weekly-updates.index')
+            ->with('success', "Weekly update for {$weekLabel} has been deleted.");
+    }
 }
