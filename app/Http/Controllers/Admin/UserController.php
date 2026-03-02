@@ -160,7 +160,10 @@ class UserController extends Controller
         ]);
 
         $validated['password'] = Hash::make($validated['password']);
-        $validated['is_active'] = $request->boolean('is_active', true);
+        $validated['is_active'] = $request->has('is_active') ? true : false;
+        $validated['approval_status'] = User::APPROVAL_APPROVED;
+        $validated['approved_at'] = now();
+        $validated['approved_by'] = auth()->id();
         unset($validated['profile_photo']);
 
         // Clear counselor fields if role is not counselor

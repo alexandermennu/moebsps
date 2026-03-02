@@ -272,6 +272,7 @@
             </div>
 
             <div class="mb-6">
+                <input type="hidden" name="is_active" value="0">
                 <label class="flex items-center gap-2">
                     <input type="checkbox" name="is_active" value="1" {{ old('is_active', true) ? 'checked' : '' }}
                            class="h-4 w-4 text-slate-600 border-gray-300 rounded focus:ring-slate-500">

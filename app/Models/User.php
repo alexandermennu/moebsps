@@ -18,6 +18,25 @@ class User extends Authenticatable
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
 
+    /**
+     * Fallback $fillable in case the #[Fillable] attribute is not processed.
+     */
+    protected $fillable = [
+        'name', 'email', 'password', 'role', 'division_id', 'position', 'phone',
+        'profile_photo', 'is_active', 'approval_status', 'created_by_user_id',
+        'approved_at', 'approved_by', 'rejection_reason',
+        'address', 'city', 'date_of_birth', 'gender', 'nationality',
+        'emergency_contact_name', 'emergency_contact_phone', 'emergency_contact_relationship',
+        'counselor_school', 'counselor_county', 'counselor_status', 'counselor_qualification',
+        'counselor_specialization', 'counselor_years_experience', 'counselor_training',
+        'counselor_school_phone', 'counselor_appointed_at', 'counselor_assignment_date',
+        'counselor_school_district', 'counselor_school_level', 'counselor_school_type',
+        'counselor_school_population', 'counselor_num_boys', 'counselor_num_girls',
+        'counselor_school_address', 'counselor_school_principal',
+        'counselor_profile_status', 'counselor_profile_reviewed_at',
+        'counselor_profile_reviewed_by', 'counselor_profile_review_notes',
+    ];
+
     // ── Full Access Roles ───────────────────────────────────
     const ROLE_MINISTER = 'minister';
     const ROLE_ADMIN_ASSISTANT = 'admin_assistant';
