@@ -120,7 +120,6 @@ class UserController extends Controller
 
     public function store(Request $request)
     {
-        try {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
@@ -167,25 +166,24 @@ class UserController extends Controller
         $validated['approved_by'] = auth()->id();
         unset($validated['profile_photo']);
 
-        // Clear counselor fields if role is not counselor
+        // Counselor-only fields — remove entirely for non-counselor roles
+        $counselorOnlyFields = [
+            'counselor_school', 'counselor_county', 'counselor_status',
+            'counselor_specialization', 'counselor_years_experience',
+            'counselor_training', 'counselor_school_phone', 'counselor_appointed_at',
+            'counselor_assignment_date', 'counselor_school_district',
+            'counselor_school_address', 'counselor_school_principal',
+            'counselor_school_level', 'counselor_school_type',
+            'counselor_school_population', 'counselor_num_boys', 'counselor_num_girls',
+            'date_of_birth', 'gender', 'nationality', 'address', 'city',
+            'emergency_contact_name', 'emergency_contact_phone', 'emergency_contact_relationship',
+        ];
+
         if ($validated['role'] !== User::ROLE_COUNSELOR) {
-            $validated['counselor_school'] = null;
-            $validated['counselor_county'] = null;
-            $validated['counselor_status'] = null;
-            $validated['counselor_specialization'] = null;
-            $validated['counselor_years_experience'] = null;
-            $validated['counselor_training'] = null;
-            $validated['counselor_school_phone'] = null;
-            $validated['counselor_appointed_at'] = null;
-            $validated['counselor_assignment_date'] = null;
-            $validated['counselor_school_district'] = null;
-            $validated['counselor_school_address'] = null;
-            $validated['counselor_school_principal'] = null;
-            $validated['counselor_school_level'] = null;
-            $validated['counselor_school_type'] = null;
-            $validated['counselor_school_population'] = null;
-            $validated['counselor_num_boys'] = null;
-            $validated['counselor_num_girls'] = null;
+            // Remove all counselor/personal fields — don't attempt to write them at all
+            foreach ($counselorOnlyFields as $field) {
+                unset($validated[$field]);
+            }
         } else {
             // Counselors must always belong to CGPC division
             $cgpc = Division::where('code', 'CGPC')->first();
@@ -207,9 +205,6 @@ class UserController extends Controller
 
         return redirect()->route('admin.users.index')
             ->with('success', 'User created successfully.');
-        } catch (\Throwable $e) {
-            return back()->withInput()->with('error', 'DEBUG: ' . $e->getMessage() . ' | File: ' . $e->getFile() . ':' . $e->getLine());
-        }
     }
 
     public function edit(User $user)
@@ -272,25 +267,24 @@ class UserController extends Controller
         $validated['is_active'] = $request->boolean('is_active');
         unset($validated['profile_photo'], $validated['remove_photo']);
 
-        // Clear counselor fields if role is not counselor
+        // Counselor-only fields — remove entirely for non-counselor roles
+        $counselorOnlyFields = [
+            'counselor_school', 'counselor_county', 'counselor_status',
+            'counselor_specialization', 'counselor_years_experience',
+            'counselor_training', 'counselor_school_phone', 'counselor_appointed_at',
+            'counselor_assignment_date', 'counselor_school_district',
+            'counselor_school_address', 'counselor_school_principal',
+            'counselor_school_level', 'counselor_school_type',
+            'counselor_school_population', 'counselor_num_boys', 'counselor_num_girls',
+            'date_of_birth', 'gender', 'nationality', 'address', 'city',
+            'emergency_contact_name', 'emergency_contact_phone', 'emergency_contact_relationship',
+        ];
+
         if ($validated['role'] !== User::ROLE_COUNSELOR) {
-            $validated['counselor_school'] = null;
-            $validated['counselor_county'] = null;
-            $validated['counselor_status'] = null;
-            $validated['counselor_specialization'] = null;
-            $validated['counselor_years_experience'] = null;
-            $validated['counselor_training'] = null;
-            $validated['counselor_school_phone'] = null;
-            $validated['counselor_appointed_at'] = null;
-            $validated['counselor_assignment_date'] = null;
-            $validated['counselor_school_district'] = null;
-            $validated['counselor_school_address'] = null;
-            $validated['counselor_school_principal'] = null;
-            $validated['counselor_school_level'] = null;
-            $validated['counselor_school_type'] = null;
-            $validated['counselor_school_population'] = null;
-            $validated['counselor_num_boys'] = null;
-            $validated['counselor_num_girls'] = null;
+            // Remove all counselor/personal fields — don't attempt to write them at all
+            foreach ($counselorOnlyFields as $field) {
+                unset($validated[$field]);
+            }
         } else {
             // Counselors must always belong to CGPC division
             $cgpc = Division::where('code', 'CGPC')->first();

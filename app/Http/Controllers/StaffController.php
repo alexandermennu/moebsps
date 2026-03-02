@@ -116,7 +116,8 @@ class StaffController extends Controller
 
         $isCounselor = $validated['role'] === User::ROLE_COUNSELOR;
 
-        $newStaff = User::create([
+        // Base user data
+        $userData = [
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
@@ -127,32 +128,38 @@ class StaffController extends Controller
             'is_active' => false,
             'approval_status' => User::APPROVAL_PENDING,
             'created_by_user_id' => $user->id,
-            'counselor_school' => $isCounselor ? ($validated['counselor_school'] ?? null) : null,
-            'counselor_county' => $isCounselor ? ($validated['counselor_county'] ?? null) : null,
-            'counselor_status' => $isCounselor ? ($validated['counselor_status'] ?? 'active') : null,
-            'counselor_specialization' => $isCounselor ? ($validated['counselor_specialization'] ?? null) : null,
-            'counselor_years_experience' => $isCounselor ? ($validated['counselor_years_experience'] ?? null) : null,
-            'counselor_school_phone' => $isCounselor ? ($validated['counselor_school_phone'] ?? null) : null,
-            // Personal information
-            'date_of_birth' => $isCounselor ? ($validated['date_of_birth'] ?? null) : null,
-            'gender' => $isCounselor ? ($validated['gender'] ?? null) : null,
-            'nationality' => $isCounselor ? ($validated['nationality'] ?? null) : null,
-            'address' => $isCounselor ? ($validated['address'] ?? null) : null,
-            'city' => $isCounselor ? ($validated['city'] ?? null) : null,
-            'emergency_contact_name' => $isCounselor ? ($validated['emergency_contact_name'] ?? null) : null,
-            'emergency_contact_phone' => $isCounselor ? ($validated['emergency_contact_phone'] ?? null) : null,
-            'emergency_contact_relationship' => $isCounselor ? ($validated['emergency_contact_relationship'] ?? null) : null,
-            // School & assignment details
-            'counselor_assignment_date' => $isCounselor ? ($validated['counselor_assignment_date'] ?? null) : null,
-            'counselor_school_district' => $isCounselor ? ($validated['counselor_school_district'] ?? null) : null,
-            'counselor_school_address' => $isCounselor ? ($validated['counselor_school_address'] ?? null) : null,
-            'counselor_school_principal' => $isCounselor ? ($validated['counselor_school_principal'] ?? null) : null,
-            'counselor_school_level' => $isCounselor ? ($validated['counselor_school_level'] ?? null) : null,
-            'counselor_school_type' => $isCounselor ? ($validated['counselor_school_type'] ?? null) : null,
-            'counselor_school_population' => $isCounselor ? ($validated['counselor_school_population'] ?? null) : null,
-            'counselor_num_boys' => $isCounselor ? ($validated['counselor_num_boys'] ?? null) : null,
-            'counselor_num_girls' => $isCounselor ? ($validated['counselor_num_girls'] ?? null) : null,
-        ]);
+        ];
+
+        // Only include counselor/personal fields when creating a counselor
+        if ($isCounselor) {
+            $userData += [
+                'counselor_school' => $validated['counselor_school'] ?? null,
+                'counselor_county' => $validated['counselor_county'] ?? null,
+                'counselor_status' => $validated['counselor_status'] ?? 'active',
+                'counselor_specialization' => $validated['counselor_specialization'] ?? null,
+                'counselor_years_experience' => $validated['counselor_years_experience'] ?? null,
+                'counselor_school_phone' => $validated['counselor_school_phone'] ?? null,
+                'date_of_birth' => $validated['date_of_birth'] ?? null,
+                'gender' => $validated['gender'] ?? null,
+                'nationality' => $validated['nationality'] ?? null,
+                'address' => $validated['address'] ?? null,
+                'city' => $validated['city'] ?? null,
+                'emergency_contact_name' => $validated['emergency_contact_name'] ?? null,
+                'emergency_contact_phone' => $validated['emergency_contact_phone'] ?? null,
+                'emergency_contact_relationship' => $validated['emergency_contact_relationship'] ?? null,
+                'counselor_assignment_date' => $validated['counselor_assignment_date'] ?? null,
+                'counselor_school_district' => $validated['counselor_school_district'] ?? null,
+                'counselor_school_address' => $validated['counselor_school_address'] ?? null,
+                'counselor_school_principal' => $validated['counselor_school_principal'] ?? null,
+                'counselor_school_level' => $validated['counselor_school_level'] ?? null,
+                'counselor_school_type' => $validated['counselor_school_type'] ?? null,
+                'counselor_school_population' => $validated['counselor_school_population'] ?? null,
+                'counselor_num_boys' => $validated['counselor_num_boys'] ?? null,
+                'counselor_num_girls' => $validated['counselor_num_girls'] ?? null,
+            ];
+        }
+
+        $newStaff = User::create($userData);
 
         // Handle profile photo upload
         if ($request->hasFile('profile_photo')) {
