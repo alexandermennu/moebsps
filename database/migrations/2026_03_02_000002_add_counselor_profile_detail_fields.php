@@ -25,8 +25,9 @@ return new class extends Migration
             $table->string('counselor_school_level')->nullable()->after('counselor_school_district');
             $table->string('counselor_school_type')->nullable()->after('counselor_school_level');
             $table->unsignedInteger('counselor_school_population')->nullable()->after('counselor_school_type');
-            $table->unsignedInteger('counselor_student_counselor_ratio')->nullable()->after('counselor_school_population');
-            $table->text('counselor_school_address')->nullable()->after('counselor_student_counselor_ratio');
+            $table->unsignedInteger('counselor_num_boys')->nullable()->after('counselor_school_population');
+            $table->unsignedInteger('counselor_num_girls')->nullable()->after('counselor_num_boys');
+            $table->text('counselor_school_address')->nullable()->after('counselor_num_girls');
             $table->string('counselor_school_principal')->nullable()->after('counselor_school_address');
         });
     }
@@ -48,7 +49,8 @@ return new class extends Migration
                 'counselor_school_level',
                 'counselor_school_type',
                 'counselor_school_population',
-                'counselor_student_counselor_ratio',
+                'counselor_num_boys',
+                'counselor_num_girls',
                 'counselor_school_address',
                 'counselor_school_principal',
             ]);

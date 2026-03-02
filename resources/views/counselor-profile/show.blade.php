@@ -210,7 +210,7 @@
                 {{-- School Brief Details --}}
                 <div class="mt-4 pt-4 border-t border-gray-200">
                     <h3 class="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-3">School Brief Details</h3>
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid grid-cols-3 gap-3">
                         <div class="bg-gray-50 border border-gray-100 p-4 text-center">
                             <p class="text-xs text-gray-500 font-medium uppercase">School Level</p>
                             <p class="text-sm font-semibold text-gray-900 mt-1">{{ \App\Models\User::SCHOOL_LEVELS[$counselor->counselor_school_level] ?? '—' }}</p>
@@ -224,8 +224,12 @@
                             <p class="text-sm font-semibold text-gray-900 mt-1">{{ $counselor->counselor_school_population ? number_format($counselor->counselor_school_population) : '—' }}</p>
                         </div>
                         <div class="bg-gray-50 border border-gray-100 p-4 text-center">
-                            <p class="text-xs text-gray-500 font-medium uppercase">Student : Counselor Ratio</p>
-                            <p class="text-sm font-semibold text-gray-900 mt-1">{{ $counselor->counselor_student_counselor_ratio ? $counselor->counselor_student_counselor_ratio . ' : 1' : '—' }}</p>
+                            <p class="text-xs text-gray-500 font-medium uppercase">No. of Boys</p>
+                            <p class="text-sm font-semibold text-gray-900 mt-1">{{ $counselor->counselor_num_boys ? number_format($counselor->counselor_num_boys) : '—' }}</p>
+                        </div>
+                        <div class="bg-gray-50 border border-gray-100 p-4 text-center">
+                            <p class="text-xs text-gray-500 font-medium uppercase">No. of Girls</p>
+                            <p class="text-sm font-semibold text-gray-900 mt-1">{{ $counselor->counselor_num_girls ? number_format($counselor->counselor_num_girls) : '—' }}</p>
                         </div>
                     </div>
                 </div>

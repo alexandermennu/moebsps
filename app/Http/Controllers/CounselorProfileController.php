@@ -82,7 +82,8 @@ class CounselorProfileController extends Controller
             'counselor_school_level'         => 'nullable|in:' . implode(',', array_keys(User::SCHOOL_LEVELS)),
             'counselor_school_type'          => 'nullable|in:' . implode(',', array_keys(User::SCHOOL_TYPES)),
             'counselor_school_population'    => 'nullable|integer|min:0|max:50000',
-            'counselor_student_counselor_ratio' => 'nullable|integer|min:1|max:5000',
+            'counselor_num_boys'             => 'nullable|integer|min:0|max:50000',
+            'counselor_num_girls'            => 'nullable|integer|min:0|max:50000',
 
             // Section 3: Education, Experience & Qualifications
             'counselor_qualification'        => 'nullable|in:' . implode(',', array_keys(User::COUNSELOR_QUALIFICATIONS)),
@@ -108,7 +109,7 @@ class CounselorProfileController extends Controller
             'counselor_assignment_date', 'counselor_school_district',
             'counselor_school_address', 'counselor_school_principal',
             'counselor_school_level', 'counselor_school_type',
-            'counselor_school_population', 'counselor_student_counselor_ratio',
+            'counselor_school_population', 'counselor_num_boys', 'counselor_num_girls',
             // Qualifications
             'counselor_qualification', 'counselor_specialization',
             'counselor_years_experience', 'counselor_training',

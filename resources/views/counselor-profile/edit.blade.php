@@ -274,15 +274,22 @@
                                 @error('counselor_school_population') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
                             </div>
                             <div>
-                                <label for="counselor_student_counselor_ratio" class="block text-xs font-medium text-gray-700 mb-1">Student-to-Counselor Ratio</label>
-                                <div class="flex items-center gap-2">
-                                    <input type="number" name="counselor_student_counselor_ratio" id="counselor_student_counselor_ratio"
-                                           value="{{ old('counselor_student_counselor_ratio', $counselor->counselor_student_counselor_ratio) }}"
-                                           min="1" max="5000" placeholder="e.g. 500"
-                                           class="w-full px-3 py-2 border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                    <span class="text-xs text-gray-400 whitespace-nowrap">: 1</span>
-                                </div>
-                                @error('counselor_student_counselor_ratio') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+                                <label for="counselor_num_boys" class="block text-xs font-medium text-gray-700 mb-1">No. of Boys</label>
+                                <input type="number" name="counselor_num_boys" id="counselor_num_boys"
+                                       value="{{ old('counselor_num_boys', $counselor->counselor_num_boys) }}"
+                                       min="0" max="50000" placeholder="e.g. 600"
+                                       class="w-full px-3 py-2 border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                @error('counselor_num_boys') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label for="counselor_num_girls" class="block text-xs font-medium text-gray-700 mb-1">No. of Girls</label>
+                                <input type="number" name="counselor_num_girls" id="counselor_num_girls"
+                                       value="{{ old('counselor_num_girls', $counselor->counselor_num_girls) }}"
+                                       min="0" max="50000" placeholder="e.g. 600"
+                                       class="w-full px-3 py-2 border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                @error('counselor_num_girls') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
                             </div>
                         </div>
                     </div>
