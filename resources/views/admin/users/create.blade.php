@@ -85,7 +85,7 @@
 
             {{-- Counselor-specific Fields --}}
             <div id="counselor-fields" class="mb-4 p-4 bg-blue-50 border border-blue-200" style="display: none;">
-                <h3 class="text-sm font-semibold text-blue-800 mb-3">Counselor Details</h3>
+                <h3 class="text-sm font-semibold text-blue-800 mb-3">Counselor Assignment</h3>
                 <div class="grid grid-cols-2 gap-4 mb-3">
                     <div>
                         <label for="counselor_school" class="block text-sm font-medium text-gray-700 mb-1">School of Assignment *</label>
@@ -103,14 +103,63 @@
                         </select>
                     </div>
                 </div>
+                <div class="grid grid-cols-2 gap-4 mb-3">
+                    <div>
+                        <label for="counselor_status" class="block text-sm font-medium text-gray-700 mb-1">Current Status *</label>
+                        <select name="counselor_status" id="counselor_status"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-slate-500">
+                            @foreach(\App\Models\User::COUNSELOR_STATUSES as $key => $label)
+                                <option value="{{ $key }}" {{ old('counselor_status', 'active') === $key ? 'selected' : '' }}>{{ $label }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div>
+                        <label for="counselor_appointed_at" class="block text-sm font-medium text-gray-700 mb-1">Appointment Date</label>
+                        <input type="date" name="counselor_appointed_at" id="counselor_appointed_at" value="{{ old('counselor_appointed_at') }}"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-slate-500">
+                    </div>
+                </div>
+
+                <h3 class="text-sm font-semibold text-blue-800 mb-3 mt-4 pt-3 border-t border-blue-200">Counselor Profile</h3>
+                <div class="grid grid-cols-3 gap-4 mb-3">
+                    <div>
+                        <label for="counselor_qualification" class="block text-sm font-medium text-gray-700 mb-1">Qualification</label>
+                        <select name="counselor_qualification" id="counselor_qualification"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-slate-500">
+                            <option value="">Select...</option>
+                            @foreach(\App\Models\User::COUNSELOR_QUALIFICATIONS as $key => $label)
+                                <option value="{{ $key }}" {{ old('counselor_qualification') === $key ? 'selected' : '' }}>{{ $label }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div>
+                        <label for="counselor_specialization" class="block text-sm font-medium text-gray-700 mb-1">Specialization</label>
+                        <select name="counselor_specialization" id="counselor_specialization"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-slate-500">
+                            <option value="">Select...</option>
+                            @foreach(\App\Models\User::COUNSELOR_SPECIALIZATIONS as $key => $label)
+                                <option value="{{ $key }}" {{ old('counselor_specialization') === $key ? 'selected' : '' }}>{{ $label }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div>
+                        <label for="counselor_years_experience" class="block text-sm font-medium text-gray-700 mb-1">Years Experience</label>
+                        <input type="number" name="counselor_years_experience" id="counselor_years_experience" value="{{ old('counselor_years_experience') }}"
+                               min="0" max="50" placeholder="e.g. 5"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-slate-500">
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="counselor_school_phone" class="block text-sm font-medium text-gray-700 mb-1">School Phone</label>
+                    <input type="text" name="counselor_school_phone" id="counselor_school_phone" value="{{ old('counselor_school_phone') }}"
+                           placeholder="+231-xxx-xxx-xxxx"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-slate-500">
+                </div>
                 <div>
-                    <label for="counselor_status" class="block text-sm font-medium text-gray-700 mb-1">Current Status *</label>
-                    <select name="counselor_status" id="counselor_status"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-slate-500">
-                        @foreach(\App\Models\User::COUNSELOR_STATUSES as $key => $label)
-                            <option value="{{ $key }}" {{ old('counselor_status', 'active') === $key ? 'selected' : '' }}>{{ $label }}</option>
-                        @endforeach
-                    </select>
+                    <label for="counselor_training" class="block text-sm font-medium text-gray-700 mb-1">Training & Certifications</label>
+                    <textarea name="counselor_training" id="counselor_training" rows="3"
+                              placeholder="List relevant training programs and certifications..."
+                              class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-slate-500">{{ old('counselor_training') }}</textarea>
                 </div>
             </div>
 

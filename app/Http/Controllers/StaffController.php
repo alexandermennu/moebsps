@@ -89,6 +89,10 @@ class StaffController extends Controller
             'counselor_school' => 'required_if:role,counselor|nullable|string|max:255',
             'counselor_county' => 'required_if:role,counselor|nullable|in:' . implode(',', User::COUNTIES),
             'counselor_status' => 'required_if:role,counselor|nullable|in:' . implode(',', array_keys(User::COUNSELOR_STATUSES)),
+            'counselor_qualification' => 'nullable|in:' . implode(',', array_keys(User::COUNSELOR_QUALIFICATIONS)),
+            'counselor_specialization' => 'nullable|in:' . implode(',', array_keys(User::COUNSELOR_SPECIALIZATIONS)),
+            'counselor_years_experience' => 'nullable|integer|min:0|max:50',
+            'counselor_school_phone' => 'nullable|string|max:50',
         ]);
 
         $newStaff = User::create([
@@ -105,6 +109,10 @@ class StaffController extends Controller
             'counselor_school' => $validated['role'] === User::ROLE_COUNSELOR ? ($validated['counselor_school'] ?? null) : null,
             'counselor_county' => $validated['role'] === User::ROLE_COUNSELOR ? ($validated['counselor_county'] ?? null) : null,
             'counselor_status' => $validated['role'] === User::ROLE_COUNSELOR ? ($validated['counselor_status'] ?? 'active') : null,
+            'counselor_qualification' => $validated['role'] === User::ROLE_COUNSELOR ? ($validated['counselor_qualification'] ?? null) : null,
+            'counselor_specialization' => $validated['role'] === User::ROLE_COUNSELOR ? ($validated['counselor_specialization'] ?? null) : null,
+            'counselor_years_experience' => $validated['role'] === User::ROLE_COUNSELOR ? ($validated['counselor_years_experience'] ?? null) : null,
+            'counselor_school_phone' => $validated['role'] === User::ROLE_COUNSELOR ? ($validated['counselor_school_phone'] ?? null) : null,
         ]);
 
         // Handle profile photo upload
@@ -188,6 +196,10 @@ class StaffController extends Controller
             'counselor_school' => 'required_if:role,counselor|nullable|string|max:255',
             'counselor_county' => 'required_if:role,counselor|nullable|in:' . implode(',', User::COUNTIES),
             'counselor_status' => 'required_if:role,counselor|nullable|in:' . implode(',', array_keys(User::COUNSELOR_STATUSES)),
+            'counselor_qualification' => 'nullable|in:' . implode(',', array_keys(User::COUNSELOR_QUALIFICATIONS)),
+            'counselor_specialization' => 'nullable|in:' . implode(',', array_keys(User::COUNSELOR_SPECIALIZATIONS)),
+            'counselor_years_experience' => 'nullable|integer|min:0|max:50',
+            'counselor_school_phone' => 'nullable|string|max:50',
         ]);
 
         $data = [
@@ -199,6 +211,10 @@ class StaffController extends Controller
             'counselor_school' => $validated['role'] === User::ROLE_COUNSELOR ? ($validated['counselor_school'] ?? null) : null,
             'counselor_county' => $validated['role'] === User::ROLE_COUNSELOR ? ($validated['counselor_county'] ?? null) : null,
             'counselor_status' => $validated['role'] === User::ROLE_COUNSELOR ? ($validated['counselor_status'] ?? 'active') : null,
+            'counselor_qualification' => $validated['role'] === User::ROLE_COUNSELOR ? ($validated['counselor_qualification'] ?? null) : null,
+            'counselor_specialization' => $validated['role'] === User::ROLE_COUNSELOR ? ($validated['counselor_specialization'] ?? null) : null,
+            'counselor_years_experience' => $validated['role'] === User::ROLE_COUNSELOR ? ($validated['counselor_years_experience'] ?? null) : null,
+            'counselor_school_phone' => $validated['role'] === User::ROLE_COUNSELOR ? ($validated['counselor_school_phone'] ?? null) : null,
         ];
 
         if (!empty($validated['password'])) {

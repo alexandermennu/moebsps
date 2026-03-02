@@ -11,7 +11,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Storage;
 
-#[Fillable(['name', 'email', 'password', 'role', 'division_id', 'position', 'phone', 'profile_photo', 'is_active', 'approval_status', 'created_by_user_id', 'approved_at', 'approved_by', 'rejection_reason', 'counselor_school', 'counselor_county', 'counselor_status'])]
+#[Fillable(['name', 'email', 'password', 'role', 'division_id', 'position', 'phone', 'profile_photo', 'is_active', 'approval_status', 'created_by_user_id', 'approved_at', 'approved_by', 'rejection_reason', 'counselor_school', 'counselor_county', 'counselor_status', 'counselor_qualification', 'counselor_specialization', 'counselor_years_experience', 'counselor_training', 'counselor_school_phone', 'counselor_appointed_at'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -54,6 +54,7 @@ class User extends Authenticatable
             'password' => 'hashed',
             'is_active' => 'boolean',
             'approved_at' => 'datetime',
+            'counselor_appointed_at' => 'date',
         ];
     }
 
@@ -89,6 +90,31 @@ class User extends Authenticatable
         'River Cess County',
         'River Gee County',
         'Sinoe County',
+    ];
+
+    // ── Counselor Qualification Constants ───────────────────
+    const COUNSELOR_QUALIFICATIONS = [
+        'certificate'   => 'Certificate',
+        'diploma'       => 'Diploma',
+        'associate'     => 'Associate Degree',
+        'bachelors'     => 'Bachelor\'s Degree',
+        'masters'       => 'Master\'s Degree',
+        'doctorate'     => 'Doctorate',
+        'other'         => 'Other',
+    ];
+
+    // ── Counselor Specialization Constants ──────────────────
+    const COUNSELOR_SPECIALIZATIONS = [
+        'school_counseling'      => 'School Counseling',
+        'mental_health'          => 'Mental Health',
+        'trauma_support'         => 'Trauma Support',
+        'child_protection'       => 'Child Protection',
+        'gender_based_violence'  => 'Gender-Based Violence',
+        'substance_abuse'        => 'Substance Abuse',
+        'career_guidance'        => 'Career Guidance',
+        'psychosocial_support'   => 'Psychosocial Support',
+        'special_needs'          => 'Special Needs Education',
+        'other'                  => 'Other',
     ];
 
     // ── Relationships ──────────────────────────────────────
@@ -131,6 +157,11 @@ class User extends Authenticatable
     public function approvedByUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'approved_by');
+    }
+
+    public function counselorDocuments(): HasMany
+    {
+        return $this->hasMany(CounselorDocument::class);
     }
 
     // ── Approval Helpers ───────────────────────────────────
@@ -400,6 +431,16 @@ class User extends Authenticatable
     public function getCounselorStatusLabelAttribute(): string
     {
         return self::COUNSELOR_STATUSES[$this->counselor_status] ?? ucfirst($this->counselor_status ?? 'Active');
+    }
+
+    public function getCounselorQualificationLabelAttribute(): string
+    {
+        return self::COUNSELOR_QUALIFICATIONS[$this->counselor_qualification] ?? ucfirst($this->counselor_qualification ?? '—');
+    }
+
+    public function getCounselorSpecializationLabelAttribute(): string
+    {
+        return self::COUNSELOR_SPECIALIZATIONS[$this->counselor_specialization] ?? ucfirst($this->counselor_specialization ?? '—');
     }
 
     public function unreadNotificationCount(): int

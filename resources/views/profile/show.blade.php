@@ -113,6 +113,16 @@
                     <dt class="text-sm font-medium text-gray-500">County</dt>
                     <dd class="text-sm text-gray-900 col-span-2">{{ $user->counselor_county ?? '—' }}</dd>
                 </div>
+                <div class="py-3 grid grid-cols-3 gap-4">
+                    <dt class="text-sm font-medium text-gray-500">Counselor Status</dt>
+                    <dd class="text-sm text-gray-900 col-span-2">{{ $user->counselor_status_label }}</dd>
+                </div>
+                <div class="py-3 grid grid-cols-3 gap-4">
+                    <dt class="text-sm font-medium text-gray-500">Counselor Profile</dt>
+                    <dd class="text-sm col-span-2">
+                        <a href="{{ route('counselor-profile.show', $user) }}" class="text-blue-700 hover:underline font-medium">View Full Counselor Profile →</a>
+                    </dd>
+                </div>
                 @endif
 
                 <div class="py-3 grid grid-cols-3 gap-4">

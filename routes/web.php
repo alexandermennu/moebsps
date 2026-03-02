@@ -19,6 +19,7 @@ use App\Http\Controllers\SrgbvDashboardController;
 use App\Http\Controllers\CasesReportController;
 use App\Http\Controllers\TrackedActivityController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\CounselorProfileController;
 
 /*
 |--------------------------------------------------------------------------
@@ -97,6 +98,13 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::delete('/{staff_user}', [StaffController::class, 'destroy'])->name('destroy');
     });
 
+    // Counselor Profile
+    Route::get('/counselor-profile/edit/me', [CounselorProfileController::class, 'edit'])->name('counselor-profile.edit');
+    Route::put('/counselor-profile', [CounselorProfileController::class, 'update'])->name('counselor-profile.update');
+    Route::post('/counselor-profile/documents', [CounselorProfileController::class, 'uploadDocument'])->name('counselor-profile.documents.upload');
+    Route::delete('/counselor-profile/documents/{document}', [CounselorProfileController::class, 'deleteDocument'])->name('counselor-profile.documents.delete');
+    Route::get('/counselor-profile/{counselor}', [CounselorProfileController::class, 'show'])->name('counselor-profile.show');
+
     // Cases Report Landing
     Route::get('/cases-report', [CasesReportController::class, 'index'])->name('cases-report');
 
@@ -126,6 +134,10 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::get('users/counselors', [UserController::class, 'counselors'])->name('users.counselors');
         Route::resource('users', UserController::class)->except(['show']);
         Route::patch('users/{user}/toggle-active', [UserController::class, 'toggleActive'])->name('users.toggle-active');
+
+        // Counselor Profile Management (admin)
+        Route::put('counselor-profile/{counselor}', [CounselorProfileController::class, 'adminUpdate'])->name('counselor-profile.update');
+        Route::post('counselor-profile/{counselor}/documents', [CounselorProfileController::class, 'adminUploadDocument'])->name('counselor-profile.documents.upload');
 
         // Staff Approvals
         Route::get('staff-approvals', [StaffApprovalController::class, 'index'])->name('staff-approvals.index');

@@ -129,6 +129,12 @@ class UserController extends Controller
             'counselor_school' => 'required_if:role,counselor|nullable|string|max:255',
             'counselor_county' => 'required_if:role,counselor|nullable|in:' . implode(',', User::COUNTIES),
             'counselor_status' => 'required_if:role,counselor|nullable|in:' . implode(',', array_keys(User::COUNSELOR_STATUSES)),
+            'counselor_qualification' => 'nullable|in:' . implode(',', array_keys(User::COUNSELOR_QUALIFICATIONS)),
+            'counselor_specialization' => 'nullable|in:' . implode(',', array_keys(User::COUNSELOR_SPECIALIZATIONS)),
+            'counselor_years_experience' => 'nullable|integer|min:0|max:50',
+            'counselor_training' => 'nullable|string|max:2000',
+            'counselor_school_phone' => 'nullable|string|max:50',
+            'counselor_appointed_at' => 'nullable|date',
         ]);
 
         $validated['password'] = Hash::make($validated['password']);
@@ -140,6 +146,12 @@ class UserController extends Controller
             $validated['counselor_school'] = null;
             $validated['counselor_county'] = null;
             $validated['counselor_status'] = null;
+            $validated['counselor_qualification'] = null;
+            $validated['counselor_specialization'] = null;
+            $validated['counselor_years_experience'] = null;
+            $validated['counselor_training'] = null;
+            $validated['counselor_school_phone'] = null;
+            $validated['counselor_appointed_at'] = null;
         }
 
         $user = User::create($validated);
@@ -181,6 +193,12 @@ class UserController extends Controller
             'counselor_school' => 'required_if:role,counselor|nullable|string|max:255',
             'counselor_county' => 'required_if:role,counselor|nullable|in:' . implode(',', User::COUNTIES),
             'counselor_status' => 'required_if:role,counselor|nullable|in:' . implode(',', array_keys(User::COUNSELOR_STATUSES)),
+            'counselor_qualification' => 'nullable|in:' . implode(',', array_keys(User::COUNSELOR_QUALIFICATIONS)),
+            'counselor_specialization' => 'nullable|in:' . implode(',', array_keys(User::COUNSELOR_SPECIALIZATIONS)),
+            'counselor_years_experience' => 'nullable|integer|min:0|max:50',
+            'counselor_training' => 'nullable|string|max:2000',
+            'counselor_school_phone' => 'nullable|string|max:50',
+            'counselor_appointed_at' => 'nullable|date',
         ]);
 
         if (!empty($validated['password'])) {
@@ -197,6 +215,12 @@ class UserController extends Controller
             $validated['counselor_school'] = null;
             $validated['counselor_county'] = null;
             $validated['counselor_status'] = null;
+            $validated['counselor_qualification'] = null;
+            $validated['counselor_specialization'] = null;
+            $validated['counselor_years_experience'] = null;
+            $validated['counselor_training'] = null;
+            $validated['counselor_school_phone'] = null;
+            $validated['counselor_appointed_at'] = null;
         }
 
         $user->update($validated);

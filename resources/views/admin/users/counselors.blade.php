@@ -65,9 +65,9 @@
                     <tr>
                         <th class="text-left px-5 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium">#</th>
                         <th class="text-left px-5 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium">Name</th>
-                        <th class="text-left px-5 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium">Email</th>
                         <th class="text-left px-5 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium">School of Assignment</th>
                         <th class="text-left px-5 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium">County</th>
+                        <th class="text-left px-5 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium">Qualification</th>
                         <th class="text-center px-5 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium">Current Status</th>
                         <th class="text-center px-5 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium">Account</th>
                         <th class="text-right px-5 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium">Actions</th>
@@ -80,12 +80,24 @@
                             <td class="px-5 py-3">
                                 <div class="flex items-center gap-3">
                                     <x-user-avatar :user="$c" size="xs" />
-                                    <span class="font-medium text-gray-800">{{ $c->name }}</span>
+                                    <div>
+                                        <a href="{{ route('counselor-profile.show', $c) }}" class="font-medium text-gray-800 hover:text-blue-700">{{ $c->name }}</a>
+                                        <p class="text-xs text-gray-400">{{ $c->email }}</p>
+                                    </div>
                                 </div>
                             </td>
-                            <td class="px-5 py-3 text-gray-600">{{ $c->email }}</td>
                             <td class="px-5 py-3 text-gray-700">{{ $c->counselor_school ?? '—' }}</td>
                             <td class="px-5 py-3 text-gray-700">{{ $c->counselor_county ?? '—' }}</td>
+                            <td class="px-5 py-3">
+                                @if($c->counselor_qualification)
+                                    <span class="text-gray-700">{{ $c->counselor_qualification_label }}</span>
+                                    @if($c->counselor_specialization)
+                                        <p class="text-xs text-gray-400 mt-0.5">{{ $c->counselor_specialization_label }}</p>
+                                    @endif
+                                @else
+                                    <span class="text-gray-400 text-xs italic">Not set</span>
+                                @endif
+                            </td>
                             <td class="px-5 py-3 text-center">
                                 @php
                                     $statusColors = [
@@ -108,7 +120,10 @@
                                 </span>
                             </td>
                             <td class="px-5 py-3 text-right">
-                                @include('admin.users._actions', ['u' => $c])
+                                <div class="flex items-center justify-end gap-2">
+                                    <a href="{{ route('counselor-profile.show', $c) }}" class="px-2 py-1 text-[10px] text-blue-700 border border-blue-200 hover:bg-blue-50 font-medium">Profile</a>
+                                    @include('admin.users._actions', ['u' => $c])
+                                </div>
                             </td>
                         </tr>
                     @empty
