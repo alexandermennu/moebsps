@@ -63,11 +63,33 @@ class CounselorProfileController extends Controller
         }
 
         $validated = $request->validate([
-            'counselor_qualification'    => 'nullable|in:' . implode(',', array_keys(User::COUNSELOR_QUALIFICATIONS)),
-            'counselor_specialization'   => 'nullable|in:' . implode(',', array_keys(User::COUNSELOR_SPECIALIZATIONS)),
-            'counselor_years_experience' => 'nullable|integer|min:0|max:50',
-            'counselor_training'         => 'nullable|string|max:2000',
-            'counselor_school_phone'     => 'nullable|string|max:50',
+            // Section 1: Personal Information
+            'date_of_birth'                  => 'nullable|date|before:today',
+            'gender'                         => 'nullable|in:' . implode(',', array_keys(User::GENDERS)),
+            'nationality'                    => 'nullable|string|max:100',
+            'address'                        => 'nullable|string|max:500',
+            'city'                           => 'nullable|string|max:100',
+            'counselor_school_phone'         => 'nullable|string|max:50',
+            'emergency_contact_name'         => 'nullable|string|max:255',
+            'emergency_contact_phone'        => 'nullable|string|max:50',
+            'emergency_contact_relationship' => 'nullable|string|max:100',
+
+            // Section 2: Assignment Details (counselor-editable)
+            'counselor_assignment_date'      => 'nullable|date',
+            'counselor_school_district'      => 'nullable|string|max:255',
+            'counselor_school_address'       => 'nullable|string|max:1000',
+            'counselor_school_principal'     => 'nullable|string|max:255',
+            'counselor_school_level'         => 'nullable|in:' . implode(',', array_keys(User::SCHOOL_LEVELS)),
+            'counselor_school_type'          => 'nullable|in:' . implode(',', array_keys(User::SCHOOL_TYPES)),
+            'counselor_school_population'    => 'nullable|integer|min:0|max:50000',
+            'counselor_student_counselor_ratio' => 'nullable|integer|min:1|max:5000',
+
+            // Section 3: Education, Experience & Qualifications
+            'counselor_qualification'        => 'nullable|in:' . implode(',', array_keys(User::COUNSELOR_QUALIFICATIONS)),
+            'counselor_specialization'       => 'nullable|in:' . implode(',', array_keys(User::COUNSELOR_SPECIALIZATIONS)),
+            'counselor_years_experience'     => 'nullable|integer|min:0|max:50',
+            'counselor_training'             => 'nullable|string|max:2000',
+
             // Primary education details
             'edu_institution'   => 'nullable|string|max:255',
             'edu_program'       => 'nullable|string|max:255',
@@ -78,8 +100,18 @@ class CounselorProfileController extends Controller
         ]);
 
         $user->update(collect($validated)->only([
+            // Personal
+            'date_of_birth', 'gender', 'nationality', 'address', 'city',
+            'counselor_school_phone', 'emergency_contact_name',
+            'emergency_contact_phone', 'emergency_contact_relationship',
+            // Assignment
+            'counselor_assignment_date', 'counselor_school_district',
+            'counselor_school_address', 'counselor_school_principal',
+            'counselor_school_level', 'counselor_school_type',
+            'counselor_school_population', 'counselor_student_counselor_ratio',
+            // Qualifications
             'counselor_qualification', 'counselor_specialization',
-            'counselor_years_experience', 'counselor_training', 'counselor_school_phone',
+            'counselor_years_experience', 'counselor_training',
         ])->toArray());
 
         // Save / update primary education record

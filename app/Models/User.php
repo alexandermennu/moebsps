@@ -11,7 +11,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Storage;
 
-#[Fillable(['name', 'email', 'password', 'role', 'division_id', 'position', 'phone', 'profile_photo', 'is_active', 'approval_status', 'created_by_user_id', 'approved_at', 'approved_by', 'rejection_reason', 'counselor_school', 'counselor_county', 'counselor_status', 'counselor_qualification', 'counselor_specialization', 'counselor_years_experience', 'counselor_training', 'counselor_school_phone', 'counselor_appointed_at'])]
+#[Fillable(['name', 'email', 'password', 'role', 'division_id', 'position', 'phone', 'profile_photo', 'is_active', 'approval_status', 'created_by_user_id', 'approved_at', 'approved_by', 'rejection_reason', 'address', 'city', 'date_of_birth', 'gender', 'nationality', 'emergency_contact_name', 'emergency_contact_phone', 'emergency_contact_relationship', 'counselor_school', 'counselor_county', 'counselor_status', 'counselor_qualification', 'counselor_specialization', 'counselor_years_experience', 'counselor_training', 'counselor_school_phone', 'counselor_appointed_at', 'counselor_assignment_date', 'counselor_school_district', 'counselor_school_level', 'counselor_school_type', 'counselor_school_population', 'counselor_student_counselor_ratio', 'counselor_school_address', 'counselor_school_principal'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -54,7 +54,9 @@ class User extends Authenticatable
             'password' => 'hashed',
             'is_active' => 'boolean',
             'approved_at' => 'datetime',
+            'date_of_birth' => 'date',
             'counselor_appointed_at' => 'date',
+            'counselor_assignment_date' => 'date',
         ];
     }
 
@@ -115,6 +117,33 @@ class User extends Authenticatable
         'psychosocial_support'   => 'Psychosocial Support',
         'special_needs'          => 'Special Needs Education',
         'other'                  => 'Other',
+    ];
+
+    // ── Gender Constants ────────────────────────────────────
+    const GENDERS = [
+        'male'   => 'Male',
+        'female' => 'Female',
+    ];
+
+    // ── School Level Constants ──────────────────────────────
+    const SCHOOL_LEVELS = [
+        'early_childhood' => 'Early Childhood (ECE)',
+        'primary'         => 'Primary',
+        'junior_high'     => 'Junior High',
+        'senior_high'     => 'Senior High',
+        'combined'        => 'Combined (Multi-Level)',
+        'technical'       => 'Technical / Vocational',
+        'other'           => 'Other',
+    ];
+
+    // ── School Type Constants ───────────────────────────────
+    const SCHOOL_TYPES = [
+        'public'           => 'Public',
+        'private'          => 'Private',
+        'community'        => 'Community',
+        'mission'          => 'Mission / Faith-Based',
+        'government_aided' => 'Government-Aided',
+        'other'            => 'Other',
     ];
 
     // ── Relationships ──────────────────────────────────────
