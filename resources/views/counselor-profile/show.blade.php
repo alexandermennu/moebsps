@@ -16,19 +16,19 @@
 
     {{-- Profile Header Card --}}
     <div class="bg-white border border-gray-200 mb-6">
-        <div class="bg-gradient-to-r from-blue-800 to-blue-600 flex items-stretch">
-            {{-- Square headshot — full height of header --}}
-            @if($counselor->hasProfilePhoto())
-                <img src="{{ $counselor->profile_photo_url }}"
-                     alt="{{ $counselor->name }}"
-                     class="aspect-square object-cover flex-shrink-0 w-auto h-auto min-h-full border-r-4 border-white/20">
-            @else
-                <div class="aspect-square flex-shrink-0 min-h-full bg-white/10 flex items-center justify-center text-5xl font-bold text-white/70 border-r-4 border-white/20 px-8">
-                    {{ $counselor->initials }}
-                </div>
-            @endif
+        <div class="bg-gradient-to-r from-blue-800 to-blue-600 px-6 py-8">
+            <div class="flex items-center gap-6">
+                {{-- Square headshot --}}
+                @if($counselor->hasProfilePhoto())
+                    <img src="{{ $counselor->profile_photo_url }}"
+                         alt="{{ $counselor->name }}"
+                         class="w-28 h-28 object-cover flex-shrink-0 ring-4 ring-white/30 shadow-lg">
+                @else
+                    <div class="w-28 h-28 bg-white/10 flex items-center justify-center text-4xl font-bold text-white/70 flex-shrink-0 ring-4 ring-white/30 shadow-lg">
+                        {{ $counselor->initials }}
+                    </div>
+                @endif
 
-            <div class="px-6 py-8 flex-1">
                 <div>
                     <h1 class="text-xl font-bold text-white">{{ $counselor->name }}</h1>
                     <p class="text-blue-100 text-sm mt-1">School Counselor</p>
