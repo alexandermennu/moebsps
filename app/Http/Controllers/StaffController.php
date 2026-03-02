@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\BureauNotification;
+use App\Models\CounselorEducation;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -93,7 +94,15 @@ class StaffController extends Controller
             'counselor_specialization' => 'nullable|in:' . implode(',', array_keys(User::COUNSELOR_SPECIALIZATIONS)),
             'counselor_years_experience' => 'nullable|integer|min:0|max:50',
             'counselor_school_phone' => 'nullable|string|max:50',
+            'edu_institution' => 'nullable|string|max:255',
+            'edu_program' => 'nullable|string|max:255',
+            'edu_year_started' => 'nullable|integer|min:1950|max:' . (date('Y') + 5),
+            'edu_year_graduated' => 'nullable|integer|min:1950|max:' . (date('Y') + 5),
+            'edu_country' => 'nullable|string|max:100',
+            'edu_notes' => 'nullable|string|max:1000',
         ]);
+
+        $eduFields = collect($validated)->filter(fn($v, $k) => str_starts_with($k, 'edu_'))->toArray();
 
         $newStaff = User::create([
             'name' => $validated['name'],
@@ -114,6 +123,19 @@ class StaffController extends Controller
             'counselor_years_experience' => $validated['role'] === User::ROLE_COUNSELOR ? ($validated['counselor_years_experience'] ?? null) : null,
             'counselor_school_phone' => $validated['role'] === User::ROLE_COUNSELOR ? ($validated['counselor_school_phone'] ?? null) : null,
         ]);
+
+        // Save education record for counselors
+        if ($validated['role'] === User::ROLE_COUNSELOR && !empty($eduFields['edu_institution']) && !empty($validated['counselor_qualification'])) {
+            $newStaff->counselorEducation()->create([
+                'institution' => $eduFields['edu_institution'],
+                'program' => $eduFields['edu_program'] ?? null,
+                'degree_level' => $validated['counselor_qualification'],
+                'year_started' => $eduFields['edu_year_started'] ?? null,
+                'year_graduated' => $eduFields['edu_year_graduated'] ?? null,
+                'country' => $eduFields['edu_country'] ?? null,
+                'notes' => $eduFields['edu_notes'] ?? null,
+            ]);
+        }
 
         // Handle profile photo upload
         if ($request->hasFile('profile_photo')) {
@@ -162,6 +184,7 @@ class StaffController extends Controller
         }
 
         $roles = User::directorAssignableRoles($user->division_id);
+        $staff_user->load('counselorEducation');
 
         return view('staff.edit', ['staff' => $staff_user, 'roles' => $roles, 'user' => $user]);
     }
@@ -200,7 +223,15 @@ class StaffController extends Controller
             'counselor_specialization' => 'nullable|in:' . implode(',', array_keys(User::COUNSELOR_SPECIALIZATIONS)),
             'counselor_years_experience' => 'nullable|integer|min:0|max:50',
             'counselor_school_phone' => 'nullable|string|max:50',
+            'edu_institution' => 'nullable|string|max:255',
+            'edu_program' => 'nullable|string|max:255',
+            'edu_year_started' => 'nullable|integer|min:1950|max:' . (date('Y') + 5),
+            'edu_year_graduated' => 'nullable|integer|min:1950|max:' . (date('Y') + 5),
+            'edu_country' => 'nullable|string|max:100',
+            'edu_notes' => 'nullable|string|max:1000',
         ]);
+
+        $eduFields = collect($validated)->filter(fn($v, $k) => str_starts_with($k, 'edu_'))->toArray();
 
         $data = [
             'name' => $validated['name'],
@@ -222,6 +253,21 @@ class StaffController extends Controller
         }
 
         $staff_user->update($data);
+
+        // Save/update education record for counselors
+        if ($validated['role'] === User::ROLE_COUNSELOR && !empty($eduFields['edu_institution']) && !empty($validated['counselor_qualification'])) {
+            $staff_user->counselorEducation()->updateOrCreate(
+                ['degree_level' => $validated['counselor_qualification']],
+                [
+                    'institution' => $eduFields['edu_institution'],
+                    'program' => $eduFields['edu_program'] ?? null,
+                    'year_started' => $eduFields['edu_year_started'] ?? null,
+                    'year_graduated' => $eduFields['edu_year_graduated'] ?? null,
+                    'country' => $eduFields['edu_country'] ?? null,
+                    'notes' => $eduFields['edu_notes'] ?? null,
+                ]
+            );
+        }
 
         // Handle profile photo
         if ($request->boolean('remove_photo')) {

@@ -164,6 +164,16 @@ class User extends Authenticatable
         return $this->hasMany(CounselorDocument::class);
     }
 
+    public function counselorEducation(): HasMany
+    {
+        return $this->hasMany(CounselorEducation::class);
+    }
+
+    public function counselorCertificates(): HasMany
+    {
+        return $this->hasMany(CounselorCertificate::class);
+    }
+
     // ── Approval Helpers ───────────────────────────────────
 
     public function isPending(): bool

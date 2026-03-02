@@ -103,6 +103,8 @@ Route::middleware(['auth', 'active'])->group(function () {
     Route::put('/counselor-profile', [CounselorProfileController::class, 'update'])->name('counselor-profile.update');
     Route::post('/counselor-profile/documents', [CounselorProfileController::class, 'uploadDocument'])->name('counselor-profile.documents.upload');
     Route::delete('/counselor-profile/documents/{document}', [CounselorProfileController::class, 'deleteDocument'])->name('counselor-profile.documents.delete');
+    Route::post('/counselor-profile/certificates', [CounselorProfileController::class, 'storeCertificate'])->name('counselor-profile.certificates.store');
+    Route::delete('/counselor-profile/certificates/{certificate}', [CounselorProfileController::class, 'deleteCertificate'])->name('counselor-profile.certificates.delete');
     Route::get('/counselor-profile/{counselor}', [CounselorProfileController::class, 'show'])->name('counselor-profile.show');
 
     // Cases Report Landing
@@ -138,6 +140,8 @@ Route::middleware(['auth', 'active'])->group(function () {
         // Counselor Profile Management (admin)
         Route::put('counselor-profile/{counselor}', [CounselorProfileController::class, 'adminUpdate'])->name('counselor-profile.update');
         Route::post('counselor-profile/{counselor}/documents', [CounselorProfileController::class, 'adminUploadDocument'])->name('counselor-profile.documents.upload');
+        Route::post('counselor-profile/{counselor}/certificates', [CounselorProfileController::class, 'adminStoreCertificate'])->name('counselor-profile.certificates.store');
+        Route::put('counselor-profile/{counselor}/education', [CounselorProfileController::class, 'adminUpdateEducation'])->name('counselor-profile.education.update');
 
         // Staff Approvals
         Route::get('staff-approvals', [StaffApprovalController::class, 'index'])->name('staff-approvals.index');

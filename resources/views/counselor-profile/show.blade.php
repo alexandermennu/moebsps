@@ -128,7 +128,7 @@
                     Qualifications & Experience
                 </h2>
 
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
                     <div class="bg-gray-50 border border-gray-100 p-4 text-center">
                         <p class="text-xs text-gray-500 font-medium uppercase">Qualification</p>
                         <p class="text-sm font-semibold text-gray-900 mt-1">{{ $counselor->counselor_qualification_label }}</p>
@@ -142,7 +142,92 @@
                         <p class="text-sm font-semibold text-gray-900 mt-1">{{ $counselor->counselor_years_experience !== null ? $counselor->counselor_years_experience . ' years' : '—' }}</p>
                     </div>
                 </div>
+
+                {{-- Primary Education Details --}}
+                @php $eduRecord = $counselor->counselorEducation->first(); @endphp
+                @if($eduRecord)
+                    <div class="bg-blue-50 border border-blue-200 p-4 mt-2">
+                        <h3 class="text-xs font-semibold text-blue-800 uppercase tracking-wide mb-3">
+                            <svg class="w-3.5 h-3.5 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222"/></svg>
+                            Education — {{ $eduRecord->degree_level_label }}
+                        </h3>
+                        <div class="grid grid-cols-2 gap-3 text-sm">
+                            <div>
+                                <span class="text-blue-600 text-xs font-medium">Institution</span>
+                                <p class="text-gray-900 font-medium">{{ $eduRecord->institution }}</p>
+                            </div>
+                            <div>
+                                <span class="text-blue-600 text-xs font-medium">Program</span>
+                                <p class="text-gray-900">{{ $eduRecord->program ?: '—' }}</p>
+                            </div>
+                            <div>
+                                <span class="text-blue-600 text-xs font-medium">Period</span>
+                                <p class="text-gray-900">{{ $eduRecord->year_range }}</p>
+                            </div>
+                            @if($eduRecord->country)
+                                <div>
+                                    <span class="text-blue-600 text-xs font-medium">Country</span>
+                                    <p class="text-gray-900">{{ $eduRecord->country }}</p>
+                                </div>
+                            @endif
+                            @if($eduRecord->notes)
+                                <div class="col-span-2">
+                                    <span class="text-blue-600 text-xs font-medium">Notes</span>
+                                    <p class="text-gray-700 text-xs">{{ $eduRecord->notes }}</p>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+                @endif
             </div>
+
+            {{-- Additional Certificates & Achievements --}}
+            @if($counselor->counselorCertificates->count() > 0)
+            <div class="bg-white border border-gray-200 p-5">
+                <div class="flex items-center justify-between border-b border-gray-200 pb-2 mb-4">
+                    <h2 class="text-sm font-semibold text-gray-900 uppercase tracking-wide">
+                        <svg class="w-4 h-4 inline-block mr-1 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
+                        Additional Certificates & Achievements
+                    </h2>
+                    <span class="text-xs text-gray-400">{{ $counselor->counselorCertificates->count() }} certificate(s)</span>
+                </div>
+
+                <div class="divide-y divide-gray-100">
+                    @foreach($counselor->counselorCertificates as $cert)
+                        <div class="py-3">
+                            <div class="flex items-start gap-3">
+                                <div class="w-9 h-9 bg-amber-50 border border-amber-200 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                    <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-sm font-semibold text-gray-900">{{ $cert->certificate_name }}</p>
+                                    <p class="text-xs text-gray-600 mt-0.5">{{ $cert->institution }}</p>
+                                    <div class="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1.5 text-xs text-gray-500">
+                                        @if($cert->program)
+                                            <span><strong>Program:</strong> {{ $cert->program }}</span>
+                                        @endif
+                                        @if($cert->year_obtained)
+                                            <span><strong>Year:</strong> {{ $cert->year_obtained }}</span>
+                                        @endif
+                                        @if($cert->certificate_number)
+                                            <span><strong>No:</strong> {{ $cert->certificate_number }}</span>
+                                        @endif
+                                        @if($cert->expiry_date)
+                                            <span class="px-1.5 py-0.5 text-xs font-medium {{ $cert->is_expired ? 'bg-red-50 text-red-700' : 'bg-green-50 text-green-700' }}">
+                                                {{ $cert->status_label }} — {{ $cert->expiry_date->format('M Y') }}
+                                            </span>
+                                        @endif
+                                    </div>
+                                    @if($cert->description)
+                                        <p class="text-xs text-gray-500 mt-1.5 italic">{{ $cert->description }}</p>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+            @endif
 
             {{-- Training & Development --}}
             <div class="bg-white border border-gray-200 p-5">
