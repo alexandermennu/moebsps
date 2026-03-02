@@ -4,7 +4,7 @@
 @section('page-title', 'Add New User')
 
 @section('content')
-<div class="max-w-2xl">
+<div class="max-w-4xl">
     <div class="mb-6">
         <a href="{{ route('admin.users.index') }}" class="text-xs text-blue-700 hover:underline">Back to Users</a>
     </div>
@@ -116,6 +116,123 @@
                     <div>
                         <label for="counselor_appointed_at" class="block text-sm font-medium text-gray-700 mb-1">Appointment Date</label>
                         <input type="date" name="counselor_appointed_at" id="counselor_appointed_at" value="{{ old('counselor_appointed_at') }}"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-slate-500">
+                    </div>
+                </div>
+
+                {{-- Personal Information --}}
+                <h3 class="text-sm font-semibold text-blue-800 mb-3 mt-4 pt-3 border-t border-blue-200">Personal Information</h3>
+                <div class="grid grid-cols-3 gap-4 mb-3">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
+                        <input type="date" name="date_of_birth" value="{{ old('date_of_birth') }}"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-slate-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Gender</label>
+                        <select name="gender" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-slate-500">
+                            <option value="">Select...</option>
+                            @foreach(\App\Models\User::GENDERS as $key => $label)
+                                <option value="{{ $key }}" {{ old('gender') === $key ? 'selected' : '' }}>{{ $label }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Nationality</label>
+                        <input type="text" name="nationality" value="{{ old('nationality') }}" placeholder="e.g. Liberian"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-slate-500">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4 mb-3">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Residential Address</label>
+                        <input type="text" name="address" value="{{ old('address') }}" placeholder="Street address"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-slate-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">City / Town</label>
+                        <input type="text" name="city" value="{{ old('city') }}" placeholder="e.g. Monrovia"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-slate-500">
+                    </div>
+                </div>
+                <div class="grid grid-cols-3 gap-4 mb-3">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Emergency Contact Name</label>
+                        <input type="text" name="emergency_contact_name" value="{{ old('emergency_contact_name') }}"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-slate-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Emergency Contact Phone</label>
+                        <input type="text" name="emergency_contact_phone" value="{{ old('emergency_contact_phone') }}"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-slate-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Emergency Relationship</label>
+                        <input type="text" name="emergency_contact_relationship" value="{{ old('emergency_contact_relationship') }}"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-slate-500">
+                    </div>
+                </div>
+
+                {{-- Assignment Details --}}
+                <h3 class="text-sm font-semibold text-blue-800 mb-3 mt-4 pt-3 border-t border-blue-200">School & Assignment Details</h3>
+                <div class="grid grid-cols-2 gap-4 mb-3">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Assignment / Start Date</label>
+                        <input type="date" name="counselor_assignment_date" value="{{ old('counselor_assignment_date') }}"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-slate-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">School District</label>
+                        <input type="text" name="counselor_school_district" value="{{ old('counselor_school_district') }}"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-slate-500">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4 mb-3">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">School Address</label>
+                        <input type="text" name="counselor_school_address" value="{{ old('counselor_school_address') }}"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-slate-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Principal / Head Teacher</label>
+                        <input type="text" name="counselor_school_principal" value="{{ old('counselor_school_principal') }}"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-slate-500">
+                    </div>
+                </div>
+                <div class="grid grid-cols-3 gap-4 mb-3">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">School Level</label>
+                        <select name="counselor_school_level" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-slate-500">
+                            <option value="">Select...</option>
+                            @foreach(\App\Models\User::SCHOOL_LEVELS as $key => $label)
+                                <option value="{{ $key }}" {{ old('counselor_school_level') === $key ? 'selected' : '' }}>{{ $label }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">School Type</label>
+                        <select name="counselor_school_type" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-slate-500">
+                            <option value="">Select...</option>
+                            @foreach(\App\Models\User::SCHOOL_TYPES as $key => $label)
+                                <option value="{{ $key }}" {{ old('counselor_school_type') === $key ? 'selected' : '' }}>{{ $label }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Student Population</label>
+                        <input type="number" name="counselor_school_population" value="{{ old('counselor_school_population') }}" min="0" max="50000"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-slate-500">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4 mb-3">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">No. of Boys</label>
+                        <input type="number" name="counselor_num_boys" value="{{ old('counselor_num_boys') }}" min="0" max="50000"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-slate-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">No. of Girls</label>
+                        <input type="number" name="counselor_num_girls" value="{{ old('counselor_num_girls') }}" min="0" max="50000"
                                class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-slate-500">
                     </div>
                 </div>

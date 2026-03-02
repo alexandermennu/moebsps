@@ -130,8 +130,11 @@ class CounselorProfileController extends Controller
             );
         }
 
+        // Set profile status to pending review for admin approval
+        $user->update(['counselor_profile_status' => User::PROFILE_PENDING_REVIEW]);
+
         return redirect()->route('counselor-profile.show', $user)
-            ->with('success', 'Counselor profile updated successfully.');
+            ->with('success', 'Your profile has been updated and submitted for review. An administrator will verify your records shortly.');
     }
 
     /**
@@ -205,18 +208,96 @@ class CounselorProfileController extends Controller
         }
 
         $validated = $request->validate([
-            'counselor_qualification' => 'nullable|in:' . implode(',', array_keys(User::COUNSELOR_QUALIFICATIONS)),
-            'counselor_specialization' => 'nullable|in:' . implode(',', array_keys(User::COUNSELOR_SPECIALIZATIONS)),
-            'counselor_years_experience' => 'nullable|integer|min:0|max:50',
-            'counselor_training' => 'nullable|string|max:2000',
-            'counselor_school_phone' => 'nullable|string|max:50',
-            'counselor_appointed_at' => 'nullable|date',
+            // Personal Information
+            'date_of_birth'                  => 'nullable|date|before:today',
+            'gender'                         => 'nullable|in:' . implode(',', array_keys(User::GENDERS)),
+            'nationality'                    => 'nullable|string|max:100',
+            'address'                        => 'nullable|string|max:500',
+            'city'                           => 'nullable|string|max:100',
+            'emergency_contact_name'         => 'nullable|string|max:255',
+            'emergency_contact_phone'        => 'nullable|string|max:50',
+            'emergency_contact_relationship' => 'nullable|string|max:100',
+
+            // Assignment Details
+            'counselor_school_phone'         => 'nullable|string|max:50',
+            'counselor_appointed_at'         => 'nullable|date',
+            'counselor_assignment_date'       => 'nullable|date',
+            'counselor_school_district'      => 'nullable|string|max:255',
+            'counselor_school_address'       => 'nullable|string|max:1000',
+            'counselor_school_principal'     => 'nullable|string|max:255',
+            'counselor_school_level'         => 'nullable|in:' . implode(',', array_keys(User::SCHOOL_LEVELS)),
+            'counselor_school_type'          => 'nullable|in:' . implode(',', array_keys(User::SCHOOL_TYPES)),
+            'counselor_school_population'    => 'nullable|integer|min:0|max:50000',
+            'counselor_num_boys'             => 'nullable|integer|min:0|max:50000',
+            'counselor_num_girls'            => 'nullable|integer|min:0|max:50000',
+
+            // Education & Qualifications
+            'counselor_qualification'        => 'nullable|in:' . implode(',', array_keys(User::COUNSELOR_QUALIFICATIONS)),
+            'counselor_specialization'       => 'nullable|in:' . implode(',', array_keys(User::COUNSELOR_SPECIALIZATIONS)),
+            'counselor_years_experience'     => 'nullable|integer|min:0|max:50',
+            'counselor_training'             => 'nullable|string|max:2000',
         ]);
 
         $counselor->update($validated);
 
         return redirect()->route('counselor-profile.show', $counselor)
             ->with('success', 'Counselor profile updated successfully.');
+    }
+
+    /**
+     * Admin: approve a counselor's profile after review.
+     */
+    public function adminApproveProfile(Request $request, User $counselor)
+    {
+        $user = auth()->user();
+
+        if (!$user->hasFullAccess()) {
+            abort(403);
+        }
+
+        if (!$counselor->isCounselor()) {
+            abort(404);
+        }
+
+        $counselor->update([
+            'counselor_profile_status'      => User::PROFILE_APPROVED,
+            'counselor_profile_reviewed_at' => now(),
+            'counselor_profile_reviewed_by' => $user->id,
+            'counselor_profile_review_notes' => $request->input('review_notes'),
+        ]);
+
+        return redirect()->route('counselor-profile.show', $counselor)
+            ->with('success', 'Counselor profile has been approved.');
+    }
+
+    /**
+     * Admin: request changes on a counselor's profile.
+     */
+    public function adminRequestChanges(Request $request, User $counselor)
+    {
+        $user = auth()->user();
+
+        if (!$user->hasFullAccess()) {
+            abort(403);
+        }
+
+        if (!$counselor->isCounselor()) {
+            abort(404);
+        }
+
+        $request->validate([
+            'review_notes' => 'required|string|max:2000',
+        ]);
+
+        $counselor->update([
+            'counselor_profile_status'      => User::PROFILE_CHANGES_REQUESTED,
+            'counselor_profile_reviewed_at' => now(),
+            'counselor_profile_reviewed_by' => $user->id,
+            'counselor_profile_review_notes' => $request->input('review_notes'),
+        ]);
+
+        return redirect()->route('counselor-profile.show', $counselor)
+            ->with('success', 'Changes have been requested. The counselor will be notified.');
     }
 
     /**
@@ -283,12 +364,35 @@ class CounselorProfileController extends Controller
             'certificate_number' => 'nullable|string|max:100',
             'expiry_date'        => 'nullable|date',
             'description'        => 'nullable|string|max:1000',
+            'certificate_document' => 'nullable|file|mimes:pdf,jpg,jpeg,png,webp,doc,docx|max:5120',
         ]);
 
-        $user->counselorCertificates()->create($validated);
+        // Handle optional document upload
+        $documentData = [];
+        if ($request->hasFile('certificate_document')) {
+            $file = $request->file('certificate_document');
+            $path = $file->store(
+                'counselor-certificates/' . $user->id,
+                config('filesystems.uploads', 'public')
+            );
+            $documentData = [
+                'document_path' => $path,
+                'document_name' => $file->getClientOriginalName(),
+                'document_type' => $file->getMimeType(),
+                'document_size' => $file->getSize(),
+            ];
+        }
+
+        $user->counselorCertificates()->create(array_merge(
+            collect($validated)->except('certificate_document')->toArray(),
+            $documentData
+        ));
+
+        // Trigger pending review when certificates are added
+        $user->update(['counselor_profile_status' => User::PROFILE_PENDING_REVIEW]);
 
         return redirect()->route('counselor-profile.show', $user)
-            ->with('success', 'Certificate added successfully.');
+            ->with('success', 'Certificate added and submitted for review.');
     }
 
     /**
@@ -300,6 +404,11 @@ class CounselorProfileController extends Controller
 
         if ($certificate->user_id !== $user->id && !$user->hasFullAccess()) {
             abort(403);
+        }
+
+        // Delete associated document file from storage if present
+        if ($certificate->hasDocument()) {
+            Storage::disk(config('filesystems.uploads', 'public'))->delete($certificate->document_path);
         }
 
         $certificate->delete();
@@ -334,9 +443,28 @@ class CounselorProfileController extends Controller
             'certificate_number' => 'nullable|string|max:100',
             'expiry_date'        => 'nullable|date',
             'description'        => 'nullable|string|max:1000',
+            'certificate_document' => 'nullable|file|mimes:pdf,jpg,jpeg,png,webp,doc,docx|max:5120',
         ]);
 
-        $counselor->counselorCertificates()->create($validated);
+        $documentData = [];
+        if ($request->hasFile('certificate_document')) {
+            $file = $request->file('certificate_document');
+            $path = $file->store(
+                'counselor-certificates/' . $counselor->id,
+                config('filesystems.uploads', 'public')
+            );
+            $documentData = [
+                'document_path' => $path,
+                'document_name' => $file->getClientOriginalName(),
+                'document_type' => $file->getMimeType(),
+                'document_size' => $file->getSize(),
+            ];
+        }
+
+        $counselor->counselorCertificates()->create(array_merge(
+            collect($validated)->except('certificate_document')->toArray(),
+            $documentData
+        ));
 
         return redirect()->route('counselor-profile.show', $counselor)
             ->with('success', 'Certificate added successfully.');

@@ -94,6 +94,26 @@ class StaffController extends Controller
             'counselor_specialization' => 'nullable|in:' . implode(',', array_keys(User::COUNSELOR_SPECIALIZATIONS)),
             'counselor_years_experience' => 'nullable|integer|min:0|max:50',
             'counselor_school_phone' => 'nullable|string|max:50',
+            // Personal information
+            'date_of_birth' => 'nullable|date|before:today',
+            'gender' => 'nullable|in:' . implode(',', array_keys(User::GENDERS)),
+            'nationality' => 'nullable|string|max:100',
+            'address' => 'nullable|string|max:500',
+            'city' => 'nullable|string|max:100',
+            'emergency_contact_name' => 'nullable|string|max:255',
+            'emergency_contact_phone' => 'nullable|string|max:50',
+            'emergency_contact_relationship' => 'nullable|string|max:100',
+            // School & assignment details
+            'counselor_assignment_date' => 'nullable|date',
+            'counselor_school_district' => 'nullable|string|max:255',
+            'counselor_school_address' => 'nullable|string|max:500',
+            'counselor_school_principal' => 'nullable|string|max:255',
+            'counselor_school_level' => 'nullable|in:' . implode(',', array_keys(User::SCHOOL_LEVELS)),
+            'counselor_school_type' => 'nullable|in:' . implode(',', array_keys(User::SCHOOL_TYPES)),
+            'counselor_school_population' => 'nullable|integer|min:0|max:50000',
+            'counselor_num_boys' => 'nullable|integer|min:0|max:50000',
+            'counselor_num_girls' => 'nullable|integer|min:0|max:50000',
+            // Education details
             'edu_institution' => 'nullable|string|max:255',
             'edu_program' => 'nullable|string|max:255',
             'edu_year_started' => 'nullable|integer|min:1950|max:' . (date('Y') + 5),
@@ -103,6 +123,8 @@ class StaffController extends Controller
         ]);
 
         $eduFields = collect($validated)->filter(fn($v, $k) => str_starts_with($k, 'edu_'))->toArray();
+
+        $isCounselor = $validated['role'] === User::ROLE_COUNSELOR;
 
         $newStaff = User::create([
             'name' => $validated['name'],
@@ -115,17 +137,36 @@ class StaffController extends Controller
             'is_active' => false,
             'approval_status' => User::APPROVAL_PENDING,
             'created_by_user_id' => $user->id,
-            'counselor_school' => $validated['role'] === User::ROLE_COUNSELOR ? ($validated['counselor_school'] ?? null) : null,
-            'counselor_county' => $validated['role'] === User::ROLE_COUNSELOR ? ($validated['counselor_county'] ?? null) : null,
-            'counselor_status' => $validated['role'] === User::ROLE_COUNSELOR ? ($validated['counselor_status'] ?? 'active') : null,
-            'counselor_qualification' => $validated['role'] === User::ROLE_COUNSELOR ? ($validated['counselor_qualification'] ?? null) : null,
-            'counselor_specialization' => $validated['role'] === User::ROLE_COUNSELOR ? ($validated['counselor_specialization'] ?? null) : null,
-            'counselor_years_experience' => $validated['role'] === User::ROLE_COUNSELOR ? ($validated['counselor_years_experience'] ?? null) : null,
-            'counselor_school_phone' => $validated['role'] === User::ROLE_COUNSELOR ? ($validated['counselor_school_phone'] ?? null) : null,
+            'counselor_school' => $isCounselor ? ($validated['counselor_school'] ?? null) : null,
+            'counselor_county' => $isCounselor ? ($validated['counselor_county'] ?? null) : null,
+            'counselor_status' => $isCounselor ? ($validated['counselor_status'] ?? 'active') : null,
+            'counselor_qualification' => $isCounselor ? ($validated['counselor_qualification'] ?? null) : null,
+            'counselor_specialization' => $isCounselor ? ($validated['counselor_specialization'] ?? null) : null,
+            'counselor_years_experience' => $isCounselor ? ($validated['counselor_years_experience'] ?? null) : null,
+            'counselor_school_phone' => $isCounselor ? ($validated['counselor_school_phone'] ?? null) : null,
+            // Personal information
+            'date_of_birth' => $isCounselor ? ($validated['date_of_birth'] ?? null) : null,
+            'gender' => $isCounselor ? ($validated['gender'] ?? null) : null,
+            'nationality' => $isCounselor ? ($validated['nationality'] ?? null) : null,
+            'address' => $isCounselor ? ($validated['address'] ?? null) : null,
+            'city' => $isCounselor ? ($validated['city'] ?? null) : null,
+            'emergency_contact_name' => $isCounselor ? ($validated['emergency_contact_name'] ?? null) : null,
+            'emergency_contact_phone' => $isCounselor ? ($validated['emergency_contact_phone'] ?? null) : null,
+            'emergency_contact_relationship' => $isCounselor ? ($validated['emergency_contact_relationship'] ?? null) : null,
+            // School & assignment details
+            'counselor_assignment_date' => $isCounselor ? ($validated['counselor_assignment_date'] ?? null) : null,
+            'counselor_school_district' => $isCounselor ? ($validated['counselor_school_district'] ?? null) : null,
+            'counselor_school_address' => $isCounselor ? ($validated['counselor_school_address'] ?? null) : null,
+            'counselor_school_principal' => $isCounselor ? ($validated['counselor_school_principal'] ?? null) : null,
+            'counselor_school_level' => $isCounselor ? ($validated['counselor_school_level'] ?? null) : null,
+            'counselor_school_type' => $isCounselor ? ($validated['counselor_school_type'] ?? null) : null,
+            'counselor_school_population' => $isCounselor ? ($validated['counselor_school_population'] ?? null) : null,
+            'counselor_num_boys' => $isCounselor ? ($validated['counselor_num_boys'] ?? null) : null,
+            'counselor_num_girls' => $isCounselor ? ($validated['counselor_num_girls'] ?? null) : null,
         ]);
 
         // Save education record for counselors
-        if ($validated['role'] === User::ROLE_COUNSELOR && !empty($eduFields['edu_institution']) && !empty($validated['counselor_qualification'])) {
+        if ($isCounselor && !empty($eduFields['edu_institution']) && !empty($validated['counselor_qualification'])) {
             $newStaff->counselorEducation()->create([
                 'institution' => $eduFields['edu_institution'],
                 'program' => $eduFields['edu_program'] ?? null,
@@ -223,6 +264,26 @@ class StaffController extends Controller
             'counselor_specialization' => 'nullable|in:' . implode(',', array_keys(User::COUNSELOR_SPECIALIZATIONS)),
             'counselor_years_experience' => 'nullable|integer|min:0|max:50',
             'counselor_school_phone' => 'nullable|string|max:50',
+            // Personal information
+            'date_of_birth' => 'nullable|date|before:today',
+            'gender' => 'nullable|in:' . implode(',', array_keys(User::GENDERS)),
+            'nationality' => 'nullable|string|max:100',
+            'address' => 'nullable|string|max:500',
+            'city' => 'nullable|string|max:100',
+            'emergency_contact_name' => 'nullable|string|max:255',
+            'emergency_contact_phone' => 'nullable|string|max:50',
+            'emergency_contact_relationship' => 'nullable|string|max:100',
+            // School & assignment details
+            'counselor_assignment_date' => 'nullable|date',
+            'counselor_school_district' => 'nullable|string|max:255',
+            'counselor_school_address' => 'nullable|string|max:500',
+            'counselor_school_principal' => 'nullable|string|max:255',
+            'counselor_school_level' => 'nullable|in:' . implode(',', array_keys(User::SCHOOL_LEVELS)),
+            'counselor_school_type' => 'nullable|in:' . implode(',', array_keys(User::SCHOOL_TYPES)),
+            'counselor_school_population' => 'nullable|integer|min:0|max:50000',
+            'counselor_num_boys' => 'nullable|integer|min:0|max:50000',
+            'counselor_num_girls' => 'nullable|integer|min:0|max:50000',
+            // Education details
             'edu_institution' => 'nullable|string|max:255',
             'edu_program' => 'nullable|string|max:255',
             'edu_year_started' => 'nullable|integer|min:1950|max:' . (date('Y') + 5),
@@ -233,19 +294,40 @@ class StaffController extends Controller
 
         $eduFields = collect($validated)->filter(fn($v, $k) => str_starts_with($k, 'edu_'))->toArray();
 
+        $isCounselor = $validated['role'] === User::ROLE_COUNSELOR;
+
         $data = [
             'name' => $validated['name'],
             'email' => $validated['email'],
             'role' => $validated['role'],
             'position' => $validated['position'] ?? null,
             'phone' => $validated['phone'] ?? null,
-            'counselor_school' => $validated['role'] === User::ROLE_COUNSELOR ? ($validated['counselor_school'] ?? null) : null,
-            'counselor_county' => $validated['role'] === User::ROLE_COUNSELOR ? ($validated['counselor_county'] ?? null) : null,
-            'counselor_status' => $validated['role'] === User::ROLE_COUNSELOR ? ($validated['counselor_status'] ?? 'active') : null,
-            'counselor_qualification' => $validated['role'] === User::ROLE_COUNSELOR ? ($validated['counselor_qualification'] ?? null) : null,
-            'counselor_specialization' => $validated['role'] === User::ROLE_COUNSELOR ? ($validated['counselor_specialization'] ?? null) : null,
-            'counselor_years_experience' => $validated['role'] === User::ROLE_COUNSELOR ? ($validated['counselor_years_experience'] ?? null) : null,
-            'counselor_school_phone' => $validated['role'] === User::ROLE_COUNSELOR ? ($validated['counselor_school_phone'] ?? null) : null,
+            'counselor_school' => $isCounselor ? ($validated['counselor_school'] ?? null) : null,
+            'counselor_county' => $isCounselor ? ($validated['counselor_county'] ?? null) : null,
+            'counselor_status' => $isCounselor ? ($validated['counselor_status'] ?? 'active') : null,
+            'counselor_qualification' => $isCounselor ? ($validated['counselor_qualification'] ?? null) : null,
+            'counselor_specialization' => $isCounselor ? ($validated['counselor_specialization'] ?? null) : null,
+            'counselor_years_experience' => $isCounselor ? ($validated['counselor_years_experience'] ?? null) : null,
+            'counselor_school_phone' => $isCounselor ? ($validated['counselor_school_phone'] ?? null) : null,
+            // Personal information
+            'date_of_birth' => $isCounselor ? ($validated['date_of_birth'] ?? null) : null,
+            'gender' => $isCounselor ? ($validated['gender'] ?? null) : null,
+            'nationality' => $isCounselor ? ($validated['nationality'] ?? null) : null,
+            'address' => $isCounselor ? ($validated['address'] ?? null) : null,
+            'city' => $isCounselor ? ($validated['city'] ?? null) : null,
+            'emergency_contact_name' => $isCounselor ? ($validated['emergency_contact_name'] ?? null) : null,
+            'emergency_contact_phone' => $isCounselor ? ($validated['emergency_contact_phone'] ?? null) : null,
+            'emergency_contact_relationship' => $isCounselor ? ($validated['emergency_contact_relationship'] ?? null) : null,
+            // School & assignment details
+            'counselor_assignment_date' => $isCounselor ? ($validated['counselor_assignment_date'] ?? null) : null,
+            'counselor_school_district' => $isCounselor ? ($validated['counselor_school_district'] ?? null) : null,
+            'counselor_school_address' => $isCounselor ? ($validated['counselor_school_address'] ?? null) : null,
+            'counselor_school_principal' => $isCounselor ? ($validated['counselor_school_principal'] ?? null) : null,
+            'counselor_school_level' => $isCounselor ? ($validated['counselor_school_level'] ?? null) : null,
+            'counselor_school_type' => $isCounselor ? ($validated['counselor_school_type'] ?? null) : null,
+            'counselor_school_population' => $isCounselor ? ($validated['counselor_school_population'] ?? null) : null,
+            'counselor_num_boys' => $isCounselor ? ($validated['counselor_num_boys'] ?? null) : null,
+            'counselor_num_girls' => $isCounselor ? ($validated['counselor_num_girls'] ?? null) : null,
         ];
 
         if (!empty($validated['password'])) {
@@ -255,7 +337,7 @@ class StaffController extends Controller
         $staff_user->update($data);
 
         // Save/update education record for counselors
-        if ($validated['role'] === User::ROLE_COUNSELOR && !empty($eduFields['edu_institution']) && !empty($validated['counselor_qualification'])) {
+        if ($isCounselor && !empty($eduFields['edu_institution']) && !empty($validated['counselor_qualification'])) {
             $staff_user->counselorEducation()->updateOrCreate(
                 ['degree_level' => $validated['counselor_qualification']],
                 [

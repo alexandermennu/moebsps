@@ -11,9 +11,18 @@
             <h2 class="text-sm font-semibold text-gray-900 uppercase tracking-wide mt-2">Counselors</h2>
             <p class="text-sm text-gray-500">CGPC Division — {{ $counselors->total() }} total counselors</p>
         </div>
-        <a href="{{ route('admin.users.create') }}?prefill_role=counselor" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium hover:bg-blue-700">
-            + Add Counselor
-        </a>
+        <div class="flex items-center gap-3">
+            @php $pendingCount = \App\Models\User::where('role', 'counselor')->pendingProfileReview()->count(); @endphp
+            @if($pendingCount > 0)
+                <a href="{{ route('admin.users.counselors', ['profile_status' => 'pending_review']) }}" class="inline-flex items-center gap-1.5 px-3 py-2 bg-amber-50 border border-amber-300 text-amber-800 text-sm font-medium hover:bg-amber-100">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                    {{ $pendingCount }} Pending Review
+                </a>
+            @endif
+            <a href="{{ route('admin.users.create') }}?prefill_role=counselor" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium hover:bg-blue-700">
+                + Add Counselor
+            </a>
+        </div>
     </div>
 
     {{-- Filters --}}
@@ -41,8 +50,17 @@
                 @endforeach
             </select>
         </div>
+        <div>
+            <label class="block text-xs text-gray-500 mb-1">Profile</label>
+            <select name="profile_status" class="px-3 py-2 border border-gray-300 rounded-md text-sm">
+                <option value="">All</option>
+                @foreach(\App\Models\User::PROFILE_STATUSES as $key => $label)
+                    <option value="{{ $key }}" {{ request('profile_status') === $key ? 'selected' : '' }}>{{ $label }}</option>
+                @endforeach
+            </select>
+        </div>
         <button type="submit" class="px-4 py-2 bg-gray-100 border border-gray-300 text-sm hover:bg-gray-200">Filter</button>
-        @if(request()->hasAny(['search', 'county', 'status']))
+        @if(request()->hasAny(['search', 'county', 'status', 'profile_status']))
             <a href="{{ route('admin.users.counselors') }}" class="px-4 py-2 text-sm text-gray-500 hover:text-gray-700">Clear</a>
         @endif
     </form>
@@ -69,6 +87,7 @@
                         <th class="text-left px-5 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium">County</th>
                         <th class="text-left px-5 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium">Qualification</th>
                         <th class="text-center px-5 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium">Current Status</th>
+                        <th class="text-center px-5 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium">Profile</th>
                         <th class="text-center px-5 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium">Account</th>
                         <th class="text-right px-5 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium">Actions</th>
                     </tr>
@@ -115,6 +134,20 @@
                                 </span>
                             </td>
                             <td class="px-5 py-3 text-center">
+                                @php
+                                    $profileColors = [
+                                        'draft' => 'bg-gray-100 text-gray-600',
+                                        'pending_review' => 'bg-amber-100 text-amber-700',
+                                        'approved' => 'bg-green-100 text-green-700',
+                                        'changes_requested' => 'bg-red-100 text-red-700',
+                                    ];
+                                    $profileColor = $profileColors[$c->counselor_profile_status] ?? 'bg-gray-100 text-gray-600';
+                                @endphp
+                                <span class="text-[10px] px-1.5 py-0.5 font-medium {{ $profileColor }}">
+                                    {{ $c->counselor_profile_status_label }}
+                                </span>
+                            </td>
+                            <td class="px-5 py-3 text-center">
                                 <span class="text-[10px] px-1.5 py-0.5 font-medium {{ $c->is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
                                     {{ $c->is_active ? 'Active' : 'Inactive' }}
                                 </span>
@@ -128,7 +161,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8" class="px-5 py-8 text-center text-gray-500">No counselors found.</td>
+                            <td colspan="9" class="px-5 py-8 text-center text-gray-500">No counselors found.</td>
                         </tr>
                     @endforelse
                 </tbody>

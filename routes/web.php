@@ -142,6 +142,8 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::post('counselor-profile/{counselor}/documents', [CounselorProfileController::class, 'adminUploadDocument'])->name('counselor-profile.documents.upload');
         Route::post('counselor-profile/{counselor}/certificates', [CounselorProfileController::class, 'adminStoreCertificate'])->name('counselor-profile.certificates.store');
         Route::put('counselor-profile/{counselor}/education', [CounselorProfileController::class, 'adminUpdateEducation'])->name('counselor-profile.education.update');
+        Route::post('counselor-profile/{counselor}/approve', [CounselorProfileController::class, 'adminApproveProfile'])->name('counselor-profile.approve');
+        Route::post('counselor-profile/{counselor}/request-changes', [CounselorProfileController::class, 'adminRequestChanges'])->name('counselor-profile.request-changes');
 
         // Staff Approvals
         Route::get('staff-approvals', [StaffApprovalController::class, 'index'])->name('staff-approvals.index');

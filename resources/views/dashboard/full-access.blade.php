@@ -207,7 +207,7 @@
     </section>
 
     {{-- ── SECTION 4: ITEMS REQUIRING ATTENTION ────────────────── --}}
-    @if(($stats['pending_staff'] ?? 0) > 0 || $stats['srgbv_open'] > 0 || $stats['escalated_activities'] > 0 || $stats['pending_updates'] > 0 || $stats['pending_plans'] > 0 || ($trackedStats['stale'] ?? 0) > 0 || ($trackedStats['repeated'] ?? 0) > 0)
+    @if(($stats['pending_staff'] ?? 0) > 0 || ($stats['pending_profiles'] ?? 0) > 0 || $stats['srgbv_open'] > 0 || $stats['escalated_activities'] > 0 || $stats['pending_updates'] > 0 || $stats['pending_plans'] > 0 || ($trackedStats['stale'] ?? 0) > 0 || ($trackedStats['repeated'] ?? 0) > 0)
     <section>
         <h3 class="text-sm font-semibold text-gray-900 uppercase tracking-wide border-b border-gray-200 pb-2 mb-4">Items Requiring Attention</h3>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -258,6 +258,14 @@
             <a href="{{ route('admin.staff-approvals.index') }}" class="border border-gray-200 bg-white p-4 hover:bg-gray-50 transition block">
                 <p class="text-sm font-semibold text-gray-800">{{ $stats['pending_staff'] }} Staff Awaiting Approval</p>
                 <p class="text-xs text-gray-500 mt-1">Click to review pending staff registrations</p>
+            </a>
+            @endif
+
+            {{-- Counselor Profiles Pending Review --}}
+            @if(($stats['pending_profiles'] ?? 0) > 0)
+            <a href="{{ route('admin.counselors', ['profile_status' => 'pending_review']) }}" class="border border-amber-200 bg-white p-4 hover:bg-amber-50 transition block">
+                <p class="text-sm font-semibold text-amber-800">{{ $stats['pending_profiles'] }} Counselor Profile{{ $stats['pending_profiles'] > 1 ? 's' : '' }} Pending Review</p>
+                <p class="text-xs text-gray-500 mt-1">Click to review counselor profile submissions</p>
             </a>
             @endif
 

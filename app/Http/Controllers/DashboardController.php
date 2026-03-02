@@ -149,6 +149,7 @@ class DashboardController extends Controller
                 : 0,
             'total_users' => User::where('is_active', true)->count(),
             'pending_staff' => User::pendingApproval()->count(),
+            'pending_profiles' => User::pendingProfileReview()->count(),
             'srgbv_total' => SrgbvCase::count(),
             'srgbv_open' => SrgbvCase::open()->count(),
             'srgbv_critical' => SrgbvCase::critical()->open()->count(),

@@ -11,7 +11,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Storage;
 
-#[Fillable(['name', 'email', 'password', 'role', 'division_id', 'position', 'phone', 'profile_photo', 'is_active', 'approval_status', 'created_by_user_id', 'approved_at', 'approved_by', 'rejection_reason', 'address', 'city', 'date_of_birth', 'gender', 'nationality', 'emergency_contact_name', 'emergency_contact_phone', 'emergency_contact_relationship', 'counselor_school', 'counselor_county', 'counselor_status', 'counselor_qualification', 'counselor_specialization', 'counselor_years_experience', 'counselor_training', 'counselor_school_phone', 'counselor_appointed_at', 'counselor_assignment_date', 'counselor_school_district', 'counselor_school_level', 'counselor_school_type', 'counselor_school_population', 'counselor_num_boys', 'counselor_num_girls', 'counselor_school_address', 'counselor_school_principal'])]
+#[Fillable(['name', 'email', 'password', 'role', 'division_id', 'position', 'phone', 'profile_photo', 'is_active', 'approval_status', 'created_by_user_id', 'approved_at', 'approved_by', 'rejection_reason', 'address', 'city', 'date_of_birth', 'gender', 'nationality', 'emergency_contact_name', 'emergency_contact_phone', 'emergency_contact_relationship', 'counselor_school', 'counselor_county', 'counselor_status', 'counselor_qualification', 'counselor_specialization', 'counselor_years_experience', 'counselor_training', 'counselor_school_phone', 'counselor_appointed_at', 'counselor_assignment_date', 'counselor_school_district', 'counselor_school_level', 'counselor_school_type', 'counselor_school_population', 'counselor_num_boys', 'counselor_num_girls', 'counselor_school_address', 'counselor_school_principal', 'counselor_profile_status', 'counselor_profile_reviewed_at', 'counselor_profile_reviewed_by', 'counselor_profile_review_notes'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -57,6 +57,7 @@ class User extends Authenticatable
             'date_of_birth' => 'date',
             'counselor_appointed_at' => 'date',
             'counselor_assignment_date' => 'date',
+            'counselor_profile_reviewed_at' => 'datetime',
         ];
     }
 
@@ -64,6 +65,19 @@ class User extends Authenticatable
     const APPROVAL_APPROVED = 'approved';
     const APPROVAL_PENDING  = 'pending';
     const APPROVAL_REJECTED = 'rejected';
+
+    // ── Counselor Profile Status Constants ──────────────────
+    const PROFILE_DRAFT          = 'draft';
+    const PROFILE_PENDING_REVIEW = 'pending_review';
+    const PROFILE_APPROVED       = 'approved';
+    const PROFILE_CHANGES_REQUESTED = 'changes_requested';
+
+    const PROFILE_STATUSES = [
+        self::PROFILE_DRAFT              => 'Draft',
+        self::PROFILE_PENDING_REVIEW     => 'Pending Review',
+        self::PROFILE_APPROVED           => 'Approved',
+        self::PROFILE_CHANGES_REQUESTED  => 'Changes Requested',
+    ];
 
     // ── Counselor Status Constants ──────────────────────────
     const COUNSELOR_STATUSES = [
@@ -223,6 +237,43 @@ class User extends Authenticatable
     public function scopePendingApproval($query)
     {
         return $query->where('approval_status', self::APPROVAL_PENDING);
+    }
+
+    // ── Counselor Profile Status Helpers ───────────────────
+
+    public function isProfileDraft(): bool
+    {
+        return $this->counselor_profile_status === self::PROFILE_DRAFT;
+    }
+
+    public function isProfilePendingReview(): bool
+    {
+        return $this->counselor_profile_status === self::PROFILE_PENDING_REVIEW;
+    }
+
+    public function isProfileApproved(): bool
+    {
+        return $this->counselor_profile_status === self::PROFILE_APPROVED;
+    }
+
+    public function isProfileChangesRequested(): bool
+    {
+        return $this->counselor_profile_status === self::PROFILE_CHANGES_REQUESTED;
+    }
+
+    public function getCounselorProfileStatusLabelAttribute(): string
+    {
+        return self::PROFILE_STATUSES[$this->counselor_profile_status] ?? 'Draft';
+    }
+
+    public function profileReviewedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'counselor_profile_reviewed_by');
+    }
+
+    public function scopePendingProfileReview($query)
+    {
+        return $query->where('counselor_profile_status', self::PROFILE_PENDING_REVIEW);
     }
 
     // ── Profile Photo Helpers ──────────────────────────────

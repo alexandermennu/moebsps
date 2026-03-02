@@ -22,6 +22,38 @@
         </div>
     </div>
 
+    {{-- Profile Status Banner --}}
+    @if($counselor->counselor_profile_status === 'pending_review')
+        <div class="mb-6 p-4 bg-amber-50 border border-amber-200 flex items-start gap-3">
+            <svg class="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <div>
+                <h3 class="text-sm font-semibold text-amber-800">Profile Pending Review</h3>
+                <p class="text-xs text-amber-700 mt-0.5">Your profile is currently awaiting administrator review. You can still make changes — any updates will keep the profile in review status until approved.</p>
+            </div>
+        </div>
+    @elseif($counselor->counselor_profile_status === 'changes_requested')
+        <div class="mb-6 p-4 bg-red-50 border border-red-200 flex items-start gap-3">
+            <svg class="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
+            <div>
+                <h3 class="text-sm font-semibold text-red-800">Changes Requested</h3>
+                <p class="text-xs text-red-700 mt-0.5">An administrator has reviewed your profile and requested changes. Please update the relevant information and resubmit.</p>
+                @if($counselor->counselor_profile_review_notes)
+                    <div class="mt-2 p-2 bg-white border border-red-200 text-xs text-red-800">
+                        <strong>Reviewer Notes:</strong> {{ $counselor->counselor_profile_review_notes }}
+                    </div>
+                @endif
+            </div>
+        </div>
+    @elseif($counselor->counselor_profile_status === 'approved')
+        <div class="mb-6 p-4 bg-green-50 border border-green-200 flex items-start gap-3">
+            <svg class="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <div>
+                <h3 class="text-sm font-semibold text-green-800">Profile Approved</h3>
+                <p class="text-xs text-green-700 mt-0.5">Your profile has been verified by an administrator. Any changes you make will require re-approval.</p>
+            </div>
+        </div>
+    @endif
+
     @if($errors->any())
         <div class="mb-6 p-4 bg-red-50 border border-red-200">
             <h3 class="text-sm font-semibold text-red-800 mb-2">Please correct the following errors:</h3>
@@ -460,6 +492,19 @@
                                         @if($cert->description)
                                             <p class="text-xs text-gray-500 mt-1">{{ $cert->description }}</p>
                                         @endif
+                                        {{-- Document attachment indicator --}}
+                                        @if($cert->hasDocument())
+                                            <div class="mt-1.5 flex items-center gap-1.5 text-xs">
+                                                <svg class="w-3.5 h-3.5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
+                                                <a href="{{ $cert->getDocumentUrl() }}" target="_blank" class="text-blue-700 hover:underline font-medium">{{ $cert->document_name }}</a>
+                                                <span class="text-gray-400">({{ $cert->document_size_formatted }})</span>
+                                            </div>
+                                        @else
+                                            <div class="mt-1.5 flex items-center gap-1 text-xs text-gray-400">
+                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
+                                                <span>No document attached</span>
+                                            </div>
+                                        @endif
                                     </div>
                                 </div>
                                 <form method="POST" action="{{ route('counselor-profile.certificates.delete', $cert) }}" onsubmit="return confirm('Remove this certificate?')">
@@ -483,7 +528,7 @@
 
                 <div id="cert-form" class="mt-4 p-5 bg-gray-50 border border-gray-200" style="display: none;">
                     <h4 class="text-xs font-semibold text-gray-700 uppercase tracking-wide mb-4">New Certificate / Achievement</h4>
-                    <form method="POST" action="{{ route('counselor-profile.certificates.store') }}">
+                    <form method="POST" action="{{ route('counselor-profile.certificates.store') }}" enctype="multipart/form-data">
                         @csrf
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
                             <div>
@@ -524,10 +569,22 @@
                                        class="w-full px-3 py-2 border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                             </div>
                         </div>
-                        <div class="mb-4">
+                        <div class="mb-3">
                             <label class="block text-xs font-medium text-gray-600 mb-1">Description / Notes</label>
                             <textarea name="description" rows="2" placeholder="Any additional details about this certificate or achievement"
                                       class="w-full px-3 py-2 border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">{{ old('description') }}</textarea>
+                        </div>
+                        <div class="mb-4 p-3 bg-white border border-gray-200">
+                            <label class="block text-xs font-medium text-gray-600 mb-1">
+                                <span class="flex items-center gap-1.5">
+                                    <svg class="w-3.5 h-3.5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
+                                    Attach Supporting Document (optional)
+                                </span>
+                            </label>
+                            <input type="file" name="certificate_document" accept=".pdf,.jpg,.jpeg,.png,.webp,.doc,.docx"
+                                   class="w-full text-sm text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:border file:border-gray-300 file:text-xs file:font-medium file:bg-gray-50 file:text-gray-700 hover:file:bg-gray-100">
+                            <p class="mt-1 text-xs text-gray-400">Upload a copy of this certificate for verification. PDF, JPG, PNG, DOC. Max 5MB.</p>
+                            @error('certificate_document') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
                         </div>
                         <div class="flex items-center gap-2">
                             <button type="submit" class="px-4 py-2 bg-blue-700 text-white text-sm font-medium hover:bg-blue-600">Save Certificate</button>

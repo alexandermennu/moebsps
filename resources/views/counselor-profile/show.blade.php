@@ -40,6 +40,18 @@
                         </div>
                         <div class="flex items-center gap-2">
                             @php
+                                $profileStatusColors = [
+                                    'draft' => 'bg-gray-100 text-gray-700',
+                                    'pending_review' => 'bg-amber-100 text-amber-800',
+                                    'approved' => 'bg-green-100 text-green-800',
+                                    'changes_requested' => 'bg-red-100 text-red-800',
+                                ];
+                                $profileStatusClass = $profileStatusColors[$counselor->counselor_profile_status] ?? 'bg-gray-100 text-gray-700';
+                            @endphp
+                            <span class="inline-block px-2.5 py-0.5 text-xs font-semibold {{ $profileStatusClass }}">
+                                Profile: {{ $counselor->counselor_profile_status_label }}
+                            </span>
+                            @php
                                 $statusColors = [
                                     'active' => 'bg-green-100 text-green-800',
                                     'abandoned_resigned' => 'bg-red-100 text-red-800',
@@ -104,6 +116,93 @@
             </div>
         </div>
     </div>
+
+    {{-- ═══════════════════════════════════════════════════════════════════
+         PROFILE REVIEW PANEL (visible to admin when profile is pending/changes_requested)
+         ═══════════════════════════════════════════════════════════════════ --}}
+    @if(auth()->user()->hasFullAccess() && in_array($counselor->counselor_profile_status, ['pending_review', 'changes_requested']))
+        <div class="bg-amber-50 border border-amber-300 mb-6 p-5">
+            <div class="flex items-start gap-3 mb-4">
+                <svg class="w-6 h-6 text-amber-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+                <div>
+                    <h3 class="text-sm font-bold text-amber-800 uppercase tracking-wide">Profile Review Required</h3>
+                    <p class="text-xs text-amber-700 mt-0.5">This counselor's profile is awaiting your review. Please verify the information and attached documents below, then approve or request changes.</p>
+                    @if($counselor->counselor_profile_reviewed_at)
+                        <p class="text-xs text-amber-600 mt-1">
+                            Last reviewed: {{ $counselor->counselor_profile_reviewed_at->format('M j, Y g:i A') }}
+                            @if($counselor->profileReviewedBy) by {{ $counselor->profileReviewedBy->name }} @endif
+                        </p>
+                    @endif
+                </div>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <form method="POST" action="{{ route('admin.counselor-profile.approve', $counselor) }}">
+                    @csrf
+                    <div class="mb-2">
+                        <textarea name="review_notes" rows="2" placeholder="Optional approval notes..."
+                                  class="w-full px-3 py-2 border border-green-300 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"></textarea>
+                    </div>
+                    <button type="submit" class="w-full px-4 py-2 bg-green-700 text-white text-sm font-semibold hover:bg-green-600 flex items-center justify-center gap-2"
+                            onclick="return confirm('Approve this counselor\'s profile? This confirms all information has been verified.')">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                        Approve Profile
+                    </button>
+                </form>
+                <form method="POST" action="{{ route('admin.counselor-profile.request-changes', $counselor) }}">
+                    @csrf
+                    <div class="mb-2">
+                        <textarea name="review_notes" rows="2" required placeholder="Describe what needs to be corrected... *"
+                                  class="w-full px-3 py-2 border border-red-300 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"></textarea>
+                    </div>
+                    <button type="submit" class="w-full px-4 py-2 bg-red-600 text-white text-sm font-semibold hover:bg-red-500 flex items-center justify-center gap-2"
+                            onclick="return confirm('Request changes to this counselor\'s profile?')">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
+                        Request Changes
+                    </button>
+                </form>
+            </div>
+        </div>
+    @elseif(auth()->user()->hasFullAccess() && $counselor->counselor_profile_status === 'approved' && $counselor->counselor_profile_reviewed_at)
+        <div class="bg-green-50 border border-green-200 mb-6 px-5 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <span class="text-sm font-medium text-green-800">Profile Approved</span>
+                <span class="text-xs text-green-600">
+                    {{ $counselor->counselor_profile_reviewed_at->format('M j, Y') }}
+                    @if($counselor->profileReviewedBy) by {{ $counselor->profileReviewedBy->name }} @endif
+                </span>
+            </div>
+        </div>
+    @elseif($counselor->id === auth()->id())
+        {{-- Status banners for the counselor themselves --}}
+        @if($counselor->counselor_profile_status === 'pending_review')
+            <div class="bg-amber-50 border border-amber-200 mb-6 px-5 py-3 flex items-start gap-3">
+                <svg class="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <div>
+                    <span class="text-sm font-medium text-amber-800">Your profile is pending administrator review.</span>
+                    <p class="text-xs text-amber-600 mt-0.5">An administrator will verify your records and attached documents. You will be notified once reviewed.</p>
+                </div>
+            </div>
+        @elseif($counselor->counselor_profile_status === 'changes_requested')
+            <div class="bg-red-50 border border-red-200 mb-6 px-5 py-3 flex items-start gap-3">
+                <svg class="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
+                <div>
+                    <span class="text-sm font-medium text-red-800">Changes have been requested on your profile.</span>
+                    @if($counselor->counselor_profile_review_notes)
+                        <div class="mt-1.5 p-2 bg-white border border-red-200 text-xs text-red-800">
+                            <strong>Reviewer Notes:</strong> {{ $counselor->counselor_profile_review_notes }}
+                        </div>
+                    @endif
+                    <p class="text-xs text-red-600 mt-1">Please <a href="{{ route('counselor-profile.edit') }}" class="underline font-medium">edit your profile</a> and resubmit.</p>
+                </div>
+            </div>
+        @elseif($counselor->counselor_profile_status === 'approved')
+            <div class="bg-green-50 border border-green-200 mb-6 px-5 py-3 flex items-center gap-2">
+                <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <span class="text-sm font-medium text-green-800">Your profile has been verified and approved.</span>
+            </div>
+        @endif
+    @endif
 
     {{-- ═══════════════════════════════════════════════════════════════════
          SECTION 1 & 2: Personal Info + Assignment Details (side-by-side)
@@ -392,6 +491,20 @@
                                         </div>
                                         @if($cert->description)
                                             <p class="text-xs text-gray-500 mt-1.5 italic">{{ $cert->description }}</p>
+                                        @endif
+                                        {{-- Attached document --}}
+                                        @if($cert->hasDocument())
+                                            <div class="mt-2 flex items-center gap-2 text-xs">
+                                                <svg class="w-3.5 h-3.5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
+                                                <a href="{{ $cert->getDocumentUrl() }}" target="_blank" class="text-blue-700 hover:underline font-medium">{{ $cert->document_name }}</a>
+                                                <span class="text-gray-400">({{ $cert->document_size_formatted }})</span>
+                                                <span class="px-1.5 py-0.5 bg-green-50 text-green-700 font-medium text-xs">Document Attached</span>
+                                            </div>
+                                        @else
+                                            <div class="mt-2 flex items-center gap-1.5 text-xs text-gray-400">
+                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
+                                                <span class="px-1.5 py-0.5 bg-gray-50 text-gray-500 font-medium">No Document</span>
+                                            </div>
                                         @endif
                                     </div>
                                 </div>

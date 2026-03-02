@@ -101,6 +101,10 @@ class UserController extends Controller
             $query->where('counselor_status', $request->status);
         }
 
+        if ($request->filled('profile_status')) {
+            $query->where('counselor_profile_status', $request->profile_status);
+        }
+
         $counselors = $query->latest()->paginate(20);
 
         return view('admin.users.counselors', compact('counselors'));
@@ -135,6 +139,25 @@ class UserController extends Controller
             'counselor_training' => 'nullable|string|max:2000',
             'counselor_school_phone' => 'nullable|string|max:50',
             'counselor_appointed_at' => 'nullable|date',
+            // Personal information
+            'date_of_birth' => 'nullable|date|before:today',
+            'gender' => 'nullable|in:' . implode(',', array_keys(User::GENDERS)),
+            'nationality' => 'nullable|string|max:100',
+            'address' => 'nullable|string|max:500',
+            'city' => 'nullable|string|max:100',
+            'emergency_contact_name' => 'nullable|string|max:255',
+            'emergency_contact_phone' => 'nullable|string|max:50',
+            'emergency_contact_relationship' => 'nullable|string|max:100',
+            // Assignment details
+            'counselor_assignment_date' => 'nullable|date',
+            'counselor_school_district' => 'nullable|string|max:255',
+            'counselor_school_address' => 'nullable|string|max:1000',
+            'counselor_school_principal' => 'nullable|string|max:255',
+            'counselor_school_level' => 'nullable|in:' . implode(',', array_keys(User::SCHOOL_LEVELS)),
+            'counselor_school_type' => 'nullable|in:' . implode(',', array_keys(User::SCHOOL_TYPES)),
+            'counselor_school_population' => 'nullable|integer|min:0|max:50000',
+            'counselor_num_boys' => 'nullable|integer|min:0|max:50000',
+            'counselor_num_girls' => 'nullable|integer|min:0|max:50000',
             // Education details
             'edu_institution'   => 'nullable|string|max:255',
             'edu_program'       => 'nullable|string|max:255',
@@ -159,6 +182,15 @@ class UserController extends Controller
             $validated['counselor_training'] = null;
             $validated['counselor_school_phone'] = null;
             $validated['counselor_appointed_at'] = null;
+            $validated['counselor_assignment_date'] = null;
+            $validated['counselor_school_district'] = null;
+            $validated['counselor_school_address'] = null;
+            $validated['counselor_school_principal'] = null;
+            $validated['counselor_school_level'] = null;
+            $validated['counselor_school_type'] = null;
+            $validated['counselor_school_population'] = null;
+            $validated['counselor_num_boys'] = null;
+            $validated['counselor_num_girls'] = null;
         } else {
             // Counselors must always belong to CGPC division
             $cgpc = Division::where('code', 'CGPC')->first();
@@ -230,6 +262,25 @@ class UserController extends Controller
             'counselor_training' => 'nullable|string|max:2000',
             'counselor_school_phone' => 'nullable|string|max:50',
             'counselor_appointed_at' => 'nullable|date',
+            // Personal information
+            'date_of_birth' => 'nullable|date|before:today',
+            'gender' => 'nullable|in:' . implode(',', array_keys(User::GENDERS)),
+            'nationality' => 'nullable|string|max:100',
+            'address' => 'nullable|string|max:500',
+            'city' => 'nullable|string|max:100',
+            'emergency_contact_name' => 'nullable|string|max:255',
+            'emergency_contact_phone' => 'nullable|string|max:50',
+            'emergency_contact_relationship' => 'nullable|string|max:100',
+            // Assignment details
+            'counselor_assignment_date' => 'nullable|date',
+            'counselor_school_district' => 'nullable|string|max:255',
+            'counselor_school_address' => 'nullable|string|max:1000',
+            'counselor_school_principal' => 'nullable|string|max:255',
+            'counselor_school_level' => 'nullable|in:' . implode(',', array_keys(User::SCHOOL_LEVELS)),
+            'counselor_school_type' => 'nullable|in:' . implode(',', array_keys(User::SCHOOL_TYPES)),
+            'counselor_school_population' => 'nullable|integer|min:0|max:50000',
+            'counselor_num_boys' => 'nullable|integer|min:0|max:50000',
+            'counselor_num_girls' => 'nullable|integer|min:0|max:50000',
             // Education details
             'edu_institution'   => 'nullable|string|max:255',
             'edu_program'       => 'nullable|string|max:255',
@@ -259,6 +310,15 @@ class UserController extends Controller
             $validated['counselor_training'] = null;
             $validated['counselor_school_phone'] = null;
             $validated['counselor_appointed_at'] = null;
+            $validated['counselor_assignment_date'] = null;
+            $validated['counselor_school_district'] = null;
+            $validated['counselor_school_address'] = null;
+            $validated['counselor_school_principal'] = null;
+            $validated['counselor_school_level'] = null;
+            $validated['counselor_school_type'] = null;
+            $validated['counselor_school_population'] = null;
+            $validated['counselor_num_boys'] = null;
+            $validated['counselor_num_girls'] = null;
         } else {
             // Counselors must always belong to CGPC division
             $cgpc = Division::where('code', 'CGPC')->first();
