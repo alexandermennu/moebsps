@@ -11,6 +11,7 @@
         'md' => 'w-10 h-10 text-sm',
         'lg' => 'w-14 h-14 text-lg',
         'xl' => 'w-20 h-20 text-2xl',
+        '2xl' => 'w-32 h-32 text-4xl',
     ];
 
     $imgSizes = [
@@ -19,6 +20,7 @@
         'md' => 'w-10 h-10',
         'lg' => 'w-14 h-14',
         'xl' => 'w-20 h-20',
+        '2xl' => 'w-32 h-32',
     ];
 
     $sizeClass = $sizes[$size] ?? $sizes['md'];

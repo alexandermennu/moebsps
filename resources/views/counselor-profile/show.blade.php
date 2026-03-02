@@ -17,8 +17,8 @@
     {{-- Profile Header Card --}}
     <div class="bg-white border border-gray-200 mb-6">
         <div class="bg-gradient-to-r from-blue-800 to-blue-600 px-6 py-8">
-            <div class="flex items-center gap-5">
-                <x-user-avatar :user="$counselor" size="xl" />
+            <div class="flex items-center gap-6">
+                <x-user-avatar :user="$counselor" size="2xl" class="ring-4 ring-white/30 shadow-lg" />
                 <div>
                     <h1 class="text-xl font-bold text-white">{{ $counselor->name }}</h1>
                     <p class="text-blue-100 text-sm mt-1">School Counselor</p>
