@@ -25,13 +25,37 @@ class SirDashboardController extends Controller
             'total' => Incident::srgbv()->count(),
             'open' => Incident::srgbv()->open()->count(),
             'critical' => Incident::srgbv()->critical()->open()->count(),
+            'newToday' => Incident::srgbv()->whereDate('created_at', today())->count(),
         ] : null;
 
         $otherStats = $canAccessOther ? [
             'total' => Incident::where('type', '!=', Incident::TYPE_SRGBV)->count(),
             'open' => Incident::where('type', '!=', Incident::TYPE_SRGBV)->open()->count(),
             'critical' => Incident::where('type', '!=', Incident::TYPE_SRGBV)->critical()->open()->count(),
+            'newToday' => Incident::where('type', '!=', Incident::TYPE_SRGBV)->whereDate('created_at', today())->count(),
         ] : null;
+
+        // Combined stats
+        $combinedStats = [
+            'total' => ($srgbvStats['total'] ?? 0) + ($otherStats['total'] ?? 0),
+            'open' => ($srgbvStats['open'] ?? 0) + ($otherStats['open'] ?? 0),
+            'critical' => ($srgbvStats['critical'] ?? 0) + ($otherStats['critical'] ?? 0),
+            'newToday' => ($srgbvStats['newToday'] ?? 0) + ($otherStats['newToday'] ?? 0),
+        ];
+
+        // Recent incidents across both modules
+        $recentIncidents = Incident::with(['reporter', 'assignee'])
+            ->when(!$canAccessSrgbv, fn($q) => $q->where('type', '!=', Incident::TYPE_SRGBV))
+            ->when(!$canAccessOther, fn($q) => $q->where('type', Incident::TYPE_SRGBV))
+            ->latest()
+            ->take(5)
+            ->get();
+
+        // Urgent cases requiring attention
+        $urgentCount = Incident::requiringImmediateAction()
+            ->when(!$canAccessSrgbv, fn($q) => $q->where('type', '!=', Incident::TYPE_SRGBV))
+            ->when(!$canAccessOther, fn($q) => $q->where('type', Incident::TYPE_SRGBV))
+            ->count();
 
         return view('sir.landing', [
             'user' => $user,
@@ -39,6 +63,9 @@ class SirDashboardController extends Controller
             'canAccessOther' => $canAccessOther,
             'srgbvStats' => $srgbvStats,
             'otherStats' => $otherStats,
+            'combinedStats' => $combinedStats,
+            'recentIncidents' => $recentIncidents,
+            'urgentCount' => $urgentCount,
         ]);
     }
 
