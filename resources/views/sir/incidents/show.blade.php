@@ -32,7 +32,7 @@
                         </div>
                         <h1 class="text-lg font-semibold text-white">{{ $incident->title }}</h1>
                         <p class="text-{{ $incident->type === 'srgbv' ? 'red' : 'blue' }}-100 text-sm mt-0.5">
-                            {{ $incident->category_label }} • {{ $incident->incident_date?->format('M d, Y') ?? 'Date unknown' }} • Reported {{ $incident->created_at->diffForHumans() }}
+                            {{ $incident->category_label }} • {{ $incident->incident_date?->format('M d, Y') ?? 'Date unknown' }} • Reported {{ $incident->created_at?->diffForHumans() ?? 'recently' }}
                         </p>
                     </div>
                 </div>
@@ -447,7 +447,7 @@
                             @endif
                             
                             <div class="flex items-center flex-wrap gap-2 mb-2">
-                                <span class="text-sm font-semibold text-gray-800">{{ $note->user->name }}</span>
+                                <span class="text-sm font-semibold text-gray-800">{{ $note->user?->name ?? 'Unknown User' }}</span>
                                 <span class="text-xs px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full">{{ $note->note_type_label }}</span>
                                 @if($note->is_private)
                                 <span class="text-xs px-2 py-0.5 bg-amber-100 text-amber-700 rounded-full flex items-center gap-1">
@@ -455,7 +455,7 @@
                                     Private
                                 </span>
                                 @endif
-                                <span class="text-xs text-gray-400">{{ $note->created_at->diffForHumans() }}</span>
+                                <span class="text-xs text-gray-400">{{ $note->created_at?->diffForHumans() ?? '' }}</span>
                             </div>
                             <p class="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">{{ $note->note }}</p>
                         </div>
@@ -513,7 +513,7 @@
                         </div>
                         <div>
                             <dt class="text-gray-500 mb-1">Reported</dt>
-                            <dd class="font-medium text-gray-800">{{ $incident->created_at->format('M d, Y g:i A') }}</dd>
+                            <dd class="font-medium text-gray-800">{{ $incident->created_at?->format('M d, Y g:i A') ?? 'Unknown' }}</dd>
                         </div>
                         <div class="border-t border-gray-100 pt-4">
                             <dt class="text-gray-500 mb-1">Reporter</dt>
