@@ -83,7 +83,7 @@ class DashboardController extends Controller
             ->overdue()
             ->with('assignee')
             ->latest()
-            ->take(5))
+            ->take(5)
             ->get();
 
         // Division staff list
