@@ -173,7 +173,6 @@ class ActivityController extends Controller
                 abort(403);
             }
         }
-        }
 
         $activity->load(['division', 'assignee', 'creator', 'comments.user']);
 
