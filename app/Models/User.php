@@ -11,7 +11,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Storage;
 
-#[Fillable(['name', 'email', 'password', 'role', 'division_id', 'position', 'phone', 'profile_photo', 'is_active', 'approval_status', 'created_by_user_id', 'approved_at', 'approved_by', 'rejection_reason', 'address', 'city', 'date_of_birth', 'gender', 'nationality', 'emergency_contact_name', 'emergency_contact_phone', 'emergency_contact_relationship', 'counselor_school', 'counselor_county', 'counselor_status', 'counselor_qualification', 'counselor_specialization', 'counselor_years_experience', 'counselor_training', 'counselor_school_phone', 'counselor_appointed_at', 'counselor_assignment_date', 'counselor_school_district', 'counselor_school_level', 'counselor_school_type', 'counselor_school_population', 'counselor_num_boys', 'counselor_num_girls', 'counselor_school_address', 'counselor_school_principal', 'counselor_profile_status', 'counselor_profile_reviewed_at', 'counselor_profile_reviewed_by', 'counselor_profile_review_notes'])]
+#[Fillable(['name', 'email', 'password', 'role', 'sir_access', 'division_id', 'position', 'phone', 'profile_photo', 'is_active', 'approval_status', 'created_by_user_id', 'approved_at', 'approved_by', 'rejection_reason', 'address', 'city', 'date_of_birth', 'gender', 'nationality', 'emergency_contact_name', 'emergency_contact_phone', 'emergency_contact_relationship', 'counselor_school', 'counselor_county', 'counselor_status', 'counselor_qualification', 'counselor_specialization', 'counselor_years_experience', 'counselor_training', 'counselor_school_phone', 'counselor_appointed_at', 'counselor_assignment_date', 'counselor_school_district', 'counselor_school_level', 'counselor_school_type', 'counselor_school_population', 'counselor_num_boys', 'counselor_num_girls', 'counselor_school_address', 'counselor_school_principal', 'counselor_profile_status', 'counselor_profile_reviewed_at', 'counselor_profile_reviewed_by', 'counselor_profile_review_notes'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -22,7 +22,7 @@ class User extends Authenticatable
      * Fallback $fillable in case the #[Fillable] attribute is not processed.
      */
     protected $fillable = [
-        'name', 'email', 'password', 'role', 'division_id', 'position', 'phone',
+        'name', 'email', 'password', 'role', 'sir_access', 'division_id', 'position', 'phone',
         'profile_photo', 'is_active', 'approval_status', 'created_by_user_id',
         'approved_at', 'approved_by', 'rejection_reason',
         'address', 'city', 'date_of_birth', 'gender', 'nationality',
@@ -556,5 +556,81 @@ class User extends Authenticatable
     public function unreadNotificationCount(): int
     {
         return $this->bureauNotifications()->unread()->where('type', '!=', 'message')->count();
+    }
+
+    // ── SIR Access Constants ────────────────────────────────
+    const SIR_ACCESS_SRGBV = 'srgbv';
+    const SIR_ACCESS_OTHER = 'other_incidents';
+    const SIR_ACCESS_BOTH = 'both';
+
+    const SIR_ACCESS_OPTIONS = [
+        '' => 'None (use role defaults)',
+        self::SIR_ACCESS_SRGBV => 'SRGBV Only',
+        self::SIR_ACCESS_OTHER => 'Other Incidents Only',
+        self::SIR_ACCESS_BOTH => 'Both (SRGBV + Other Incidents)',
+    ];
+
+    /**
+     * Can this user access the SRGBV tracker?
+     * Access: Admins, Minister, Counselors, CGPC division staff,
+     *         or anyone with sir_access = 'srgbv' or 'both'
+     */
+    public function canAccessSrgbv(): bool
+    {
+        // Full-access roles (admin, minister) always have access
+        if ($this->hasFullAccess()) return true;
+
+        // Explicit SIR access grant
+        if (in_array($this->sir_access, [self::SIR_ACCESS_SRGBV, self::SIR_ACCESS_BOTH])) return true;
+
+        // Counselors inherently access SRGBV
+        if ($this->isCounselor()) return true;
+
+        // CGPC division staff (director, supervisor, coordinator)
+        if ($this->division && $this->division->code === 'CGPC' &&
+            in_array($this->role, [self::ROLE_DIRECTOR, self::ROLE_SUPERVISOR, self::ROLE_COORDINATOR])) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Can this user access Other Incidents?
+     * Access: Admins, Minister, Full-access users,
+     *         Community Engagement division (CEDP) users,
+     *         or anyone with sir_access = 'other_incidents' or 'both'
+     */
+    public function canAccessOtherIncidents(): bool
+    {
+        // Full-access roles always have access
+        if ($this->hasFullAccess()) return true;
+
+        // Explicit SIR access grant
+        if (in_array($this->sir_access, [self::SIR_ACCESS_OTHER, self::SIR_ACCESS_BOTH])) return true;
+
+        // Community Engagement & Dropout Prevention division
+        if ($this->division && $this->division->code === 'CEDP') return true;
+
+        return false;
+    }
+
+    /**
+     * Can this user access any part of SIR?
+     */
+    public function canAccessSir(): bool
+    {
+        return $this->canAccessSrgbv() || $this->canAccessOtherIncidents();
+    }
+
+    /**
+     * Can this user manage (edit, delete, assign) incidents?
+     */
+    public function canManageIncidents(): bool
+    {
+        if ($this->hasFullAccess()) return true;
+        if ($this->isDirector() && $this->division &&
+            in_array($this->division->code, ['CGPC', 'CEDP'])) return true;
+        return false;
     }
 }

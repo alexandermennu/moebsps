@@ -148,6 +148,8 @@ Route::middleware(['auth', 'active'])->group(function () {
     // ── SIR (School Incident Reporter) ──────────────────────
     Route::prefix('sir')->name('sir.')->group(function () {
         Route::get('/dashboard', [SirDashboardController::class, 'index'])->name('dashboard');
+        Route::get('/srgbv', [SirDashboardController::class, 'srgbvDashboard'])->name('srgbv.dashboard');
+        Route::get('/other', [SirDashboardController::class, 'otherDashboard'])->name('other.dashboard');
         Route::get('/incidents', [IncidentController::class, 'index'])->name('incidents.index');
         Route::get('/incidents/create', [IncidentController::class, 'create'])->name('incidents.create');
         Route::post('/incidents', [IncidentController::class, 'store'])->name('incidents.store');

@@ -63,6 +63,18 @@
                 </div>
             </div>
 
+            {{-- SIR Access --}}
+            <div class="mb-4">
+                <label for="sir_access" class="block text-sm font-medium text-gray-700 mb-1">SIR Module Access</label>
+                <select name="sir_access" id="sir_access"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-slate-500">
+                    @foreach(\App\Models\User::SIR_ACCESS_OPTIONS as $key => $label)
+                        <option value="{{ $key }}" {{ old('sir_access', $user->sir_access) === $key ? 'selected' : '' }}>{{ $label }}</option>
+                    @endforeach
+                </select>
+                <p class="text-xs text-gray-400 mt-1">Admins, Minister & Counselors automatically have access. Use this to grant access to other staff.</p>
+            </div>
+
             <div class="grid grid-cols-2 gap-4 mb-4">
                 <div>
                     <label for="position" class="block text-sm font-medium text-gray-700 mb-1">Position</label>

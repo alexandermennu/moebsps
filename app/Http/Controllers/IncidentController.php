@@ -15,15 +15,22 @@ use Illuminate\Validation\Rule;
 class IncidentController extends Controller
 {
     /**
-     * Can the user access the SIR module?
+     * Can the user access incidents of this type?
      */
-    private function canAccessSir(User $user): bool
+    private function canAccessIncidentType(User $user, ?string $type = null): bool
     {
-        if ($user->hasFullAccess()) return true;
-        if ($user->isDirector() && $user->division && $user->division->code === 'CGPC') return true;
-        if ($user->isCounselor()) return true;
-        if (in_array($user->role, [User::ROLE_SUPERVISOR, User::ROLE_COORDINATOR]) && $user->division && $user->division->code === 'CGPC') return true;
-        return false;
+        if (!$user->canAccessSir()) return false;
+
+        // If no specific type requested, they have access to at least one module
+        if (!$type) return true;
+
+        // SRGBV type requires SRGBV access
+        if ($type === Incident::TYPE_SRGBV) {
+            return $user->canAccessSrgbv();
+        }
+
+        // All other types require Other Incidents access
+        return $user->canAccessOtherIncidents();
     }
 
     /**
@@ -31,9 +38,32 @@ class IncidentController extends Controller
      */
     private function canManageIncidents(User $user): bool
     {
-        if ($user->hasFullAccess()) return true;
-        if ($user->isDirector() && $user->division && $user->division->code === 'CGPC') return true;
-        return false;
+        return $user->canManageIncidents();
+    }
+
+    /**
+     * Scope query based on user's SIR access (SRGBV only, Other only, or both).
+     */
+    private function scopeByAccess($query, User $user, ?string $module = null)
+    {
+        $canSrgbv = $user->canAccessSrgbv();
+        $canOther = $user->canAccessOtherIncidents();
+
+        // Module-specific filtering
+        if ($module === 'srgbv') {
+            $query->where('type', Incident::TYPE_SRGBV);
+        } elseif ($module === 'other') {
+            $query->where('type', '!=', Incident::TYPE_SRGBV);
+        } elseif (!$canSrgbv && $canOther) {
+            // User only has Other Incidents access
+            $query->where('type', '!=', Incident::TYPE_SRGBV);
+        } elseif ($canSrgbv && !$canOther) {
+            // User only has SRGBV access
+            $query->where('type', Incident::TYPE_SRGBV);
+        }
+        // If both, no type filter needed
+
+        return $query;
     }
 
     /**
@@ -42,12 +72,17 @@ class IncidentController extends Controller
     public function index(Request $request)
     {
         $user = $request->user();
-        if (!$this->canAccessSir($user)) abort(403);
+        if (!$user->canAccessSir()) abort(403);
+
+        $module = $request->query('module'); // 'srgbv', 'other', or null (all accessible)
 
         $query = Incident::with(['reporter', 'assignee', 'division']);
 
+        // Scope by module access
+        $this->scopeByAccess($query, $user, $module);
+
         // Scope for non-manager users
-        if (!$user->hasFullAccess() && !($user->isDirector() && $user->division && $user->division->code === 'CGPC')) {
+        if (!$user->hasFullAccess() && !($user->isDirector() && $user->division && in_array($user->division->code, ['CGPC', 'CEDP']))) {
             $query->where(function ($q) use ($user) {
                 $q->where('division_id', $user->division_id)
                   ->orWhere('reported_by', $user->id)
@@ -93,6 +128,7 @@ class IncidentController extends Controller
         return view('sir.incidents.index', [
             'incidents' => $incidents,
             'user' => $user,
+            'module' => $module,
             'canManage' => $this->canManageIncidents($user),
         ]);
     }
@@ -103,7 +139,7 @@ class IncidentController extends Controller
     public function create(Request $request)
     {
         $user = auth()->user();
-        if (!$this->canAccessSir($user)) abort(403);
+        if (!$user->canAccessSir()) abort(403);
 
         $counselors = User::where('role', User::ROLE_COUNSELOR)
             ->where('is_active', true)
@@ -129,7 +165,7 @@ class IncidentController extends Controller
     public function store(Request $request)
     {
         $user = $request->user();
-        if (!$this->canAccessSir($user)) abort(403);
+        if (!$user->canAccessSir()) abort(403);
 
         $validated = $request->validate([
             'type' => ['required', Rule::in(array_keys(Incident::TYPES))],
@@ -274,7 +310,7 @@ class IncidentController extends Controller
     public function show(Incident $incident)
     {
         $user = auth()->user();
-        if (!$this->canAccessSir($user)) abort(403);
+        if (!$this->canAccessIncidentType($user, $incident->type)) abort(403);
 
         $incident->load([
             'reporter', 'assignee', 'division',
@@ -309,6 +345,7 @@ class IncidentController extends Controller
     {
         $user = auth()->user();
         if (!$this->canManageIncidents($user)) abort(403);
+        if (!$this->canAccessIncidentType($user, $incident->type)) abort(403);
 
         $counselors = User::where('role', User::ROLE_COUNSELOR)
             ->where('is_active', true)
@@ -424,7 +461,7 @@ class IncidentController extends Controller
     public function addNote(Request $request, Incident $incident)
     {
         $user = $request->user();
-        if (!$this->canAccessSir($user)) abort(403);
+        if (!$this->canAccessIncidentType($user, $incident->type)) abort(403);
 
         $validated = $request->validate([
             'note' => 'required|string',
@@ -450,7 +487,7 @@ class IncidentController extends Controller
     public function uploadFiles(Request $request, Incident $incident)
     {
         $user = $request->user();
-        if (!$this->canAccessSir($user)) abort(403);
+        if (!$this->canAccessIncidentType($user, $incident->type)) abort(403);
 
         $request->validate([
             'files' => 'required',
