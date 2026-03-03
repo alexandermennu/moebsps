@@ -20,6 +20,9 @@ use App\Http\Controllers\CasesReportController;
 use App\Http\Controllers\TrackedActivityController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\CounselorProfileController;
+use App\Http\Controllers\IncidentController;
+use App\Http\Controllers\SirDashboardController;
+use App\Http\Controllers\PublicIncidentController;
 
 /*
 |--------------------------------------------------------------------------
@@ -34,6 +37,20 @@ Route::get('/', function () {
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login']);
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+
+/*
+|--------------------------------------------------------------------------
+| SIR Public Routes (No Authentication Required)
+|--------------------------------------------------------------------------
+*/
+
+Route::prefix('sir/public')->name('sir.public.')->middleware('throttle:10,1')->group(function () {
+    Route::get('/report', [PublicIncidentController::class, 'create'])->name('report');
+    Route::post('/report', [PublicIncidentController::class, 'store'])->name('store');
+    Route::get('/confirm', [PublicIncidentController::class, 'confirm'])->name('confirm');
+    Route::get('/track', [PublicIncidentController::class, 'trackForm'])->name('track.form');
+    Route::post('/track', [PublicIncidentController::class, 'track'])->name('track');
+});
 
 /*
 |--------------------------------------------------------------------------
@@ -109,10 +126,10 @@ Route::middleware(['auth', 'active'])->group(function () {
     Route::delete('/counselor-profile/certificates/{certificate}', [CounselorProfileController::class, 'deleteCertificate'])->name('counselor-profile.certificates.delete');
     Route::get('/counselor-profile/{counselor}', [CounselorProfileController::class, 'show'])->name('counselor-profile.show');
 
-    // Cases Report Landing
+    // Cases Report Landing (legacy — redirects to SIR)
     Route::get('/cases-report', [CasesReportController::class, 'index'])->name('cases-report');
 
-    // SRGBV Case Management
+    // SRGBV Case Management (legacy — kept for backward compatibility)
     Route::prefix('srgbv')->name('srgbv.')->group(function () {
         Route::get('/dashboard', [SrgbvDashboardController::class, 'index'])->name('dashboard');
         Route::get('/cases', [SrgbvCaseController::class, 'index'])->name('cases.index');
@@ -126,6 +143,22 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::delete('/cases/{srgbvCase}/files/{file}', [SrgbvCaseController::class, 'deleteFile'])->name('cases.files.delete');
         Route::patch('/cases/{srgbvCase}/status', [SrgbvCaseController::class, 'updateStatus'])->name('cases.status');
         Route::delete('/cases/{srgbvCase}', [SrgbvCaseController::class, 'destroy'])->name('cases.destroy');
+    });
+
+    // ── SIR (School Incident Reporter) ──────────────────────
+    Route::prefix('sir')->name('sir.')->group(function () {
+        Route::get('/dashboard', [SirDashboardController::class, 'index'])->name('dashboard');
+        Route::get('/incidents', [IncidentController::class, 'index'])->name('incidents.index');
+        Route::get('/incidents/create', [IncidentController::class, 'create'])->name('incidents.create');
+        Route::post('/incidents', [IncidentController::class, 'store'])->name('incidents.store');
+        Route::get('/incidents/{incident}', [IncidentController::class, 'show'])->name('incidents.show');
+        Route::get('/incidents/{incident}/edit', [IncidentController::class, 'edit'])->name('incidents.edit');
+        Route::put('/incidents/{incident}', [IncidentController::class, 'update'])->name('incidents.update');
+        Route::post('/incidents/{incident}/notes', [IncidentController::class, 'addNote'])->name('incidents.notes');
+        Route::post('/incidents/{incident}/files', [IncidentController::class, 'uploadFiles'])->name('incidents.files');
+        Route::delete('/incidents/{incident}/files/{file}', [IncidentController::class, 'deleteFile'])->name('incidents.files.delete');
+        Route::patch('/incidents/{incident}/status', [IncidentController::class, 'updateStatus'])->name('incidents.status');
+        Route::delete('/incidents/{incident}', [IncidentController::class, 'destroy'])->name('incidents.destroy');
     });
 
     /*

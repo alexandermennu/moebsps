@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Activity;
 use App\Models\Division;
-use App\Models\SrgbvCase;
+use App\Models\Incident;
 use App\Models\TrackedActivity;
 use App\Models\User;
 use App\Models\WeeklyPlan;
@@ -62,11 +62,11 @@ class DashboardController extends Controller
             'escalated' => Activity::byDivision($divisionId)->escalated()->count(),
         ];
 
-        // SRGBV stats for CGPC directors
+        // Incident stats for CGPC directors
         if ($user->division && $user->division->code === 'CGPC') {
-            $stats['srgbv_total'] = SrgbvCase::count();
-            $stats['srgbv_open'] = SrgbvCase::open()->count();
-            $stats['srgbv_critical'] = SrgbvCase::critical()->open()->count();
+            $stats['srgbv_total'] = Incident::count();
+            $stats['srgbv_open'] = Incident::open()->count();
+            $stats['srgbv_critical'] = Incident::critical()->open()->count();
         }
 
         $recentActivities = Activity::where(function ($q) use ($divisionId, $user) {
@@ -156,9 +156,9 @@ class DashboardController extends Controller
             'total_users' => User::where('is_active', true)->count(),
             'pending_staff' => User::pendingApproval()->count(),
             'pending_profiles' => User::pendingProfileReview()->count(),
-            'srgbv_total' => SrgbvCase::count(),
-            'srgbv_open' => SrgbvCase::open()->count(),
-            'srgbv_critical' => SrgbvCase::critical()->open()->count(),
+            'srgbv_total' => Incident::count(),
+            'srgbv_open' => Incident::open()->count(),
+            'srgbv_critical' => Incident::critical()->open()->count(),
             'approved_updates' => WeeklyUpdate::where('status', 'approved')->count(),
             'approved_plans' => WeeklyPlan::where('status', 'approved')->count(),
         ];
