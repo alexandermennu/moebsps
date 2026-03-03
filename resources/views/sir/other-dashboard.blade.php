@@ -185,59 +185,22 @@
             </div>
         </div>
 
-        {{-- Liberia County Map --}}
+        {{-- Liberia County Map (Leaflet + GeoJSON) --}}
         <div class="bg-white border border-gray-200 rounded-lg p-5">
             <div class="flex items-center justify-between mb-4">
                 <h3 class="text-sm font-semibold text-gray-900">Incidents by County</h3>
                 <div class="flex items-center gap-1 text-xs text-gray-500">
-                    <span class="w-3 h-3 rounded bg-blue-100"></span>
+                    <span class="w-3 h-3 rounded" style="background:#dbeafe"></span>
                     <span>Low</span>
-                    <span class="w-3 h-3 rounded bg-blue-300 ml-1"></span>
-                    <span class="w-3 h-3 rounded bg-blue-500"></span>
-                    <span class="w-3 h-3 rounded bg-blue-700"></span>
+                    <span class="w-3 h-3 rounded ml-1" style="background:#93c5fd"></span>
+                    <span class="w-3 h-3 rounded" style="background:#3b82f6"></span>
+                    <span class="w-3 h-3 rounded" style="background:#1e40af"></span>
                     <span>High</span>
                 </div>
             </div>
             <div class="flex gap-4">
-                {{-- SVG Map of Liberia (Accurate county boundaries) --}}
-                <div class="flex-1 min-h-[220px]" id="liberiaMapContainer">
-                    <svg viewBox="0 0 500 450" class="w-full h-full" id="liberiaMap">
-                        {{-- Lofa County (Northwest, borders Guinea & Sierra Leone) --}}
-                        <path id="county-lofa" d="M95,20 L145,15 L195,25 L235,45 L245,85 L225,115 L185,125 L145,115 L105,95 L85,55 Z" class="county-path" data-county="Lofa"/>
-                        {{-- Gbarpolu County (West-central) --}}
-                        <path id="county-gbarpolu" d="M45,95 L85,55 L105,95 L145,115 L155,155 L125,185 L75,175 L35,135 Z" class="county-path" data-county="Gbarpolu"/>
-                        {{-- Bong County (Central) --}}
-                        <path id="county-bong" d="M145,115 L185,125 L225,115 L265,135 L275,175 L245,205 L195,215 L155,195 L155,155 Z" class="county-path" data-county="Bong"/>
-                        {{-- Nimba County (Northeast, largest county, borders Guinea & Ivory Coast) --}}
-                        <path id="county-nimba" d="M225,115 L245,85 L285,55 L345,45 L385,75 L395,135 L365,185 L315,195 L275,175 L265,135 Z" class="county-path" data-county="Nimba"/>
-                        {{-- Grand Cape Mount County (Far west coast) --}}
-                        <path id="county-grandcapemount" d="M5,135 L35,135 L75,175 L65,215 L35,235 L5,215 L0,175 Z" class="county-path" data-county="Grand Cape Mount"/>
-                        {{-- Bomi County (West, small) --}}
-                        <path id="county-bomi" d="M35,135 L75,175 L125,185 L115,225 L65,215 Z" class="county-path" data-county="Bomi"/>
-                        {{-- Montserrado County (Capital Monrovia, west coast) --}}
-                        <path id="county-montserrado" d="M65,215 L115,225 L135,255 L115,285 L75,275 L45,255 L35,235 Z" class="county-path" data-county="Montserrado"/>
-                        {{-- Margibi County (Central coast) --}}
-                        <path id="county-margibi" d="M115,225 L155,195 L195,215 L185,255 L135,255 Z" class="county-path" data-county="Margibi"/>
-                        {{-- Grand Bassa County (Central coast) --}}
-                        <path id="county-grandbassa" d="M135,255 L185,255 L245,275 L235,315 L175,335 L115,315 L115,285 Z" class="county-path" data-county="Grand Bassa"/>
-                        {{-- River Cess County (Southeast coast) --}}
-                        <path id="county-rivercess" d="M175,335 L235,315 L285,325 L295,365 L245,385 L195,375 Z" class="county-path" data-county="River Cess"/>
-                        {{-- Sinoe County (Southeast coast) --}}
-                        <path id="county-sinoe" d="M245,385 L295,365 L355,355 L375,395 L335,425 L275,425 L245,405 Z" class="county-path" data-county="Sinoe"/>
-                        {{-- Grand Gedeh County (East, borders Ivory Coast) --}}
-                        <path id="county-grandgedeh" d="M315,195 L365,185 L415,195 L435,255 L405,305 L345,315 L295,295 L285,245 L275,205 Z" class="county-path" data-county="Grand Gedeh"/>
-                        {{-- River Gee County (Southeast) --}}
-                        <path id="county-rivergee" d="M295,295 L345,315 L365,355 L355,355 L295,365 L285,325 Z" class="county-path" data-county="River Gee"/>
-                        {{-- Grand Kru County (South coast) --}}
-                        <path id="county-grandkru" d="M355,355 L365,355 L405,365 L425,405 L395,435 L355,435 L335,425 L375,395 Z" class="county-path" data-county="Grand Kru"/>
-                        {{-- Maryland County (Southeast tip) --}}
-                        <path id="county-maryland" d="M395,435 L425,405 L465,415 L485,445 L455,465 L415,455 Z" class="county-path" data-county="Maryland"/>
-                        {{-- Ocean indication --}}
-                        <path d="M0,280 Q50,270 115,285 Q175,335 245,385 Q335,425 455,465 L485,445 L500,450 L500,480 L0,480 Z" fill="#E0F2FE" stroke="none" opacity="0.5"/>
-                        {{-- Country label --}}
-                        <text x="200" y="170" class="text-[10px] fill-gray-400 font-medium" text-anchor="middle">LIBERIA</text>
-                    </svg>
-                </div>
+                {{-- Leaflet Map Container --}}
+                <div class="flex-1 h-[280px] rounded-lg overflow-hidden border border-gray-200" id="liberiaMap"></div>
                 {{-- Top Counties List --}}
                 <div class="w-40 shrink-0">
                     <p class="text-xs text-gray-500 mb-2 font-medium">Top Counties</p>
@@ -248,6 +211,13 @@
                             <span class="font-semibold text-gray-900">{{ $count }}</span>
                         </div>
                         @empty
+                        <p class="text-xs text-gray-400">No data yet</p>
+                        @endforelse
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
                         <p class="text-xs text-gray-400">No data yet</p>
                         @endforelse
                     </div>
@@ -402,67 +372,110 @@
     </div>
 </div>
 
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
 <style>
-    .county-path {
-        fill: #E0E7FF;
-        stroke: #fff;
-        stroke-width: 2;
-        cursor: pointer;
-        transition: fill 0.2s ease;
-    }
-    .county-path:hover {
-        fill: #A5B4FC;
-    }
-    .county-path.level-1 { fill: #DBEAFE; }
-    .county-path.level-2 { fill: #93C5FD; }
-    .county-path.level-3 { fill: #3B82F6; }
-    .county-path.level-4 { fill: #1D4ED8; }
+    .leaflet-container { background: #f8fafc; font-family: inherit; }
+    .info-box { padding: 8px 12px; background: white; border-radius: 6px; box-shadow: 0 1px 5px rgba(0,0,0,0.2); }
+    .info-box h4 { margin: 0 0 4px 0; font-size: 13px; font-weight: 600; color: #111827; }
+    .info-box p { margin: 0; font-size: 12px; color: #6b7280; }
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const countyData = @json($countyData ?? []);
-    const maxCount = Math.max(...Object.values(countyData), 1);
     
-    document.querySelectorAll('.county-path').forEach(path => {
-        const county = path.dataset.county;
-        const count = countyData[county] || 0;
-        const intensity = count / maxCount;
-        
-        if (count === 0) {
-            path.classList.add('level-1');
-        } else if (intensity < 0.25) {
-            path.classList.add('level-1');
-        } else if (intensity < 0.5) {
-            path.classList.add('level-2');
-        } else if (intensity < 0.75) {
-            path.classList.add('level-3');
-        } else {
-            path.classList.add('level-4');
-        }
-        
-        path.addEventListener('mouseenter', function(e) {
-            const tooltip = document.createElement('div');
-            tooltip.className = 'absolute bg-gray-900 text-white text-xs px-2 py-1 rounded pointer-events-none z-50';
-            tooltip.id = 'county-tooltip';
-            tooltip.textContent = `${county}: ${count} incidents`;
-            document.body.appendChild(tooltip);
-            tooltip.style.left = (e.pageX + 10) + 'px';
-            tooltip.style.top = (e.pageY - 25) + 'px';
-        });
-        path.addEventListener('mousemove', function(e) {
-            const tooltip = document.getElementById('county-tooltip');
-            if (tooltip) {
-                tooltip.style.left = (e.pageX + 10) + 'px';
-                tooltip.style.top = (e.pageY - 25) + 'px';
-            }
-        });
-        path.addEventListener('mouseleave', function() {
-            const tooltip = document.getElementById('county-tooltip');
-            if (tooltip) tooltip.remove();
-        });
-    });
+    // Initialize Leaflet map centered on Liberia
+    const map = L.map('liberiaMap', {
+        zoomControl: false,
+        attributionControl: false,
+        dragging: true,
+        scrollWheelZoom: false
+    }).setView([6.5, -9.5], 7);
+    
+    // Add zoom control to top-right
+    L.control.zoom({ position: 'topright' }).addTo(map);
+
+    // Liberia Counties GeoJSON (simplified official boundaries)
+    const liberiaGeoJSON = {
+        "type": "FeatureCollection",
+        "features": [
+            {"type":"Feature","properties":{"name":"Bomi"},"geometry":{"type":"Polygon","coordinates":[[[-11.0,6.9],[-10.8,6.9],[-10.7,6.75],[-10.8,6.55],[-10.95,6.5],[-11.1,6.6],[-11.0,6.9]]]}},
+            {"type":"Feature","properties":{"name":"Bong"},"geometry":{"type":"Polygon","coordinates":[[[-10.3,7.4],[-9.8,7.5],[-9.4,7.3],[-9.3,6.9],[-9.6,6.7],[-10.1,6.7],[-10.4,6.9],[-10.5,7.2],[-10.3,7.4]]]}},
+            {"type":"Feature","properties":{"name":"Gbarpolu"},"geometry":{"type":"Polygon","coordinates":[[[-10.8,7.5],[-10.3,7.4],[-10.5,7.2],[-10.4,6.9],[-10.7,6.75],[-10.8,6.9],[-11.0,6.9],[-11.2,7.2],[-10.8,7.5]]]}},
+            {"type":"Feature","properties":{"name":"Grand Bassa"},"geometry":{"type":"Polygon","coordinates":[[[-10.1,6.7],[-9.6,6.7],[-9.3,6.4],[-9.1,6.1],[-9.4,5.9],[-9.8,5.95],[-10.05,6.15],[-10.2,6.4],[-10.1,6.7]]]}},
+            {"type":"Feature","properties":{"name":"Grand Cape Mount"},"geometry":{"type":"Polygon","coordinates":[[[-11.5,7.4],[-11.2,7.2],[-11.0,6.9],[-11.1,6.6],[-11.4,6.9],[-11.5,7.1],[-11.5,7.4]]]}},
+            {"type":"Feature","properties":{"name":"Grand Gedeh"},"geometry":{"type":"Polygon","coordinates":[[[-8.5,7.0],[-8.0,6.9],[-7.8,6.5],[-8.0,6.0],[-8.3,5.7],[-8.7,5.9],[-9.0,6.3],[-9.3,6.4],[-9.3,6.9],[-8.9,7.1],[-8.5,7.0]]]}},
+            {"type":"Feature","properties":{"name":"Grand Kru"},"geometry":{"type":"Polygon","coordinates":[[[-8.3,5.1],[-8.0,5.0],[-7.7,4.9],[-7.5,4.55],[-7.8,4.4],[-8.2,4.5],[-8.5,4.8],[-8.3,5.1]]]}},
+            {"type":"Feature","properties":{"name":"Lofa"},"geometry":{"type":"Polygon","coordinates":[[[-10.8,8.5],[-10.2,8.6],[-9.5,8.4],[-9.3,8.0],[-9.4,7.6],[-9.8,7.5],[-10.3,7.4],[-10.8,7.5],[-11.2,7.8],[-11.0,8.2],[-10.8,8.5]]]}},
+            {"type":"Feature","properties":{"name":"Margibi"},"geometry":{"type":"Polygon","coordinates":[[[-10.5,6.55],[-10.2,6.4],[-10.05,6.15],[-10.3,6.05],[-10.6,6.2],[-10.6,6.4],[-10.5,6.55]]]}},
+            {"type":"Feature","properties":{"name":"Maryland"},"geometry":{"type":"Polygon","coordinates":[[[-7.7,4.9],[-7.4,4.7],[-7.35,4.35],[-7.7,4.3],[-7.8,4.4],[-7.5,4.55],[-7.7,4.9]]]}},
+            {"type":"Feature","properties":{"name":"Montserrado"},"geometry":{"type":"Polygon","coordinates":[[[-10.95,6.5],[-10.8,6.55],[-10.6,6.4],[-10.6,6.2],[-10.8,6.1],[-11.0,6.2],[-10.95,6.5]]]}},
+            {"type":"Feature","properties":{"name":"Nimba"},"geometry":{"type":"Polygon","coordinates":[[[-9.4,7.6],[-9.3,8.0],[-8.8,8.3],[-8.3,7.8],[-8.3,7.3],[-8.5,7.0],[-8.9,7.1],[-9.3,6.9],[-9.4,7.3],[-9.4,7.6]]]}},
+            {"type":"Feature","properties":{"name":"River Cess"},"geometry":{"type":"Polygon","coordinates":[[[-9.4,5.9],[-9.1,6.1],[-8.7,5.9],[-8.5,5.5],[-8.7,5.3],[-9.1,5.4],[-9.4,5.6],[-9.4,5.9]]]}},
+            {"type":"Feature","properties":{"name":"River Gee"},"geometry":{"type":"Polygon","coordinates":[[[-8.3,5.7],[-8.0,6.0],[-7.8,5.7],[-7.7,5.3],[-8.0,5.0],[-8.3,5.1],[-8.5,5.5],[-8.3,5.7]]]}},
+            {"type":"Feature","properties":{"name":"Sinoe"},"geometry":{"type":"Polygon","coordinates":[[[-8.7,5.3],[-8.5,5.5],[-8.3,5.1],[-8.5,4.8],[-9.0,4.9],[-9.2,5.2],[-8.7,5.3]]]}}
+        ]
+    };
+
+    // Color scale function (blue theme for Other Incidents)
+    const maxCount = Math.max(...Object.values(countyData), 1);
+    function getColor(count) {
+        if (!count || count === 0) return '#eff6ff';
+        const ratio = count / maxCount;
+        if (ratio < 0.25) return '#bfdbfe';
+        if (ratio < 0.5) return '#60a5fa';
+        if (ratio < 0.75) return '#3b82f6';
+        return '#1e40af';
+    }
+
+    function style(feature) {
+        const count = countyData[feature.properties.name] || 0;
+        return {
+            fillColor: getColor(count),
+            weight: 1.5,
+            opacity: 1,
+            color: '#ffffff',
+            fillOpacity: 0.85
+        };
+    }
+
+    // Info control
+    const info = L.control({ position: 'bottomleft' });
+    info.onAdd = function() {
+        this._div = L.DomUtil.create('div', 'info-box');
+        this.update();
+        return this._div;
+    };
+    info.update = function(props) {
+        const count = props ? (countyData[props.name] || 0) : null;
+        this._div.innerHTML = props
+            ? `<h4>${props.name}</h4><p>${count} incident${count !== 1 ? 's' : ''} reported</p>`
+            : '<p style="color:#9ca3af">Hover over a county</p>';
+    };
+    info.addTo(map);
+
+    // Interaction handlers
+    function highlightFeature(e) {
+        const layer = e.target;
+        layer.setStyle({ weight: 3, color: '#1f2937', fillOpacity: 0.95 });
+        layer.bringToFront();
+        info.update(layer.feature.properties);
+    }
+    function resetHighlight(e) {
+        geojsonLayer.resetStyle(e.target);
+        info.update();
+    }
+    function onEachFeature(feature, layer) {
+        layer.on({ mouseover: highlightFeature, mouseout: resetHighlight });
+    }
+
+    // Add GeoJSON layer
+    const geojsonLayer = L.geoJSON(liberiaGeoJSON, { style, onEachFeature }).addTo(map);
+    
+    // Fit bounds to Liberia
+    map.fitBounds(geojsonLayer.getBounds(), { padding: [10, 10] });
 
     // Trends Line Chart
     const trendsCtx = document.getElementById('trendsChart');
