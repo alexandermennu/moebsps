@@ -24,7 +24,7 @@ class ActivityController extends Controller
             // PLUS any tasks assigned directly to them
             $query->where(function ($q) use ($user) {
                 $q->where(function ($inner) use ($user) {
-                    $inner->byDivision($user->division_id)
+                    $inner->where('division_id', $user->division_id)
                           ->whereHas('creator', function ($c) {
                               $c->whereNotIn('role', [
                                   User::ROLE_MINISTER,
@@ -38,7 +38,7 @@ class ActivityController extends Controller
             // Division-scoped users see their division's assignments
             // PLUS any tasks assigned directly to them
             $query->where(function ($q) use ($user) {
-                $q->byDivision($user->division_id)
+                $q->where('division_id', $user->division_id)
                   ->orWhere('assigned_to', $user->id);
             });
         }

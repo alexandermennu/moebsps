@@ -38,15 +38,15 @@ class DashboardController extends Controller
     {
         $divisionId = $user->division_id;
         $totalActivities = Activity::where(function ($q) use ($divisionId, $user) {
-            $q->byDivision($divisionId)->orWhere('assigned_to', $user->id);
+            $q->where('division_id', $divisionId)->orWhere('assigned_to', $user->id);
         })->count();
 
         $stats = [
             'total_activities' => $totalActivities,
-            'in_progress' => Activity::where(function ($q) use ($divisionId, $user) { $q->byDivision($divisionId)->orWhere('assigned_to', $user->id); })->where('status', 'in_progress')->count(),
-            'completed' => Activity::where(function ($q) use ($divisionId, $user) { $q->byDivision($divisionId)->orWhere('assigned_to', $user->id); })->where('status', 'completed')->count(),
-            'overdue' => Activity::where(function ($q) use ($divisionId, $user) { $q->byDivision($divisionId)->orWhere('assigned_to', $user->id); })->overdue()->count(),
-            'not_started' => Activity::where(function ($q) use ($divisionId, $user) { $q->byDivision($divisionId)->orWhere('assigned_to', $user->id); })->where('status', 'not_started')->count(),
+            'in_progress' => Activity::where(function ($q) use ($divisionId, $user) { $q->where('division_id', $divisionId)->orWhere('assigned_to', $user->id); })->where('status', 'in_progress')->count(),
+            'completed' => Activity::where(function ($q) use ($divisionId, $user) { $q->where('division_id', $divisionId)->orWhere('assigned_to', $user->id); })->where('status', 'completed')->count(),
+            'overdue' => Activity::where(function ($q) use ($divisionId, $user) { $q->where('division_id', $divisionId)->orWhere('assigned_to', $user->id); })->overdue()->count(),
+            'not_started' => Activity::where(function ($q) use ($divisionId, $user) { $q->where('division_id', $divisionId)->orWhere('assigned_to', $user->id); })->where('status', 'not_started')->count(),
             'completion_rate' => $totalActivities > 0
                 ? round((Activity::byDivision($divisionId)->where('status', 'completed')->count() / $totalActivities) * 100)
                 : 0,
@@ -70,7 +70,7 @@ class DashboardController extends Controller
         }
 
         $recentActivities = Activity::where(function ($q) use ($divisionId, $user) {
-                $q->byDivision($divisionId)->orWhere('assigned_to', $user->id);
+                $q->where('division_id', $divisionId)->orWhere('assigned_to', $user->id);
             })
             ->with('assignee')
             ->latest()
@@ -78,7 +78,7 @@ class DashboardController extends Controller
             ->get();
 
         $overdueActivities = Activity::where(function ($q) use ($divisionId, $user) {
-                $q->byDivision($divisionId)->orWhere('assigned_to', $user->id);
+                $q->where('division_id', $divisionId)->orWhere('assigned_to', $user->id);
             })
             ->overdue()
             ->with('assignee')
@@ -293,14 +293,14 @@ class DashboardController extends Controller
         $divisionId = $user->division_id;
 
         $stats = [
-            'total_activities' => Activity::where(function ($q) use ($divisionId, $user) { $q->byDivision($divisionId)->orWhere('assigned_to', $user->id); })->count(),
-            'in_progress' => Activity::where(function ($q) use ($divisionId, $user) { $q->byDivision($divisionId)->orWhere('assigned_to', $user->id); })->where('status', 'in_progress')->count(),
-            'completed' => Activity::where(function ($q) use ($divisionId, $user) { $q->byDivision($divisionId)->orWhere('assigned_to', $user->id); })->where('status', 'completed')->count(),
-            'overdue' => Activity::where(function ($q) use ($divisionId, $user) { $q->byDivision($divisionId)->orWhere('assigned_to', $user->id); })->overdue()->count(),
+            'total_activities' => Activity::where(function ($q) use ($divisionId, $user) { $q->where('division_id', $divisionId)->orWhere('assigned_to', $user->id); })->count(),
+            'in_progress' => Activity::where(function ($q) use ($divisionId, $user) { $q->where('division_id', $divisionId)->orWhere('assigned_to', $user->id); })->where('status', 'in_progress')->count(),
+            'completed' => Activity::where(function ($q) use ($divisionId, $user) { $q->where('division_id', $divisionId)->orWhere('assigned_to', $user->id); })->where('status', 'completed')->count(),
+            'overdue' => Activity::where(function ($q) use ($divisionId, $user) { $q->where('division_id', $divisionId)->orWhere('assigned_to', $user->id); })->overdue()->count(),
         ];
 
         $recentActivities = Activity::where(function ($q) use ($divisionId, $user) {
-                $q->byDivision($divisionId)->orWhere('assigned_to', $user->id);
+                $q->where('division_id', $divisionId)->orWhere('assigned_to', $user->id);
             })
             ->with('assignee')
             ->latest()
