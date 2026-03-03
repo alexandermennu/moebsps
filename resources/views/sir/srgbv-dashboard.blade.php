@@ -106,11 +106,6 @@
                         <span class="text-sm text-gray-700">Male</span>
                         <span class="text-sm font-semibold text-gray-900 ml-auto">{{ isset($byGender['male']) ? round(($byGender['male'] / $totalGender) * 100, 1) : 0 }}%</span>
                     </div>
-                    <div class="flex items-center gap-3">
-                        <span class="w-3 h-3 rounded-full bg-green-500"></span>
-                        <span class="text-sm text-gray-700">Other</span>
-                        <span class="text-sm font-semibold text-gray-900 ml-auto">{{ isset($byGender['other']) ? round(($byGender['other'] / $totalGender) * 100, 1) : 0 }}%</span>
-                    </div>
                 </div>
             </div>
         </div>
@@ -277,15 +272,15 @@ document.addEventListener('DOMContentLoaded', function() {
     const genderCtx = document.getElementById('genderChart');
     if (genderCtx) {
         const genderData = @json($byGender);
-        const genderValues = [genderData['female'] || 0, genderData['male'] || 0, genderData['other'] || 0];
+        const genderValues = [genderData['female'] || 0, genderData['male'] || 0];
 
         new Chart(genderCtx, {
             type: 'doughnut',
             data: {
-                labels: ['Female', 'Male', 'Other'],
+                labels: ['Female', 'Male'],
                 datasets: [{
-                    data: genderValues.some(v => v > 0) ? genderValues : [1, 1, 1],
-                    backgroundColor: ['#3B82F6', '#FBBF24', '#22C55E'],
+                    data: genderValues.some(v => v > 0) ? genderValues : [1, 1],
+                    backgroundColor: ['#3B82F6', '#FBBF24'],
                     borderWidth: 0,
                 }]
             },
