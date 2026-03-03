@@ -84,37 +84,15 @@
             </li>
             <li>
                 <a href="{{ route('sir.dashboard') }}"
-                   class="flex items-center gap-3 px-3 py-2 rounded-md text-sm {{ request()->routeIs('sir.dashboard') ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white' }}">
+                   class="flex items-center gap-3 px-3 py-2 rounded-md text-sm {{ request()->routeIs('sir.*') ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white' }}">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
-                    Overview
-                </a>
-            </li>
-            @if(auth()->user()->canAccessSrgbv())
-            <li>
-                <a href="{{ route('sir.srgbv.dashboard') }}"
-                   class="flex items-center gap-3 px-3 py-2 rounded-md text-sm pl-6 {{ request()->routeIs('sir.srgbv.*') || (request()->routeIs('sir.incidents.*') && request('module') === 'srgbv') ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white' }}">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z"/></svg>
-                    SRGBV
-                    @php $srgbvOpen = \App\Models\Incident::open()->where('type', 'srgbv')->count(); @endphp
-                    @if($srgbvOpen > 0)
-                        <span class="ml-auto bg-red-500 text-white text-[10px] rounded-full px-1.5 py-0.5">{{ $srgbvOpen }}</span>
+                    SIR
+                    @php $openIncidentCount = \App\Models\Incident::open()->count(); @endphp
+                    @if($openIncidentCount > 0)
+                        <span class="ml-auto bg-red-500 text-white text-xs rounded-full px-2 py-0.5">{{ $openIncidentCount }}</span>
                     @endif
                 </a>
             </li>
-            @endif
-            @if(auth()->user()->canAccessOtherIncidents())
-            <li>
-                <a href="{{ route('sir.other.dashboard') }}"
-                   class="flex items-center gap-3 px-3 py-2 rounded-md text-sm pl-6 {{ request()->routeIs('sir.other.*') || (request()->routeIs('sir.incidents.*') && request('module') === 'other') ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white' }}">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                    Other Incidents
-                    @php $otherOpen = \App\Models\Incident::open()->where('type', '!=', 'srgbv')->count(); @endphp
-                    @if($otherOpen > 0)
-                        <span class="ml-auto bg-orange-500 text-white text-[10px] rounded-full px-1.5 py-0.5">{{ $otherOpen }}</span>
-                    @endif
-                </a>
-            </li>
-            @endif
             @endif
 
             {{-- Messages --}}

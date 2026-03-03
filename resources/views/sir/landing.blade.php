@@ -10,64 +10,64 @@
     </div>
 
     {{-- Module Plates --}}
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         {{-- SRGBV Module --}}
         @if($canAccessSrgbv)
-        <a href="{{ route('sir.srgbv.dashboard') }}" class="group block bg-white border-2 border-red-200 hover:border-red-400 rounded-lg p-8 transition-all hover:shadow-lg">
-            <div class="flex items-start justify-between mb-4">
-                <div class="w-14 h-14 bg-red-100 rounded-lg flex items-center justify-center group-hover:bg-red-200 transition">
-                    <svg class="w-7 h-7 text-red-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z"/></svg>
-                </div>
-                <svg class="w-5 h-5 text-gray-300 group-hover:text-red-500 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        <a href="{{ route('sir.srgbv.dashboard') }}" class="group flex items-center gap-4 bg-white border border-red-200 hover:border-red-400 rounded-md p-4 transition hover:shadow">
+            <div class="w-10 h-10 bg-red-100 rounded-md flex items-center justify-center shrink-0 group-hover:bg-red-200 transition">
+                <svg class="w-5 h-5 text-red-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z"/></svg>
             </div>
-            <h3 class="text-lg font-bold text-gray-900 mb-1">SRGBV</h3>
-            <p class="text-sm text-gray-500 mb-5">School-Related Gender-Based Violence — Tracks and manages all SRGBV cases including physical, sexual, psychological violence, bullying, harassment, and exploitation.</p>
+            <div class="flex-1 min-w-0">
+                <h3 class="text-sm font-semibold text-gray-900">SRGBV</h3>
+                <p class="text-xs text-gray-500 truncate">Gender-Based Violence tracking & case management</p>
+            </div>
             @if($srgbvStats)
-            <div class="grid grid-cols-3 gap-3 border-t border-gray-100 pt-4">
+            <div class="flex items-center gap-3 text-center shrink-0">
                 <div>
-                    <p class="text-xs text-gray-400 uppercase tracking-wide">Total</p>
-                    <p class="text-xl font-bold text-gray-800">{{ $srgbvStats['total'] }}</p>
+                    <p class="text-[10px] text-gray-400 uppercase">Total</p>
+                    <p class="text-sm font-bold text-gray-800">{{ $srgbvStats['total'] }}</p>
                 </div>
                 <div>
-                    <p class="text-xs text-red-500 uppercase tracking-wide">Open</p>
-                    <p class="text-xl font-bold text-red-700">{{ $srgbvStats['open'] }}</p>
+                    <p class="text-[10px] text-red-500 uppercase">Open</p>
+                    <p class="text-sm font-bold text-red-700">{{ $srgbvStats['open'] }}</p>
                 </div>
                 <div>
-                    <p class="text-xs text-orange-500 uppercase tracking-wide">Critical</p>
-                    <p class="text-xl font-bold text-orange-700">{{ $srgbvStats['critical'] }}</p>
+                    <p class="text-[10px] text-orange-500 uppercase">Critical</p>
+                    <p class="text-sm font-bold text-orange-700">{{ $srgbvStats['critical'] }}</p>
                 </div>
             </div>
             @endif
+            <svg class="w-4 h-4 text-gray-300 group-hover:text-red-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
         </a>
         @endif
 
         {{-- Other Incidents Module --}}
         @if($canAccessOther)
-        <a href="{{ route('sir.other.dashboard') }}" class="group block bg-white border-2 border-blue-200 hover:border-blue-400 rounded-lg p-8 transition-all hover:shadow-lg">
-            <div class="flex items-start justify-between mb-4">
-                <div class="w-14 h-14 bg-blue-100 rounded-lg flex items-center justify-center group-hover:bg-blue-200 transition">
-                    <svg class="w-7 h-7 text-blue-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                </div>
-                <svg class="w-5 h-5 text-gray-300 group-hover:text-blue-500 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        <a href="{{ route('sir.other.dashboard') }}" class="group flex items-center gap-4 bg-white border border-blue-200 hover:border-blue-400 rounded-md p-4 transition hover:shadow">
+            <div class="w-10 h-10 bg-blue-100 rounded-md flex items-center justify-center shrink-0 group-hover:bg-blue-200 transition">
+                <svg class="w-5 h-5 text-blue-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
             </div>
-            <h3 class="text-lg font-bold text-gray-900 mb-1">Other Incidents</h3>
-            <p class="text-sm text-gray-500 mb-5">All non-SRGBV school incidents — Disciplinary, Safety & Security, Infrastructure, Academic Misconduct, Health & Welfare, and other general incidents.</p>
+            <div class="flex-1 min-w-0">
+                <h3 class="text-sm font-semibold text-gray-900">Other Incidents</h3>
+                <p class="text-xs text-gray-500 truncate">Disciplinary, Safety, Infrastructure, Academic, Health & General</p>
+            </div>
             @if($otherStats)
-            <div class="grid grid-cols-3 gap-3 border-t border-gray-100 pt-4">
+            <div class="flex items-center gap-3 text-center shrink-0">
                 <div>
-                    <p class="text-xs text-gray-400 uppercase tracking-wide">Total</p>
-                    <p class="text-xl font-bold text-gray-800">{{ $otherStats['total'] }}</p>
+                    <p class="text-[10px] text-gray-400 uppercase">Total</p>
+                    <p class="text-sm font-bold text-gray-800">{{ $otherStats['total'] }}</p>
                 </div>
                 <div>
-                    <p class="text-xs text-blue-500 uppercase tracking-wide">Open</p>
-                    <p class="text-xl font-bold text-blue-700">{{ $otherStats['open'] }}</p>
+                    <p class="text-[10px] text-blue-500 uppercase">Open</p>
+                    <p class="text-sm font-bold text-blue-700">{{ $otherStats['open'] }}</p>
                 </div>
                 <div>
-                    <p class="text-xs text-orange-500 uppercase tracking-wide">Critical</p>
-                    <p class="text-xl font-bold text-orange-700">{{ $otherStats['critical'] }}</p>
+                    <p class="text-[10px] text-orange-500 uppercase">Critical</p>
+                    <p class="text-sm font-bold text-orange-700">{{ $otherStats['critical'] }}</p>
                 </div>
             </div>
             @endif
+            <svg class="w-4 h-4 text-gray-300 group-hover:text-blue-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
         </a>
         @endif
     </div>
