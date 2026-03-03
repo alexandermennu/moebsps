@@ -254,7 +254,7 @@
                 </select>
                 <select class="text-xs border border-gray-300 rounded-md px-2.5 py-1.5 bg-white text-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-500">
                     <option>All Categories</option>
-                    @foreach(\App\Models\Incident::SRGBV_CATEGORIES as $key => $label)
+                    @foreach(\App\Models\Incident::CATEGORIES_BY_TYPE[\App\Models\Incident::TYPE_SRGBV] as $key => $label)
                     <option value="{{ $key }}">{{ $label }}</option>
                     @endforeach
                 </select>
