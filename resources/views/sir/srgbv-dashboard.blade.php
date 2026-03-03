@@ -1,288 +1,302 @@
 @extends('layouts.app')
 @section('title', 'SRGBV Dashboard')
-@section('page-title', 'SRGBV — School-Related Gender-Based Violence')
+@section('page-title', 'SRGBV Dashboard')
 @section('content')
 <div class="space-y-6">
-    {{-- Breadcrumb & Header --}}
-    <div class="flex items-center justify-between">
-        <div>
-            <div class="flex items-center gap-2 text-xs text-gray-400 mb-1">
-                <a href="{{ route('sir.dashboard') }}" class="hover:text-gray-600">SIR</a>
-                <span>›</span>
-                <span class="text-gray-600">SRGBV</span>
-            </div>
-            <h2 class="text-sm font-semibold text-gray-900 uppercase tracking-wide">SRGBV Dashboard</h2>
-            <p class="text-sm text-gray-500">Overview of school-related gender-based violence cases.</p>
+    {{-- Header --}}
+    <div>
+        <div class="flex items-center gap-2 text-xs text-gray-400 mb-1">
+            <a href="{{ route('sir.dashboard') }}" class="hover:text-gray-600">SIR</a>
+            <span>›</span>
+            <span class="text-gray-600">SRGBV</span>
         </div>
-        <div class="flex gap-2">
-            <a href="{{ route('sir.incidents.index', ['module' => 'srgbv']) }}" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50 rounded-md">View All SRGBV Cases</a>
-            @if($canManage)
-            <a href="{{ route('sir.incidents.create', ['type' => 'srgbv']) }}" class="px-4 py-2 bg-red-700 text-white text-sm font-medium hover:bg-red-800 rounded-md">Report SRGBV Case</a>
-            @endif
+        <h2 class="text-xl font-bold text-gray-900">SRGBV Dashboard</h2>
+        <p class="text-sm text-gray-500">Managing and addressing reports of School-Related Gender-Based Violence and Bullying.</p>
+    </div>
+
+    {{-- Stat Cards (4 cards matching the design) --}}
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {{-- Total Reports --}}
+        <div class="bg-white border border-gray-200 rounded-lg p-5 flex items-center gap-4">
+            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            </div>
+            <div class="flex-1">
+                <p class="text-sm text-gray-500">Total Reports</p>
+                <p class="text-2xl font-bold text-gray-900">{{ $totalIncidents }}</p>
+            </div>
+            <svg class="w-5 h-5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        </div>
+
+        {{-- Open Cases --}}
+        <div class="bg-white border border-gray-200 rounded-lg p-5 flex items-center gap-4">
+            <div class="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </div>
+            <div class="flex-1">
+                <p class="text-sm text-gray-500">Open Cases</p>
+                <p class="text-2xl font-bold text-blue-600">{{ $openIncidents }}</p>
+            </div>
+            <svg class="w-5 h-5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        </div>
+
+        {{-- Critical Cases --}}
+        <div class="bg-white border border-gray-200 rounded-lg p-5 flex items-center gap-4">
+            <div class="w-12 h-12 bg-yellow-400 rounded-lg flex items-center justify-center">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+            </div>
+            <div class="flex-1">
+                <p class="text-sm text-gray-500">Critical Cases</p>
+                <p class="text-2xl font-bold text-yellow-600">{{ $criticalIncidents }}</p>
+            </div>
+            <svg class="w-5 h-5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        </div>
+
+        {{-- Under Investigation --}}
+        <div class="bg-white border border-gray-200 rounded-lg p-5 flex items-center gap-4">
+            <div class="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
+                <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            </div>
+            <div class="flex-1">
+                <p class="text-sm text-gray-500">Under Investigation</p>
+                <p class="text-2xl font-bold text-gray-700">{{ $byStatus['under_investigation'] ?? 0 }}</p>
+            </div>
+            <svg class="w-5 h-5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
         </div>
     </div>
 
-    {{-- Key Metrics --}}
-    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-        <div class="bg-white border border-gray-200 rounded-md p-4">
-            <p class="text-xs text-gray-500 uppercase tracking-wide">Total</p>
-            <p class="text-2xl font-bold text-gray-800 mt-1">{{ $totalIncidents }}</p>
-        </div>
-        <div class="bg-red-50 border border-red-200 rounded-md p-4">
-            <p class="text-xs text-red-600 uppercase tracking-wide">Open</p>
-            <p class="text-2xl font-bold text-red-700 mt-1">{{ $openIncidents }}</p>
-        </div>
-        <div class="bg-orange-50 border border-orange-200 rounded-md p-4">
-            <p class="text-xs text-orange-600 uppercase tracking-wide">Critical</p>
-            <p class="text-2xl font-bold text-orange-700 mt-1">{{ $criticalIncidents }}</p>
-        </div>
-        <div class="bg-amber-50 border border-amber-200 rounded-md p-4">
-            <p class="text-xs text-amber-600 uppercase tracking-wide">Follow-Up Due</p>
-            <p class="text-2xl font-bold text-amber-700 mt-1">{{ $followUpDue }}</p>
-        </div>
-        <div class="bg-green-50 border border-green-200 rounded-md p-4">
-            <p class="text-xs text-green-600 uppercase tracking-wide">Resolved</p>
-            <p class="text-2xl font-bold text-green-700 mt-1">{{ $closedIncidents }}</p>
-        </div>
-        <div class="bg-blue-50 border border-blue-200 rounded-md p-4">
-            <p class="text-xs text-blue-600 uppercase tracking-wide">Resolution Rate</p>
-            <p class="text-2xl font-bold text-blue-700 mt-1">{{ $resolutionRate }}%</p>
-        </div>
-    </div>
-
-    {{-- Source Breakdown --}}
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-        <div class="bg-blue-50 border border-blue-200 rounded-md p-4 flex items-center justify-between">
-            <div>
-                <p class="text-xs text-blue-600 uppercase tracking-wide">Internal Reports</p>
-                <p class="text-sm text-blue-500 mt-0.5">From ministry staff & counselors</p>
-            </div>
-            <p class="text-3xl font-bold text-blue-700">{{ $internalCount }}</p>
-        </div>
-        <div class="bg-green-50 border border-green-200 rounded-md p-4 flex items-center justify-between">
-            <div>
-                <p class="text-xs text-green-600 uppercase tracking-wide">Public Reports</p>
-                <p class="text-sm text-green-500 mt-0.5">From the public portal</p>
-            </div>
-            <p class="text-3xl font-bold text-green-700">{{ $publicCount }}</p>
-        </div>
-    </div>
-
-    {{-- Urgent Alerts --}}
-    @if($immediateAction > 0)
-    <div class="bg-red-600 text-white rounded-md p-4 flex items-center justify-between">
-        <div class="flex items-center gap-3">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
-            <div>
-                <p class="font-semibold">{{ $immediateAction }} SRGBV Case(s) Require Immediate Action</p>
-                <p class="text-sm text-red-100">These cases have been flagged as requiring urgent response.</p>
-            </div>
-        </div>
-        <a href="{{ route('sir.incidents.index', ['module' => 'srgbv', 'priority' => 'critical']) }}" class="px-4 py-2 bg-white text-red-700 text-sm font-medium hover:bg-red-50 rounded-md">View Now</a>
-    </div>
-    @endif
-
+    {{-- Charts Row --}}
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {{-- By Category (SRGBV-Specific) --}}
-        <div class="bg-white border border-gray-200 rounded-md p-6">
-            <h3 class="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-4">By Category</h3>
-            @php
-                $categoryColors = [
-                    'physical_violence' => 'red',
-                    'sexual_violence' => 'rose',
-                    'psychological_violence' => 'purple',
-                    'bullying' => 'amber',
-                    'harassment' => 'orange',
-                    'exploitation' => 'pink',
-                    'neglect' => 'slate',
-                    'other' => 'gray',
-                ];
-                $srgbvCategories = \App\Models\Incident::CATEGORIES_BY_TYPE[\App\Models\Incident::TYPE_SRGBV] ?? [];
-            @endphp
-            @forelse($byCategory as $category => $count)
-            <div class="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
-                <div class="flex items-center gap-2">
-                    <span class="w-3 h-3 rounded-full bg-{{ $categoryColors[$category] ?? 'gray' }}-500"></span>
-                    <span class="text-sm text-gray-700">{{ $srgbvCategories[$category] ?? ucfirst(str_replace('_', ' ', $category)) }}</span>
+        {{-- SRGBV Trends Chart --}}
+        <div class="bg-white border border-gray-200 rounded-lg p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-base font-semibold text-gray-900">SRGBV Trends</h3>
+                <div class="flex items-center gap-1 text-xs">
+                    <button type="button" class="px-3 py-1 rounded bg-blue-100 text-blue-700 font-medium">7 Days</button>
+                    <button type="button" class="px-3 py-1 rounded text-gray-500 hover:bg-gray-100">30 Days</button>
+                    <button type="button" class="px-3 py-1 rounded text-gray-500 hover:bg-gray-100">Quarter</button>
+                    <button type="button" class="px-3 py-1 rounded text-gray-500 hover:bg-gray-100">Year</button>
                 </div>
-                <span class="text-sm font-semibold text-gray-900">{{ $count }}</span>
             </div>
-            @empty
-            <p class="text-sm text-gray-400">No SRGBV cases yet.</p>
-            @endforelse
+            <p class="text-xs text-gray-400 mb-2">Reports Over Time</p>
+            <div class="h-48">
+                <canvas id="trendsChart"></canvas>
+            </div>
         </div>
 
-        {{-- Victim Gender Demographics --}}
-        <div class="bg-white border border-gray-200 rounded-md p-6">
-            <h3 class="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-4">Victim Demographics</h3>
-            @php
-                $genderColors = [
-                    'male' => 'blue',
-                    'female' => 'pink',
-                    'other' => 'gray',
-                ];
-                $genderLabels = [
-                    'male' => 'Male',
-                    'female' => 'Female',
-                    'other' => 'Other / Not Specified',
-                ];
-                $totalGender = array_sum($byGender) ?: 1;
-            @endphp
-            @forelse($byGender as $gender => $count)
-            <div class="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
-                <div class="flex items-center gap-3 flex-1">
-                    <span class="w-3 h-3 rounded-full bg-{{ $genderColors[$gender] ?? 'gray' }}-500"></span>
-                    <span class="text-sm text-gray-700">{{ $genderLabels[$gender] ?? ucfirst($gender) }}</span>
-                    <div class="flex-1 mx-3">
-                        <div class="bg-gray-100 rounded-full h-2 overflow-hidden">
-                            <div class="bg-{{ $genderColors[$gender] ?? 'gray' }}-500 h-full rounded-full" style="width: {{ round(($count / $totalGender) * 100) }}%"></div>
-                        </div>
+        {{-- Victim Category Donut Chart --}}
+        <div class="bg-white border border-gray-200 rounded-lg p-6">
+            <h3 class="text-base font-semibold text-gray-900 mb-4">Victim Category</h3>
+            <div class="flex items-center gap-8">
+                <div class="relative w-40 h-40 shrink-0">
+                    <canvas id="genderChart"></canvas>
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        @php $totalGender = array_sum($byGender) ?: 1; $femalePercent = isset($byGender['female']) ? round(($byGender['female'] / $totalGender) * 100, 1) : 0; @endphp
+                        <span class="text-lg font-bold text-gray-700">{{ $femalePercent }}%</span>
                     </div>
                 </div>
-                <span class="text-sm font-semibold text-gray-900">{{ $count }} <span class="text-xs text-gray-400">({{ round(($count / $totalGender) * 100) }}%)</span></span>
-            </div>
-            @empty
-            <p class="text-sm text-gray-400">No demographic data available.</p>
-            @endforelse
-        </div>
-
-        {{-- By Status --}}
-        <div class="bg-white border border-gray-200 rounded-md p-6">
-            <h3 class="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-4">By Status</h3>
-            @forelse($byStatus as $status => $count)
-            <div class="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
-                <div class="flex items-center gap-2">
-                    <span class="w-3 h-3 rounded-full bg-{{ match($status) { 'reported' => 'red', 'under_review' => 'amber', 'under_investigation' => 'orange', 'action_taken' => 'blue', 'referred' => 'purple', 'resolved' => 'green', 'closed' => 'gray', default => 'gray' } }}-500"></span>
-                    <span class="text-sm text-gray-700">{{ \App\Models\Incident::STATUSES[$status] ?? ucfirst($status) }}</span>
+                <div class="space-y-3 flex-1">
+                    <div class="flex items-center gap-3">
+                        <span class="w-3 h-3 rounded-full bg-blue-500"></span>
+                        <span class="text-sm text-gray-700">Female</span>
+                        <span class="text-sm font-semibold text-gray-900 ml-auto">{{ isset($byGender['female']) ? round(($byGender['female'] / $totalGender) * 100, 1) : 0 }}%</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="w-3 h-3 rounded-full bg-yellow-400"></span>
+                        <span class="text-sm text-gray-700">Male</span>
+                        <span class="text-sm font-semibold text-gray-900 ml-auto">{{ isset($byGender['male']) ? round(($byGender['male'] / $totalGender) * 100, 1) : 0 }}%</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="w-3 h-3 rounded-full bg-green-500"></span>
+                        <span class="text-sm text-gray-700">Other</span>
+                        <span class="text-sm font-semibold text-gray-900 ml-auto">{{ isset($byGender['other']) ? round(($byGender['other'] / $totalGender) * 100, 1) : 0 }}%</span>
+                    </div>
                 </div>
-                <span class="text-sm font-semibold text-gray-900">{{ $count }}</span>
             </div>
-            @empty
-            <p class="text-sm text-gray-400">No cases yet.</p>
-            @endforelse
-        </div>
-
-        {{-- By Priority --}}
-        <div class="bg-white border border-gray-200 rounded-md p-6">
-            <h3 class="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-4">By Priority</h3>
-            @forelse($byPriority as $priority => $count)
-            <div class="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
-                <div class="flex items-center gap-2">
-                    <span class="w-3 h-3 rounded-full bg-{{ match($priority) { 'low' => 'gray', 'medium' => 'blue', 'high' => 'amber', 'critical' => 'red', default => 'gray' } }}-500"></span>
-                    <span class="text-sm text-gray-700">{{ \App\Models\Incident::PRIORITIES[$priority] ?? ucfirst($priority) }}</span>
-                </div>
-                <span class="text-sm font-semibold text-gray-900">{{ $count }}</span>
-            </div>
-            @empty
-            <p class="text-sm text-gray-400">No cases yet.</p>
-            @endforelse
         </div>
     </div>
 
-    {{-- Monthly Trend --}}
-    @if(count($monthlyTrend) > 0)
-    <div class="bg-white border border-gray-200 rounded-md p-6">
-        <h3 class="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-4">Monthly SRGBV Trend (Last 12 Months)</h3>
-        <div class="flex items-end gap-2 h-40">
-            @php $maxVal = max($monthlyTrend) ?: 1; @endphp
-            @foreach($monthlyTrend as $month => $count)
-            <div class="flex-1 flex flex-col items-center gap-1">
-                <span class="text-[10px] font-medium text-gray-600">{{ $count }}</span>
-                <div class="w-full bg-red-600 rounded-t" style="height: {{ ($count / $maxVal) * 100 }}%"></div>
-                <span class="text-[9px] text-gray-400">{{ \Carbon\Carbon::parse($month . '-01')->format('M') }}</span>
-            </div>
-            @endforeach
-        </div>
-    </div>
-    @endif
-
-    {{-- Top Counties --}}
-    @if(count($topCounties) > 0)
-    <div class="bg-white border border-gray-200 rounded-md p-6">
-        <h3 class="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-4">Top Counties by SRGBV Cases</h3>
-        <div class="space-y-2">
-            @php $maxCounty = max($topCounties) ?: 1; @endphp
-            @foreach($topCounties as $county => $count)
-            <div class="flex items-center gap-3">
-                <span class="text-sm text-gray-700 w-32 truncate">{{ $county }}</span>
-                <div class="flex-1 bg-gray-100 rounded-full h-4 overflow-hidden">
-                    <div class="bg-red-600 h-full rounded-full" style="width: {{ ($count / $maxCounty) * 100 }}%"></div>
+    {{-- SRGBV Incident Reports Table --}}
+    <div class="bg-white border border-gray-200 rounded-lg">
+        {{-- Table Header with Filters --}}
+        <div class="p-4 border-b border-gray-200">
+            <div class="flex flex-wrap items-center justify-between gap-4">
+                <h3 class="text-base font-semibold text-gray-900">SRGBV Incident Reports</h3>
+                <div class="flex flex-wrap items-center gap-2">
+                    <select class="text-xs border border-gray-300 rounded-md px-3 py-1.5 bg-white text-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                        <option>School: All</option>
+                    </select>
+                    <select class="text-xs border border-gray-300 rounded-md px-3 py-1.5 bg-white text-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                        <option>County: All</option>
+                        @foreach($topCounties as $county => $count)
+                        <option value="{{ $county }}">{{ $county }}</option>
+                        @endforeach
+                    </select>
+                    <select class="text-xs border border-gray-300 rounded-md px-3 py-1.5 bg-white text-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                        <option>Risk: All</option>
+                        <option value="low">Low</option>
+                        <option value="medium">Medium</option>
+                        <option value="high">High</option>
+                        <option value="critical">Critical</option>
+                    </select>
+                    <select class="text-xs border border-gray-300 rounded-md px-3 py-1.5 bg-white text-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                        <option>Status: All</option>
+                        @foreach(\App\Models\Incident::STATUSES as $key => $label)
+                        <option value="{{ $key }}">{{ $label }}</option>
+                        @endforeach
+                    </select>
+                    <button type="button" class="text-xs border border-gray-300 rounded-md px-3 py-1.5 bg-white text-gray-700 hover:bg-gray-50 flex items-center gap-1">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                        Date Range
+                    </button>
+                    @if($canManage)
+                    <a href="{{ route('sir.incidents.create', ['type' => 'srgbv']) }}" class="text-xs bg-green-500 hover:bg-green-600 text-white font-medium px-4 py-1.5 rounded-md">New Report</a>
+                    @endif
                 </div>
-                <span class="text-sm font-semibold text-gray-700 w-8 text-right">{{ $count }}</span>
             </div>
-            @endforeach
         </div>
-    </div>
-    @endif
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {{-- Recent SRGBV Cases --}}
-        <div class="bg-white border border-gray-200 rounded-md p-6">
-            <h3 class="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-4">Recent SRGBV Cases</h3>
-            <div class="space-y-3">
-                @forelse($recentIncidents as $incident)
-                <a href="{{ route('sir.incidents.show', $incident) }}" class="block p-3 bg-gray-50 rounded-md hover:bg-gray-100 transition">
-                    <div class="flex items-start justify-between gap-2">
-                        <div class="flex-1 min-w-0">
-                            <div class="flex items-center gap-2 mb-1">
-                                <span class="text-[10px] px-1.5 py-0.5 font-medium bg-red-100 text-red-700 rounded">SRGBV</span>
-                                <span class="text-[10px] px-1.5 py-0.5 font-medium bg-{{ $incident->priority_color }}-100 text-{{ $incident->priority_color }}-700 rounded">{{ $incident->priority_label }}</span>
-                                @if($incident->category)
-                                @php $catLabels = \App\Models\Incident::CATEGORIES_BY_TYPE[\App\Models\Incident::TYPE_SRGBV] ?? []; @endphp
-                                <span class="text-[10px] px-1.5 py-0.5 font-medium bg-gray-100 text-gray-600 rounded">{{ $catLabels[$incident->category] ?? ucfirst(str_replace('_', ' ', $incident->category)) }}</span>
+        {{-- Table --}}
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">
+                    <tr>
+                        <th class="px-4 py-3 text-left font-medium">Case ID</th>
+                        <th class="px-4 py-3 text-left font-medium">Category</th>
+                        <th class="px-4 py-3 text-left font-medium">School</th>
+                        <th class="px-4 py-3 text-left font-medium">County</th>
+                        <th class="px-4 py-3 text-left font-medium">Risk</th>
+                        <th class="px-4 py-3 text-left font-medium">Status</th>
+                        <th class="px-4 py-3 text-left font-medium">Assigned To</th>
+                        <th class="px-4 py-3 text-left font-medium">Date</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    @forelse($recentIncidents as $incident)
+                    <tr class="hover:bg-gray-50 cursor-pointer" onclick="window.location='{{ route('sir.incidents.show', $incident) }}'">
+                        <td class="px-4 py-3 font-medium text-gray-900">{{ $incident->incident_number }}</td>
+                        <td class="px-4 py-3 text-gray-700">{{ $incident->category_label }}</td>
+                        <td class="px-4 py-3 text-gray-700">{{ $incident->school_name ?? '—' }}</td>
+                        <td class="px-4 py-3 text-gray-500">{{ $incident->school_county ?? '—' }}</td>
+                        <td class="px-4 py-3">
+                            @php
+                                $riskColors = [
+                                    'low' => 'bg-green-100 text-green-700',
+                                    'medium' => 'bg-yellow-100 text-yellow-700',
+                                    'high' => 'bg-orange-100 text-orange-700',
+                                    'critical' => 'bg-red-100 text-red-700',
+                                ];
+                            @endphp
+                            <span class="inline-flex px-2 py-0.5 text-xs font-medium rounded {{ $riskColors[$incident->priority] ?? 'bg-gray-100 text-gray-700' }}">
+                                {{ ucfirst($incident->priority) }}
+                            </span>
+                        </td>
+                        <td class="px-4 py-3">
+                            @php
+                                $statusStyles = [
+                                    'reported' => 'text-blue-600',
+                                    'under_review' => 'text-amber-600',
+                                    'under_investigation' => 'text-orange-600',
+                                    'action_taken' => 'text-purple-600',
+                                    'referred' => 'text-indigo-600',
+                                    'resolved' => 'text-green-600',
+                                    'closed' => 'text-gray-500',
+                                ];
+                            @endphp
+                            <span class="inline-flex items-center gap-1 text-xs font-medium {{ $statusStyles[$incident->status] ?? 'text-gray-600' }}">
+                                @if(in_array($incident->status, ['reported', 'under_review']))
+                                <span class="w-1.5 h-1.5 rounded-full bg-current"></span>
                                 @endif
-                                @if($incident->isPublicReport())
-                                <span class="text-[10px] px-1.5 py-0.5 font-medium bg-green-100 text-green-700 rounded">Public</span>
-                                @endif
-                            </div>
-                            <p class="text-sm font-medium text-gray-800 truncate">{{ $incident->title }}</p>
-                            <p class="text-xs text-gray-500 mt-0.5">{{ $incident->incident_number }} · {{ $incident->created_at->diffForHumans() }}</p>
-                        </div>
-                        <span class="text-[10px] px-1.5 py-0.5 font-medium bg-{{ $incident->status_color }}-100 text-{{ $incident->status_color }}-700 rounded whitespace-nowrap">{{ $incident->status_label }}</span>
-                    </div>
-                </a>
-                @empty
-                <p class="text-sm text-gray-400">No SRGBV cases reported yet.</p>
-                @endforelse
-            </div>
+                                {{ $incident->status_label }}
+                            </span>
+                        </td>
+                        <td class="px-4 py-3 text-gray-700">{{ $incident->assignee?->name ?? 'Unassigned' }}</td>
+                        <td class="px-4 py-3 text-gray-500">{{ $incident->created_at->format('m/d/Y') }}</td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="8" class="px-4 py-8 text-center text-gray-400">No SRGBV incidents reported yet.</td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
 
-        {{-- Follow-Up Due --}}
-        <div class="bg-white border border-gray-200 rounded-md p-6">
-            <h3 class="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-4">Follow-Up Due</h3>
-            <div class="space-y-3">
-                @forelse($followUpIncidents as $incident)
-                <a href="{{ route('sir.incidents.show', $incident) }}" class="block p-3 bg-amber-50 rounded-md hover:bg-amber-100 transition">
-                    <div class="flex items-start justify-between gap-2">
-                        <div class="flex-1 min-w-0">
-                            <p class="text-sm font-medium text-gray-800 truncate">{{ $incident->title }}</p>
-                            <p class="text-xs text-gray-500 mt-0.5">{{ $incident->incident_number }} · Due: {{ $incident->follow_up_date?->format('M d, Y') ?? 'Not set' }}</p>
-                        </div>
-                        @if($incident->assignee)
-                        <span class="text-xs text-gray-500">{{ $incident->assignee->name }}</span>
-                        @endif
-                    </div>
-                </a>
-                @empty
-                <p class="text-sm text-gray-400">No follow-ups due.</p>
-                @endforelse
-            </div>
+        {{-- Table Footer --}}
+        @if($recentIncidents->count() > 0)
+        <div class="p-4 border-t border-gray-200 flex items-center justify-between">
+            <p class="text-xs text-gray-500">Showing {{ $recentIncidents->count() }} most recent cases</p>
+            <a href="{{ route('sir.incidents.index', ['module' => 'srgbv']) }}" class="text-xs text-blue-600 hover:text-blue-700 font-medium">View all SRGBV cases →</a>
         </div>
+        @endif
     </div>
-
-    {{-- Resolution Stats Footer --}}
-    @if($avgResolutionDays)
-    <div class="bg-white border border-gray-200 rounded-md p-4 flex items-center justify-center gap-8">
-        <div class="text-center">
-            <p class="text-xs text-gray-500 uppercase tracking-wide">Avg. Days to Resolve</p>
-            <p class="text-xl font-bold text-gray-800">{{ $avgResolutionDays }}</p>
-        </div>
-        <div class="w-px h-8 bg-gray-200"></div>
-        <div class="text-center">
-            <p class="text-xs text-gray-500 uppercase tracking-wide">Resolution Rate</p>
-            <p class="text-xl font-bold text-green-700">{{ $resolutionRate }}%</p>
-        </div>
-    </div>
-    @endif
 </div>
+
+{{-- Chart.js --}}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Trends Line Chart
+    const trendsCtx = document.getElementById('trendsChart');
+    if (trendsCtx) {
+        const trendsData = @json($monthlyTrend);
+        const labels = Object.keys(trendsData).map(m => {
+            const [year, month] = m.split('-');
+            return new Date(year, month - 1).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        });
+        const values = Object.values(trendsData);
+
+        new Chart(trendsCtx, {
+            type: 'line',
+            data: {
+                labels: labels.length ? labels : ['No data'],
+                datasets: [{
+                    data: values.length ? values : [0],
+                    borderColor: '#3B82F6',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.3,
+                    pointBackgroundColor: '#3B82F6',
+                    pointRadius: 4,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, grid: { color: '#f3f4f6' } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+    }
+
+    // Gender Donut Chart
+    const genderCtx = document.getElementById('genderChart');
+    if (genderCtx) {
+        const genderData = @json($byGender);
+        const genderValues = [genderData['female'] || 0, genderData['male'] || 0, genderData['other'] || 0];
+
+        new Chart(genderCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Female', 'Male', 'Other'],
+                datasets: [{
+                    data: genderValues.some(v => v > 0) ? genderValues : [1, 1, 1],
+                    backgroundColor: ['#3B82F6', '#FBBF24', '#22C55E'],
+                    borderWidth: 0,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '70%',
+                plugins: { legend: { display: false } }
+            }
+        });
+    }
+});
+</script>
 @endsection
