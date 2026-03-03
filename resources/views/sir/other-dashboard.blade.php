@@ -3,245 +3,534 @@
 @section('page-title', 'Other Incidents')
 @section('content')
 <div class="space-y-6">
-    {{-- Breadcrumb & Header --}}
-    <div class="flex items-center justify-between">
+    {{-- Header --}}
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
             <div class="flex items-center gap-2 text-xs text-gray-400 mb-1">
                 <a href="{{ route('sir.dashboard') }}" class="hover:text-gray-600">SIR</a>
                 <span>›</span>
                 <span class="text-gray-600">Other Incidents</span>
             </div>
-            <h2 class="text-sm font-semibold text-gray-900 uppercase tracking-wide">Other Incidents Dashboard</h2>
-            <p class="text-sm text-gray-500">Overview of all non-SRGBV school incidents — Disciplinary, Safety, Infrastructure, Academic, Health & General.</p>
+            <h2 class="text-xl font-bold text-gray-900">Other Incidents Dashboard</h2>
+            <p class="text-sm text-gray-500">Managing Disciplinary, Safety, Infrastructure, Academic, Health & General incidents.</p>
         </div>
-        <div class="flex gap-2">
-            <a href="{{ route('sir.incidents.index', ['module' => 'other']) }}" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50 rounded-md">View All Incidents</a>
-            @if($canManage)
-            <a href="{{ route('sir.incidents.create') }}" class="px-4 py-2 bg-blue-700 text-white text-sm font-medium hover:bg-blue-800 rounded-md">Report Incident</a>
-            @endif
-        </div>
+        @if($canManage)
+        <a href="{{ route('sir.incidents.create') }}" class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg text-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            New Report
+        </a>
+        @endif
     </div>
 
-    {{-- Key Metrics --}}
-    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-        <div class="bg-white border border-gray-200 rounded-md p-4">
-            <p class="text-xs text-gray-500 uppercase tracking-wide">Total</p>
-            <p class="text-2xl font-bold text-gray-800 mt-1">{{ $totalIncidents }}</p>
-        </div>
-        <div class="bg-blue-50 border border-blue-200 rounded-md p-4">
-            <p class="text-xs text-blue-600 uppercase tracking-wide">Open</p>
-            <p class="text-2xl font-bold text-blue-700 mt-1">{{ $openIncidents }}</p>
-        </div>
-        <div class="bg-orange-50 border border-orange-200 rounded-md p-4">
-            <p class="text-xs text-orange-600 uppercase tracking-wide">Critical</p>
-            <p class="text-2xl font-bold text-orange-700 mt-1">{{ $criticalIncidents }}</p>
-        </div>
-        <div class="bg-amber-50 border border-amber-200 rounded-md p-4">
-            <p class="text-xs text-amber-600 uppercase tracking-wide">Follow-Up Due</p>
-            <p class="text-2xl font-bold text-amber-700 mt-1">{{ $followUpDue }}</p>
-        </div>
-        <div class="bg-green-50 border border-green-200 rounded-md p-4">
-            <p class="text-xs text-green-600 uppercase tracking-wide">Resolved</p>
-            <p class="text-2xl font-bold text-green-700 mt-1">{{ $closedIncidents }}</p>
-        </div>
-        <div class="bg-indigo-50 border border-indigo-200 rounded-md p-4">
-            <p class="text-xs text-indigo-600 uppercase tracking-wide">Resolution Rate</p>
-            <p class="text-2xl font-bold text-indigo-700 mt-1">{{ $resolutionRate }}%</p>
-        </div>
-    </div>
-
-    {{-- Source Breakdown --}}
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-        <div class="bg-blue-50 border border-blue-200 rounded-md p-4 flex items-center justify-between">
-            <div>
-                <p class="text-xs text-blue-600 uppercase tracking-wide">Internal Reports</p>
-                <p class="text-sm text-blue-500 mt-0.5">From ministry staff</p>
-            </div>
-            <p class="text-3xl font-bold text-blue-700">{{ $internalCount }}</p>
-        </div>
-        <div class="bg-green-50 border border-green-200 rounded-md p-4 flex items-center justify-between">
-            <div>
-                <p class="text-xs text-green-600 uppercase tracking-wide">Public Reports</p>
-                <p class="text-sm text-green-500 mt-0.5">From the public portal</p>
-            </div>
-            <p class="text-3xl font-bold text-green-700">{{ $publicCount }}</p>
-        </div>
-    </div>
-
-    {{-- Urgent Alerts --}}
+    {{-- Alert Banner --}}
     @if($immediateAction > 0)
-    <div class="bg-orange-600 text-white rounded-md p-4 flex items-center justify-between">
-        <div class="flex items-center gap-3">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
-            <div>
-                <p class="font-semibold">{{ $immediateAction }} Incident(s) Require Immediate Action</p>
-                <p class="text-sm text-orange-100">These incidents have been flagged as requiring urgent response.</p>
-            </div>
+    <div class="bg-orange-50 border border-orange-200 rounded-lg p-4 flex items-center gap-3">
+        <div class="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center shrink-0">
+            <svg class="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
         </div>
-        <a href="{{ route('sir.incidents.index', ['module' => 'other', 'priority' => 'critical']) }}" class="px-4 py-2 bg-white text-orange-700 text-sm font-medium hover:bg-orange-50 rounded-md">View Now</a>
+        <div class="flex-1">
+            <p class="text-sm font-semibold text-orange-800">{{ $immediateAction }} {{ Str::plural('Incident', $immediateAction) }} Require Immediate Attention</p>
+            <p class="text-xs text-orange-600">These incidents have been flagged as critical and need urgent response.</p>
+        </div>
+        <a href="{{ route('sir.incidents.index', ['module' => 'other', 'priority' => 'critical']) }}" class="shrink-0 text-sm font-medium text-orange-700 hover:text-orange-800 flex items-center gap-1">
+            View Cases
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        </a>
     </div>
     @endif
 
+    {{-- Stat Cards (5 cards) --}}
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+        {{-- Active Cases --}}
+        <div class="bg-white border border-gray-200 rounded-lg p-4">
+            <div class="flex items-center justify-between mb-2">
+                <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                </div>
+                <span class="text-xs text-green-600 font-medium">Active</span>
+            </div>
+            <p class="text-2xl font-bold text-gray-900">{{ $openIncidents }}</p>
+            <p class="text-xs text-gray-500">Open Cases</p>
+        </div>
+
+        {{-- New Today --}}
+        <div class="bg-white border border-gray-200 rounded-lg p-4">
+            <div class="flex items-center justify-between mb-2">
+                <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                    <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+                </div>
+                <span class="text-xs text-blue-600 font-medium">Today</span>
+            </div>
+            <p class="text-2xl font-bold text-gray-900">{{ $newToday ?? 0 }}</p>
+            <p class="text-xs text-gray-500">New Reports</p>
+        </div>
+
+        {{-- Critical --}}
+        <div class="bg-white border border-gray-200 rounded-lg p-4">
+            <div class="flex items-center justify-between mb-2">
+                <div class="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
+                    <svg class="w-4 h-4 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                </div>
+                <span class="text-xs text-orange-600 font-medium">Critical</span>
+            </div>
+            <p class="text-2xl font-bold text-orange-600">{{ $criticalIncidents }}</p>
+            <p class="text-xs text-gray-500">Urgent Cases</p>
+        </div>
+
+        {{-- Resolved This Month --}}
+        <div class="bg-white border border-gray-200 rounded-lg p-4">
+            <div class="flex items-center justify-between mb-2">
+                <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </div>
+                <span class="text-xs text-purple-600 font-medium">Month</span>
+            </div>
+            <p class="text-2xl font-bold text-gray-900">{{ $resolvedThisMonth ?? 0 }}</p>
+            <p class="text-xs text-gray-500">Resolved</p>
+        </div>
+
+        {{-- Avg Response Time --}}
+        <div class="bg-white border border-gray-200 rounded-lg p-4">
+            <div class="flex items-center justify-between mb-2">
+                <div class="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center">
+                    <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </div>
+                <span class="text-xs text-amber-600 font-medium">Avg</span>
+            </div>
+            <p class="text-2xl font-bold text-gray-900">{{ $avgResolutionDays ?? '—' }}</p>
+            <p class="text-xs text-gray-500">Days to Resolve</p>
+        </div>
+    </div>
+
+    {{-- Charts Row: Trends + Incidents by Type --}}
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {{-- By Incident Type --}}
-        <div class="bg-white border border-gray-200 rounded-md p-6">
-            <h3 class="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-4">By Incident Type</h3>
-            @php
-                $typeColors = [
-                    'disciplinary' => 'amber',
-                    'safety' => 'orange',
-                    'infrastructure' => 'blue',
-                    'academic' => 'purple',
-                    'health' => 'teal',
-                    'other' => 'gray',
-                ];
-            @endphp
-            @forelse($byType as $type => $count)
-            <div class="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
-                <div class="flex items-center gap-2">
-                    <span class="w-3 h-3 rounded-full bg-{{ $typeColors[$type] ?? 'gray' }}-500"></span>
-                    <span class="text-sm text-gray-700">{{ \App\Models\Incident::TYPES[$type] ?? ucfirst($type) }}</span>
+        {{-- Monthly Trends Chart --}}
+        <div class="bg-white border border-gray-200 rounded-lg p-5">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-sm font-semibold text-gray-900">Incident Trends</h3>
+                <div class="flex items-center gap-1 text-xs">
+                    <button type="button" class="px-2.5 py-1 rounded bg-blue-100 text-blue-700 font-medium">12M</button>
+                    <button type="button" class="px-2.5 py-1 rounded text-gray-500 hover:bg-gray-100">6M</button>
+                    <button type="button" class="px-2.5 py-1 rounded text-gray-500 hover:bg-gray-100">3M</button>
                 </div>
-                <span class="text-sm font-semibold text-gray-900">{{ $count }}</span>
             </div>
-            @empty
-            <p class="text-sm text-gray-400">No incidents yet.</p>
-            @endforelse
+            <div class="h-52">
+                <canvas id="trendsChart"></canvas>
+            </div>
         </div>
 
-        {{-- By Status --}}
-        <div class="bg-white border border-gray-200 rounded-md p-6">
-            <h3 class="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-4">By Status</h3>
-            @forelse($byStatus as $status => $count)
-            <div class="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
-                <div class="flex items-center gap-2">
-                    <span class="w-3 h-3 rounded-full bg-{{ match($status) { 'reported' => 'red', 'under_review' => 'amber', 'under_investigation' => 'orange', 'action_taken' => 'blue', 'referred' => 'purple', 'resolved' => 'green', 'closed' => 'gray', default => 'gray' } }}-500"></span>
-                    <span class="text-sm text-gray-700">{{ \App\Models\Incident::STATUSES[$status] ?? ucfirst($status) }}</span>
+        {{-- Incidents by Type (Bar Chart) --}}
+        <div class="bg-white border border-gray-200 rounded-lg p-5">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-sm font-semibold text-gray-900">Incidents by Type</h3>
+                <div class="flex items-center gap-2 text-xs flex-wrap">
+                    <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-sm bg-amber-500"></span> Disciplinary</span>
+                    <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-sm bg-orange-500"></span> Safety</span>
+                    <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-sm bg-blue-500"></span> Infrastructure</span>
+                    <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-sm bg-purple-500"></span> Academic</span>
                 </div>
-                <span class="text-sm font-semibold text-gray-900">{{ $count }}</span>
             </div>
-            @empty
-            <p class="text-sm text-gray-400">No incidents yet.</p>
-            @endforelse
-        </div>
-
-        {{-- By Priority --}}
-        <div class="bg-white border border-gray-200 rounded-md p-6">
-            <h3 class="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-4">By Priority</h3>
-            @forelse($byPriority as $priority => $count)
-            <div class="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
-                <div class="flex items-center gap-2">
-                    <span class="w-3 h-3 rounded-full bg-{{ match($priority) { 'low' => 'gray', 'medium' => 'blue', 'high' => 'amber', 'critical' => 'red', default => 'gray' } }}-500"></span>
-                    <span class="text-sm text-gray-700">{{ \App\Models\Incident::PRIORITIES[$priority] ?? ucfirst($priority) }}</span>
-                </div>
-                <span class="text-sm font-semibold text-gray-900">{{ $count }}</span>
+            <div class="h-52">
+                <canvas id="typeChart"></canvas>
             </div>
-            @empty
-            <p class="text-sm text-gray-400">No incidents yet.</p>
-            @endforelse
         </div>
     </div>
 
-    {{-- Monthly Trend --}}
-    @if(count($monthlyTrend) > 0)
-    <div class="bg-white border border-gray-200 rounded-md p-6">
-        <h3 class="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-4">Monthly Incident Trend (Last 12 Months)</h3>
-        <div class="flex items-end gap-2 h-40">
-            @php $maxVal = max($monthlyTrend) ?: 1; @endphp
-            @foreach($monthlyTrend as $month => $count)
-            <div class="flex-1 flex flex-col items-center gap-1">
-                <span class="text-[10px] font-medium text-gray-600">{{ $count }}</span>
-                <div class="w-full bg-blue-600 rounded-t" style="height: {{ ($count / $maxVal) * 100 }}%"></div>
-                <span class="text-[9px] text-gray-400">{{ \Carbon\Carbon::parse($month . '-01')->format('M') }}</span>
-            </div>
-            @endforeach
-        </div>
-    </div>
-    @endif
-
-    {{-- Top Counties --}}
-    @if(count($topCounties) > 0)
-    <div class="bg-white border border-gray-200 rounded-md p-6">
-        <h3 class="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-4">Top Counties by Incidents</h3>
-        <div class="space-y-2">
-            @php $maxCounty = max($topCounties) ?: 1; @endphp
-            @foreach($topCounties as $county => $count)
-            <div class="flex items-center gap-3">
-                <span class="text-sm text-gray-700 w-32 truncate">{{ $county }}</span>
-                <div class="flex-1 bg-gray-100 rounded-full h-4 overflow-hidden">
-                    <div class="bg-blue-600 h-full rounded-full" style="width: {{ ($count / $maxCounty) * 100 }}%"></div>
-                </div>
-                <span class="text-sm font-semibold text-gray-700 w-8 text-right">{{ $count }}</span>
-            </div>
-            @endforeach
-        </div>
-    </div>
-    @endif
-
+    {{-- Second Row: Status Breakdown + Liberia Map --}}
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {{-- Recent Incidents --}}
-        <div class="bg-white border border-gray-200 rounded-md p-6">
-            <h3 class="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-4">Recent Incidents</h3>
-            <div class="space-y-3">
-                @forelse($recentIncidents as $incident)
-                <a href="{{ route('sir.incidents.show', $incident) }}" class="block p-3 bg-gray-50 rounded-md hover:bg-gray-100 transition">
-                    <div class="flex items-start justify-between gap-2">
-                        <div class="flex-1 min-w-0">
-                            <div class="flex items-center gap-2 mb-1">
-                                <span class="text-[10px] px-1.5 py-0.5 font-medium bg-{{ $incident->type_color }}-100 text-{{ $incident->type_color }}-700 rounded">{{ $incident->type_label }}</span>
-                                <span class="text-[10px] px-1.5 py-0.5 font-medium bg-{{ $incident->priority_color }}-100 text-{{ $incident->priority_color }}-700 rounded">{{ $incident->priority_label }}</span>
-                                @if($incident->isPublicReport())
-                                <span class="text-[10px] px-1.5 py-0.5 font-medium bg-green-100 text-green-700 rounded">Public</span>
+        {{-- Status Breakdown --}}
+        <div class="bg-white border border-gray-200 rounded-lg p-5">
+            <h3 class="text-sm font-semibold text-gray-900 mb-4">Status Breakdown</h3>
+            <div class="flex items-center gap-6">
+                <div class="relative w-36 h-36 shrink-0">
+                    <canvas id="statusChart"></canvas>
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <div class="text-center">
+                            <span class="text-xl font-bold text-gray-800">{{ $totalIncidents }}</span>
+                            <p class="text-xs text-gray-500">Total</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="space-y-2 flex-1">
+                    @php
+                        $statusColors = [
+                            'reported' => 'bg-red-500',
+                            'under_review' => 'bg-amber-500',
+                            'under_investigation' => 'bg-orange-500',
+                            'action_taken' => 'bg-blue-500',
+                            'referred' => 'bg-purple-500',
+                            'resolved' => 'bg-green-500',
+                            'closed' => 'bg-gray-400',
+                        ];
+                    @endphp
+                    @foreach(array_slice($byStatus, 0, 4, true) as $status => $count)
+                    <div class="flex items-center justify-between text-sm">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full {{ $statusColors[$status] ?? 'bg-gray-400' }}"></span>
+                            <span class="text-gray-700">{{ \App\Models\Incident::STATUSES[$status] ?? ucfirst($status) }}</span>
+                        </div>
+                        <span class="font-semibold text-gray-900">{{ $count }}</span>
+                    </div>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+
+        {{-- Liberia County Map --}}
+        <div class="bg-white border border-gray-200 rounded-lg p-5">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-sm font-semibold text-gray-900">Incidents by County</h3>
+                <div class="flex items-center gap-1 text-xs text-gray-500">
+                    <span class="w-3 h-3 rounded bg-blue-100"></span>
+                    <span>Low</span>
+                    <span class="w-3 h-3 rounded bg-blue-300 ml-1"></span>
+                    <span class="w-3 h-3 rounded bg-blue-500"></span>
+                    <span class="w-3 h-3 rounded bg-blue-700"></span>
+                    <span>High</span>
+                </div>
+            </div>
+            <div class="flex gap-4">
+                {{-- SVG Map of Liberia --}}
+                <div class="flex-1 min-h-[200px]" id="liberiaMapContainer">
+                    <svg viewBox="0 0 400 350" class="w-full h-full" id="liberiaMap">
+                        <path id="county-lofa" d="M120 30 L180 25 L200 50 L190 90 L150 100 L110 80 Z" class="county-path" data-county="Lofa"/>
+                        <path id="county-gbarpolu" d="M60 80 L110 80 L150 100 L140 140 L90 150 L50 120 Z" class="county-path" data-county="Gbarpolu"/>
+                        <path id="county-bong" d="M150 100 L190 90 L230 100 L240 140 L200 160 L140 140 Z" class="county-path" data-county="Bong"/>
+                        <path id="county-nimba" d="M200 50 L260 40 L290 80 L280 130 L230 100 L190 90 Z" class="county-path" data-county="Nimba"/>
+                        <path id="county-grandcapemount" d="M20 120 L50 120 L90 150 L70 190 L30 180 L10 150 Z" class="county-path" data-county="Grand Cape Mount"/>
+                        <path id="county-bomi" d="M50 120 L90 150 L100 180 L70 190 Z" class="county-path" data-county="Bomi"/>
+                        <path id="county-montserrado" d="M70 190 L100 180 L120 200 L100 230 L60 220 Z" class="county-path" data-county="Montserrado"/>
+                        <path id="county-margibi" d="M100 180 L140 170 L160 200 L120 200 Z" class="county-path" data-county="Margibi"/>
+                        <path id="county-grandbassa" d="M120 200 L160 200 L200 220 L180 260 L120 250 L100 230 Z" class="county-path" data-county="Grand Bassa"/>
+                        <path id="county-rivercess" d="M180 260 L200 220 L250 230 L260 270 L220 290 Z" class="county-path" data-county="River Cess"/>
+                        <path id="county-sinoe" d="M220 290 L260 270 L300 280 L310 320 L260 340 L220 320 Z" class="county-path" data-county="Sinoe"/>
+                        <path id="county-grandgedeh" d="M280 130 L340 120 L360 180 L320 220 L260 200 L250 150 Z" class="county-path" data-county="Grand Gedeh"/>
+                        <path id="county-rivergee" d="M260 200 L320 220 L330 260 L300 280 L260 270 L250 230 Z" class="county-path" data-county="River Gee"/>
+                        <path id="county-grandkru" d="M300 280 L330 260 L370 280 L380 320 L340 340 L310 320 Z" class="county-path" data-county="Grand Kru"/>
+                        <path id="county-maryland" d="M340 340 L380 320 L400 340 L390 370 L350 380 L330 360 Z" class="county-path" data-county="Maryland"/>
+                    </svg>
+                </div>
+                {{-- Top Counties List --}}
+                <div class="w-40 shrink-0">
+                    <p class="text-xs text-gray-500 mb-2 font-medium">Top Counties</p>
+                    <div class="space-y-2">
+                        @forelse(array_slice($topCounties, 0, 5, true) as $county => $count)
+                        <div class="flex items-center justify-between text-xs">
+                            <span class="text-gray-700 truncate">{{ $county }}</span>
+                            <span class="font-semibold text-gray-900">{{ $count }}</span>
+                        </div>
+                        @empty
+                        <p class="text-xs text-gray-400">No data yet</p>
+                        @endforelse
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Incident Reports Table --}}
+    <div class="bg-white border border-gray-200 rounded-lg">
+        <div class="p-4 border-b border-gray-200">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div class="flex items-center gap-3">
+                    <h3 class="text-sm font-semibold text-gray-900">Incident Reports</h3>
+                    <span class="text-xs text-gray-500">({{ $totalIncidents }} total)</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <div class="relative">
+                        <svg class="w-4 h-4 text-gray-400 absolute left-2.5 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                        <input type="text" placeholder="Search incidents..." class="text-xs border border-gray-300 rounded-md pl-8 pr-3 py-1.5 w-40 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                    </div>
+                </div>
+            </div>
+            <div class="flex flex-wrap items-center gap-2 mt-3">
+                <select class="text-xs border border-gray-300 rounded-md px-2.5 py-1.5 bg-white text-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                    <option>All Counties</option>
+                    @foreach($topCounties as $county => $count)
+                    <option value="{{ $county }}">{{ $county }}</option>
+                    @endforeach
+                </select>
+                <select class="text-xs border border-gray-300 rounded-md px-2.5 py-1.5 bg-white text-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                    <option>All Types</option>
+                    @foreach(\App\Models\Incident::TYPES as $key => $label)
+                    @if($key !== 'srgbv')
+                    <option value="{{ $key }}">{{ $label }}</option>
+                    @endif
+                    @endforeach
+                </select>
+                <select class="text-xs border border-gray-300 rounded-md px-2.5 py-1.5 bg-white text-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                    <option>All Priorities</option>
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                    <option value="critical">Critical</option>
+                </select>
+                <select class="text-xs border border-gray-300 rounded-md px-2.5 py-1.5 bg-white text-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                    <option>All Statuses</option>
+                    @foreach(\App\Models\Incident::STATUSES as $key => $label)
+                    <option value="{{ $key }}">{{ $label }}</option>
+                    @endforeach
+                </select>
+                <button type="button" class="text-xs border border-gray-300 rounded-md px-2.5 py-1.5 bg-white text-gray-600 hover:bg-gray-50 flex items-center gap-1">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                    Date Range
+                </button>
+                <button type="button" class="text-xs text-blue-600 hover:text-blue-700 font-medium ml-auto">Reset Filters</button>
+            </div>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">
+                    <tr>
+                        <th class="px-4 py-3 text-left font-medium">Case ID</th>
+                        <th class="px-4 py-3 text-left font-medium">Type</th>
+                        <th class="px-4 py-3 text-left font-medium">Title</th>
+                        <th class="px-4 py-3 text-left font-medium">County</th>
+                        <th class="px-4 py-3 text-left font-medium">Priority</th>
+                        <th class="px-4 py-3 text-left font-medium">Status</th>
+                        <th class="px-4 py-3 text-left font-medium">Assigned</th>
+                        <th class="px-4 py-3 text-left font-medium">Date</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    @forelse($recentIncidents as $incident)
+                    <tr class="hover:bg-gray-50 cursor-pointer" onclick="window.location='{{ route('sir.incidents.show', $incident) }}'">
+                        <td class="px-4 py-3 font-medium text-blue-600">{{ $incident->incident_number }}</td>
+                        <td class="px-4 py-3">
+                            @php
+                                $typeColors = [
+                                    'disciplinary' => 'bg-amber-100 text-amber-700',
+                                    'safety' => 'bg-orange-100 text-orange-700',
+                                    'infrastructure' => 'bg-blue-100 text-blue-700',
+                                    'academic' => 'bg-purple-100 text-purple-700',
+                                    'health' => 'bg-teal-100 text-teal-700',
+                                    'other' => 'bg-gray-100 text-gray-700',
+                                ];
+                            @endphp
+                            <span class="inline-flex px-2 py-0.5 text-xs font-medium rounded {{ $typeColors[$incident->type] ?? 'bg-gray-100 text-gray-700' }}">
+                                {{ $incident->type_label }}
+                            </span>
+                        </td>
+                        <td class="px-4 py-3 text-gray-700 max-w-[200px] truncate">{{ $incident->title }}</td>
+                        <td class="px-4 py-3 text-gray-500">{{ $incident->school_county ?? '—' }}</td>
+                        <td class="px-4 py-3">
+                            @php
+                                $priorityColors = [
+                                    'low' => 'bg-green-100 text-green-700',
+                                    'medium' => 'bg-yellow-100 text-yellow-700',
+                                    'high' => 'bg-orange-100 text-orange-700',
+                                    'critical' => 'bg-red-100 text-red-700',
+                                ];
+                            @endphp
+                            <span class="inline-flex px-2 py-0.5 text-xs font-medium rounded {{ $priorityColors[$incident->priority] ?? 'bg-gray-100 text-gray-700' }}">
+                                {{ ucfirst($incident->priority) }}
+                            </span>
+                        </td>
+                        <td class="px-4 py-3">
+                            @php
+                                $statusStyles = [
+                                    'reported' => 'bg-blue-100 text-blue-700',
+                                    'under_review' => 'bg-amber-100 text-amber-700',
+                                    'under_investigation' => 'bg-orange-100 text-orange-700',
+                                    'action_taken' => 'bg-purple-100 text-purple-700',
+                                    'referred' => 'bg-indigo-100 text-indigo-700',
+                                    'resolved' => 'bg-green-100 text-green-700',
+                                    'closed' => 'bg-gray-100 text-gray-600',
+                                ];
+                            @endphp
+                            <span class="inline-flex px-2 py-0.5 text-xs font-medium rounded {{ $statusStyles[$incident->status] ?? 'bg-gray-100 text-gray-600' }}">
+                                {{ $incident->status_label }}
+                            </span>
+                        </td>
+                        <td class="px-4 py-3 text-gray-600">{{ $incident->assignee?->name ?? '—' }}</td>
+                        <td class="px-4 py-3 text-gray-500">{{ $incident->created_at->format('M d, Y') }}</td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="8" class="px-4 py-12 text-center">
+                            <div class="flex flex-col items-center">
+                                <div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-3">
+                                    <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                </div>
+                                <p class="text-sm text-gray-500">No incidents reported yet.</p>
+                                @if($canManage)
+                                <a href="{{ route('sir.incidents.create') }}" class="mt-2 text-sm text-blue-600 hover:text-blue-700 font-medium">Create first report →</a>
                                 @endif
                             </div>
-                            <p class="text-sm font-medium text-gray-800 truncate">{{ $incident->title }}</p>
-                            <p class="text-xs text-gray-500 mt-0.5">{{ $incident->incident_number }} · {{ $incident->created_at->diffForHumans() }}</p>
-                        </div>
-                        <span class="text-[10px] px-1.5 py-0.5 font-medium bg-{{ $incident->status_color }}-100 text-{{ $incident->status_color }}-700 rounded whitespace-nowrap">{{ $incident->status_label }}</span>
-                    </div>
-                </a>
-                @empty
-                <p class="text-sm text-gray-400">No incidents reported yet.</p>
-                @endforelse
-            </div>
+                        </td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
 
-        {{-- Follow-Up Due --}}
-        <div class="bg-white border border-gray-200 rounded-md p-6">
-            <h3 class="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-4">Follow-Up Due</h3>
-            <div class="space-y-3">
-                @forelse($followUpIncidents as $incident)
-                <a href="{{ route('sir.incidents.show', $incident) }}" class="block p-3 bg-amber-50 rounded-md hover:bg-amber-100 transition">
-                    <div class="flex items-start justify-between gap-2">
-                        <div class="flex-1 min-w-0">
-                            <p class="text-sm font-medium text-gray-800 truncate">{{ $incident->title }}</p>
-                            <p class="text-xs text-gray-500 mt-0.5">{{ $incident->incident_number }} · Due: {{ $incident->follow_up_date?->format('M d, Y') ?? 'Not set' }}</p>
-                        </div>
-                        @if($incident->assignee)
-                        <span class="text-xs text-gray-500">{{ $incident->assignee->name }}</span>
-                        @endif
-                    </div>
-                </a>
-                @empty
-                <p class="text-sm text-gray-400">No follow-ups due.</p>
-                @endforelse
-            </div>
+        @if($recentIncidents->count() > 0)
+        <div class="p-4 border-t border-gray-200 flex items-center justify-between">
+            <p class="text-xs text-gray-500">Showing {{ $recentIncidents->count() }} most recent incidents</p>
+            <a href="{{ route('sir.incidents.index', ['module' => 'other']) }}" class="text-xs text-blue-600 hover:text-blue-700 font-medium">View all incidents →</a>
         </div>
+        @endif
     </div>
-
-    {{-- Resolution Stats Footer --}}
-    @if($avgResolutionDays)
-    <div class="bg-white border border-gray-200 rounded-md p-4 flex items-center justify-center gap-8">
-        <div class="text-center">
-            <p class="text-xs text-gray-500 uppercase tracking-wide">Avg. Days to Resolve</p>
-            <p class="text-xl font-bold text-gray-800">{{ $avgResolutionDays }}</p>
-        </div>
-        <div class="w-px h-8 bg-gray-200"></div>
-        <div class="text-center">
-            <p class="text-xs text-gray-500 uppercase tracking-wide">Resolution Rate</p>
-            <p class="text-xl font-bold text-green-700">{{ $resolutionRate }}%</p>
-        </div>
-    </div>
-    @endif
 </div>
+
+<style>
+    .county-path {
+        fill: #E0E7FF;
+        stroke: #fff;
+        stroke-width: 2;
+        cursor: pointer;
+        transition: fill 0.2s ease;
+    }
+    .county-path:hover {
+        fill: #A5B4FC;
+    }
+    .county-path.level-1 { fill: #DBEAFE; }
+    .county-path.level-2 { fill: #93C5FD; }
+    .county-path.level-3 { fill: #3B82F6; }
+    .county-path.level-4 { fill: #1D4ED8; }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const countyData = @json($countyData ?? []);
+    const maxCount = Math.max(...Object.values(countyData), 1);
+    
+    document.querySelectorAll('.county-path').forEach(path => {
+        const county = path.dataset.county;
+        const count = countyData[county] || 0;
+        const intensity = count / maxCount;
+        
+        if (count === 0) {
+            path.classList.add('level-1');
+        } else if (intensity < 0.25) {
+            path.classList.add('level-1');
+        } else if (intensity < 0.5) {
+            path.classList.add('level-2');
+        } else if (intensity < 0.75) {
+            path.classList.add('level-3');
+        } else {
+            path.classList.add('level-4');
+        }
+        
+        path.addEventListener('mouseenter', function(e) {
+            const tooltip = document.createElement('div');
+            tooltip.className = 'absolute bg-gray-900 text-white text-xs px-2 py-1 rounded pointer-events-none z-50';
+            tooltip.id = 'county-tooltip';
+            tooltip.textContent = `${county}: ${count} incidents`;
+            document.body.appendChild(tooltip);
+            tooltip.style.left = (e.pageX + 10) + 'px';
+            tooltip.style.top = (e.pageY - 25) + 'px';
+        });
+        path.addEventListener('mousemove', function(e) {
+            const tooltip = document.getElementById('county-tooltip');
+            if (tooltip) {
+                tooltip.style.left = (e.pageX + 10) + 'px';
+                tooltip.style.top = (e.pageY - 25) + 'px';
+            }
+        });
+        path.addEventListener('mouseleave', function() {
+            const tooltip = document.getElementById('county-tooltip');
+            if (tooltip) tooltip.remove();
+        });
+    });
+
+    // Trends Line Chart
+    const trendsCtx = document.getElementById('trendsChart');
+    if (trendsCtx) {
+        const trendsData = @json($monthlyTrend);
+        const labels = Object.keys(trendsData).map(m => {
+            const [year, month] = m.split('-');
+            return new Date(year, month - 1).toLocaleDateString('en-US', { month: 'short' });
+        });
+        const values = Object.values(trendsData);
+
+        new Chart(trendsCtx, {
+            type: 'line',
+            data: {
+                labels: labels.length ? labels : ['No data'],
+                datasets: [{
+                    data: values.length ? values : [0],
+                    borderColor: '#3B82F6',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4,
+                    pointBackgroundColor: '#3B82F6',
+                    pointRadius: 3,
+                    pointHoverRadius: 5,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, grid: { color: '#f3f4f6' }, ticks: { font: { size: 10 } } },
+                    x: { grid: { display: false }, ticks: { font: { size: 10 } } }
+                }
+            }
+        });
+    }
+
+    // Incidents by Type Bar Chart
+    const typeCtx = document.getElementById('typeChart');
+    if (typeCtx) {
+        const typeData = @json($byType ?? []);
+        const types = ['disciplinary', 'safety', 'infrastructure', 'academic', 'health', 'other'];
+        const colors = ['#F59E0B', '#F97316', '#3B82F6', '#8B5CF6', '#14B8A6', '#6B7280'];
+        const typeLabels = ['Disciplinary', 'Safety', 'Infrastructure', 'Academic', 'Health', 'Other'];
+
+        new Chart(typeCtx, {
+            type: 'bar',
+            data: {
+                labels: typeLabels,
+                datasets: [{
+                    data: types.map(t => typeData[t] || 0),
+                    backgroundColor: colors,
+                    borderRadius: 4,
+                    barThickness: 30,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, grid: { color: '#f3f4f6' }, ticks: { font: { size: 10 } } },
+                    x: { grid: { display: false }, ticks: { font: { size: 9 } } }
+                }
+            }
+        });
+    }
+
+    // Status Donut Chart
+    const statusCtx = document.getElementById('statusChart');
+    if (statusCtx) {
+        const statusData = @json($byStatus ?? []);
+        const statuses = ['reported', 'under_review', 'under_investigation', 'action_taken', 'resolved', 'closed'];
+        const statusColors = ['#EF4444', '#F59E0B', '#F97316', '#3B82F6', '#10B981', '#6B7280'];
+        const statusValues = statuses.map(s => statusData[s] || 0);
+
+        new Chart(statusCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Reported', 'Under Review', 'Investigation', 'Action Taken', 'Resolved', 'Closed'],
+                datasets: [{
+                    data: statusValues.some(v => v > 0) ? statusValues : [1, 1, 1, 1, 1, 1],
+                    backgroundColor: statusColors,
+                    borderWidth: 0,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '70%',
+                plugins: { legend: { display: false } }
+            }
+        });
+    }
+});
+</script>
 @endsection

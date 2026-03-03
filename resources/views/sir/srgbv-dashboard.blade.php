@@ -4,107 +4,226 @@
 @section('content')
 <div class="space-y-6">
     {{-- Header --}}
-    <div>
-        <div class="flex items-center gap-2 text-xs text-gray-400 mb-1">
-            <a href="{{ route('sir.dashboard') }}" class="hover:text-gray-600">SIR</a>
-            <span>›</span>
-            <span class="text-gray-600">SRGBV</span>
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+            <div class="flex items-center gap-2 text-xs text-gray-400 mb-1">
+                <a href="{{ route('sir.dashboard') }}" class="hover:text-gray-600">SIR</a>
+                <span>›</span>
+                <span class="text-gray-600">SRGBV</span>
+            </div>
+            <h2 class="text-xl font-bold text-gray-900">SRGBV Dashboard</h2>
+            <p class="text-sm text-gray-500">Managing reports of School-Related Gender-Based Violence and Bullying.</p>
         </div>
-        <h2 class="text-xl font-bold text-gray-900">SRGBV Dashboard</h2>
-        <p class="text-sm text-gray-500">Managing and addressing reports of School-Related Gender-Based Violence and Bullying.</p>
+        @if($canManage)
+        <a href="{{ route('sir.incidents.create', ['type' => 'srgbv']) }}" class="inline-flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white font-medium px-4 py-2 rounded-lg text-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            New Report
+        </a>
+        @endif
     </div>
 
-    {{-- Stat Cards (4 cards matching the design) --}}
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {{-- Total Reports --}}
-        <div class="bg-white border border-gray-200 rounded-lg p-5 flex items-center gap-4">
-            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+    {{-- Alert Banner --}}
+    @if($immediateAction > 0)
+    <div class="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center gap-3">
+        <div class="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center shrink-0">
+            <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+        </div>
+        <div class="flex-1">
+            <p class="text-sm font-semibold text-red-800">{{ $immediateAction }} High Risk {{ Str::plural('Case', $immediateAction) }} Require Immediate Attention</p>
+            <p class="text-xs text-red-600">These cases have been flagged as critical and need urgent review.</p>
+        </div>
+        <a href="{{ route('sir.incidents.index', ['module' => 'srgbv', 'priority' => 'critical']) }}" class="shrink-0 text-sm font-medium text-red-700 hover:text-red-800 flex items-center gap-1">
+            View Cases
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        </a>
+    </div>
+    @endif
+
+    {{-- Stat Cards (5 cards) --}}
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+        {{-- Active Cases --}}
+        <div class="bg-white border border-gray-200 rounded-lg p-4">
+            <div class="flex items-center justify-between mb-2">
+                <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                </div>
+                <span class="text-xs text-green-600 font-medium">Active</span>
             </div>
-            <div class="flex-1">
-                <p class="text-sm text-gray-500">Total Reports</p>
-                <p class="text-2xl font-bold text-gray-900">{{ $totalIncidents }}</p>
-            </div>
-            <svg class="w-5 h-5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            <p class="text-2xl font-bold text-gray-900">{{ $openIncidents }}</p>
+            <p class="text-xs text-gray-500">Open Cases</p>
         </div>
 
-        {{-- Open Cases --}}
-        <div class="bg-white border border-gray-200 rounded-lg p-5 flex items-center gap-4">
-            <div class="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center">
-                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        {{-- New Today --}}
+        <div class="bg-white border border-gray-200 rounded-lg p-4">
+            <div class="flex items-center justify-between mb-2">
+                <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                    <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+                </div>
+                <span class="text-xs text-blue-600 font-medium">Today</span>
             </div>
-            <div class="flex-1">
-                <p class="text-sm text-gray-500">Open Cases</p>
-                <p class="text-2xl font-bold text-blue-600">{{ $openIncidents }}</p>
-            </div>
-            <svg class="w-5 h-5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            <p class="text-2xl font-bold text-gray-900">{{ $newToday ?? 0 }}</p>
+            <p class="text-xs text-gray-500">New Reports</p>
         </div>
 
-        {{-- Critical Cases --}}
-        <div class="bg-white border border-gray-200 rounded-lg p-5 flex items-center gap-4">
-            <div class="w-12 h-12 bg-yellow-400 rounded-lg flex items-center justify-center">
-                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+        {{-- High Risk --}}
+        <div class="bg-white border border-gray-200 rounded-lg p-4">
+            <div class="flex items-center justify-between mb-2">
+                <div class="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
+                    <svg class="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                </div>
+                <span class="text-xs text-red-600 font-medium">Critical</span>
             </div>
-            <div class="flex-1">
-                <p class="text-sm text-gray-500">Critical Cases</p>
-                <p class="text-2xl font-bold text-yellow-600">{{ $criticalIncidents }}</p>
-            </div>
-            <svg class="w-5 h-5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            <p class="text-2xl font-bold text-red-600">{{ $criticalIncidents }}</p>
+            <p class="text-xs text-gray-500">High Risk Cases</p>
         </div>
 
-        {{-- Under Investigation --}}
-        <div class="bg-white border border-gray-200 rounded-lg p-5 flex items-center gap-4">
-            <div class="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
-                <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        {{-- Resolved This Month --}}
+        <div class="bg-white border border-gray-200 rounded-lg p-4">
+            <div class="flex items-center justify-between mb-2">
+                <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </div>
+                <span class="text-xs text-purple-600 font-medium">Month</span>
             </div>
-            <div class="flex-1">
-                <p class="text-sm text-gray-500">Under Investigation</p>
-                <p class="text-2xl font-bold text-gray-700">{{ $byStatus['under_investigation'] ?? 0 }}</p>
+            <p class="text-2xl font-bold text-gray-900">{{ $resolvedThisMonth ?? 0 }}</p>
+            <p class="text-xs text-gray-500">Resolved</p>
+        </div>
+
+        {{-- Avg Response Time --}}
+        <div class="bg-white border border-gray-200 rounded-lg p-4">
+            <div class="flex items-center justify-between mb-2">
+                <div class="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center">
+                    <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </div>
+                <span class="text-xs text-amber-600 font-medium">Avg</span>
             </div>
-            <svg class="w-5 h-5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            <p class="text-2xl font-bold text-gray-900">{{ $avgResolutionDays ?? '—' }}</p>
+            <p class="text-xs text-gray-500">Days to Resolve</p>
         </div>
     </div>
 
-    {{-- Charts Row --}}
+    {{-- Charts Row: Trends + Cases by Category --}}
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {{-- SRGBV Trends Chart --}}
-        <div class="bg-white border border-gray-200 rounded-lg p-6">
+        <div class="bg-white border border-gray-200 rounded-lg p-5">
             <div class="flex items-center justify-between mb-4">
-                <h3 class="text-base font-semibold text-gray-900">SRGBV Trends</h3>
+                <h3 class="text-sm font-semibold text-gray-900">SRGBV Trends</h3>
                 <div class="flex items-center gap-1 text-xs">
-                    <button type="button" class="px-3 py-1 rounded bg-blue-100 text-blue-700 font-medium">7 Days</button>
-                    <button type="button" class="px-3 py-1 rounded text-gray-500 hover:bg-gray-100">30 Days</button>
-                    <button type="button" class="px-3 py-1 rounded text-gray-500 hover:bg-gray-100">Quarter</button>
-                    <button type="button" class="px-3 py-1 rounded text-gray-500 hover:bg-gray-100">Year</button>
+                    <button type="button" class="px-2.5 py-1 rounded bg-blue-100 text-blue-700 font-medium">12M</button>
+                    <button type="button" class="px-2.5 py-1 rounded text-gray-500 hover:bg-gray-100">6M</button>
+                    <button type="button" class="px-2.5 py-1 rounded text-gray-500 hover:bg-gray-100">3M</button>
                 </div>
             </div>
-            <p class="text-xs text-gray-400 mb-2">Reports Over Time</p>
-            <div class="h-48">
+            <div class="h-52">
                 <canvas id="trendsChart"></canvas>
             </div>
         </div>
 
-        {{-- Victim Category Donut Chart --}}
-        <div class="bg-white border border-gray-200 rounded-lg p-6">
-            <h3 class="text-base font-semibold text-gray-900 mb-4">Victim Category</h3>
-            <div class="flex items-center gap-8">
-                <div class="relative w-40 h-40 shrink-0">
+        {{-- Cases by Category (Bar Chart) --}}
+        <div class="bg-white border border-gray-200 rounded-lg p-5">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-sm font-semibold text-gray-900">Cases by Category</h3>
+                <div class="flex items-center gap-2 text-xs">
+                    <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-sm bg-red-500"></span> Physical</span>
+                    <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-sm bg-purple-500"></span> Sexual</span>
+                    <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-sm bg-amber-500"></span> Emotional</span>
+                    <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-sm bg-blue-500"></span> Bullying</span>
+                </div>
+            </div>
+            <div class="h-52">
+                <canvas id="categoryChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    {{-- Second Row: Victim Gender + Liberia Map --}}
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {{-- Victim Category Donut --}}
+        <div class="bg-white border border-gray-200 rounded-lg p-5">
+            <h3 class="text-sm font-semibold text-gray-900 mb-4">Victim Category</h3>
+            <div class="flex items-center gap-6">
+                <div class="relative w-36 h-36 shrink-0">
                     <canvas id="genderChart"></canvas>
                     <div class="absolute inset-0 flex items-center justify-center">
-                        @php $totalGender = array_sum($byGender) ?: 1; $femalePercent = isset($byGender['female']) ? round(($byGender['female'] / $totalGender) * 100, 1) : 0; @endphp
-                        <span class="text-lg font-bold text-gray-700">{{ $femalePercent }}%</span>
+                        @php $totalGender = array_sum($byGender) ?: 1; $femalePercent = isset($byGender['female']) ? round(($byGender['female'] / $totalGender) * 100) : 0; @endphp
+                        <div class="text-center">
+                            <span class="text-xl font-bold text-gray-800">{{ $femalePercent }}%</span>
+                            <p class="text-xs text-gray-500">Female</p>
+                        </div>
                     </div>
                 </div>
                 <div class="space-y-3 flex-1">
-                    <div class="flex items-center gap-3">
-                        <span class="w-3 h-3 rounded-full bg-blue-500"></span>
-                        <span class="text-sm text-gray-700">Female</span>
-                        <span class="text-sm font-semibold text-gray-900 ml-auto">{{ isset($byGender['female']) ? round(($byGender['female'] / $totalGender) * 100, 1) : 0 }}%</span>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="w-3 h-3 rounded-full bg-blue-500"></span>
+                            <span class="text-sm text-gray-700">Female</span>
+                        </div>
+                        <span class="text-sm font-semibold text-gray-900">{{ $byGender['female'] ?? 0 }} ({{ $femalePercent }}%)</span>
                     </div>
-                    <div class="flex items-center gap-3">
-                        <span class="w-3 h-3 rounded-full bg-yellow-400"></span>
-                        <span class="text-sm text-gray-700">Male</span>
-                        <span class="text-sm font-semibold text-gray-900 ml-auto">{{ isset($byGender['male']) ? round(($byGender['male'] / $totalGender) * 100, 1) : 0 }}%</span>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="w-3 h-3 rounded-full bg-amber-400"></span>
+                            <span class="text-sm text-gray-700">Male</span>
+                        </div>
+                        @php $malePercent = isset($byGender['male']) ? round(($byGender['male'] / $totalGender) * 100) : 0; @endphp
+                        <span class="text-sm font-semibold text-gray-900">{{ $byGender['male'] ?? 0 }} ({{ $malePercent }}%)</span>
+                    </div>
+                    <div class="pt-2 border-t border-gray-100">
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-gray-500">Total Victims</span>
+                            <span class="text-sm font-semibold text-gray-900">{{ array_sum($byGender) }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- Liberia County Map --}}
+        <div class="bg-white border border-gray-200 rounded-lg p-5">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-sm font-semibold text-gray-900">Cases by County</h3>
+                <div class="flex items-center gap-1 text-xs text-gray-500">
+                    <span class="w-3 h-3 rounded bg-blue-100"></span>
+                    <span>Low</span>
+                    <span class="w-3 h-3 rounded bg-blue-300 ml-1"></span>
+                    <span class="w-3 h-3 rounded bg-blue-500"></span>
+                    <span class="w-3 h-3 rounded bg-blue-700"></span>
+                    <span>High</span>
+                </div>
+            </div>
+            <div class="flex gap-4">
+                {{-- SVG Map of Liberia --}}
+                <div class="flex-1 min-h-[200px]" id="liberiaMapContainer">
+                    <svg viewBox="0 0 400 350" class="w-full h-full" id="liberiaMap">
+                        <path id="county-lofa" d="M120 30 L180 25 L200 50 L190 90 L150 100 L110 80 Z" class="county-path" data-county="Lofa"/>
+                        <path id="county-gbarpolu" d="M60 80 L110 80 L150 100 L140 140 L90 150 L50 120 Z" class="county-path" data-county="Gbarpolu"/>
+                        <path id="county-bong" d="M150 100 L190 90 L230 100 L240 140 L200 160 L140 140 Z" class="county-path" data-county="Bong"/>
+                        <path id="county-nimba" d="M200 50 L260 40 L290 80 L280 130 L230 100 L190 90 Z" class="county-path" data-county="Nimba"/>
+                        <path id="county-grandcapemount" d="M20 120 L50 120 L90 150 L70 190 L30 180 L10 150 Z" class="county-path" data-county="Grand Cape Mount"/>
+                        <path id="county-bomi" d="M50 120 L90 150 L100 180 L70 190 Z" class="county-path" data-county="Bomi"/>
+                        <path id="county-montserrado" d="M70 190 L100 180 L120 200 L100 230 L60 220 Z" class="county-path" data-county="Montserrado"/>
+                        <path id="county-margibi" d="M100 180 L140 170 L160 200 L120 200 Z" class="county-path" data-county="Margibi"/>
+                        <path id="county-grandbassa" d="M120 200 L160 200 L200 220 L180 260 L120 250 L100 230 Z" class="county-path" data-county="Grand Bassa"/>
+                        <path id="county-rivercess" d="M180 260 L200 220 L250 230 L260 270 L220 290 Z" class="county-path" data-county="River Cess"/>
+                        <path id="county-sinoe" d="M220 290 L260 270 L300 280 L310 320 L260 340 L220 320 Z" class="county-path" data-county="Sinoe"/>
+                        <path id="county-grandgedeh" d="M280 130 L340 120 L360 180 L320 220 L260 200 L250 150 Z" class="county-path" data-county="Grand Gedeh"/>
+                        <path id="county-rivergee" d="M260 200 L320 220 L330 260 L300 280 L260 270 L250 230 Z" class="county-path" data-county="River Gee"/>
+                        <path id="county-grandkru" d="M300 280 L330 260 L370 280 L380 320 L340 340 L310 320 Z" class="county-path" data-county="Grand Kru"/>
+                        <path id="county-maryland" d="M340 340 L380 320 L400 340 L390 370 L350 380 L330 360 Z" class="county-path" data-county="Maryland"/>
+                    </svg>
+                </div>
+                {{-- Top Counties List --}}
+                <div class="w-40 shrink-0">
+                    <p class="text-xs text-gray-500 mb-2 font-medium">Top Counties</p>
+                    <div class="space-y-2">
+                        @forelse(array_slice($topCounties, 0, 5, true) as $county => $count)
+                        <div class="flex items-center justify-between text-xs">
+                            <span class="text-gray-700 truncate">{{ $county }}</span>
+                            <span class="font-semibold text-gray-900">{{ $count }}</span>
+                        </div>
+                        @empty
+                        <p class="text-xs text-gray-400">No data yet</p>
+                        @endforelse
                     </div>
                 </div>
             </div>
@@ -113,45 +232,53 @@
 
     {{-- SRGBV Incident Reports Table --}}
     <div class="bg-white border border-gray-200 rounded-lg">
-        {{-- Table Header with Filters --}}
         <div class="p-4 border-b border-gray-200">
-            <div class="flex flex-wrap items-center justify-between gap-4">
-                <h3 class="text-base font-semibold text-gray-900">SRGBV Incident Reports</h3>
-                <div class="flex flex-wrap items-center gap-2">
-                    <select class="text-xs border border-gray-300 rounded-md px-3 py-1.5 bg-white text-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-500">
-                        <option>School: All</option>
-                    </select>
-                    <select class="text-xs border border-gray-300 rounded-md px-3 py-1.5 bg-white text-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-500">
-                        <option>County: All</option>
-                        @foreach($topCounties as $county => $count)
-                        <option value="{{ $county }}">{{ $county }}</option>
-                        @endforeach
-                    </select>
-                    <select class="text-xs border border-gray-300 rounded-md px-3 py-1.5 bg-white text-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-500">
-                        <option>Risk: All</option>
-                        <option value="low">Low</option>
-                        <option value="medium">Medium</option>
-                        <option value="high">High</option>
-                        <option value="critical">Critical</option>
-                    </select>
-                    <select class="text-xs border border-gray-300 rounded-md px-3 py-1.5 bg-white text-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-500">
-                        <option>Status: All</option>
-                        @foreach(\App\Models\Incident::STATUSES as $key => $label)
-                        <option value="{{ $key }}">{{ $label }}</option>
-                        @endforeach
-                    </select>
-                    <button type="button" class="text-xs border border-gray-300 rounded-md px-3 py-1.5 bg-white text-gray-700 hover:bg-gray-50 flex items-center gap-1">
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                        Date Range
-                    </button>
-                    @if($canManage)
-                    <a href="{{ route('sir.incidents.create', ['type' => 'srgbv']) }}" class="text-xs bg-green-500 hover:bg-green-600 text-white font-medium px-4 py-1.5 rounded-md">New Report</a>
-                    @endif
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div class="flex items-center gap-3">
+                    <h3 class="text-sm font-semibold text-gray-900">SRGBV Incident Reports</h3>
+                    <span class="text-xs text-gray-500">({{ $totalIncidents }} total)</span>
                 </div>
+                <div class="flex items-center gap-2">
+                    <div class="relative">
+                        <svg class="w-4 h-4 text-gray-400 absolute left-2.5 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                        <input type="text" placeholder="Search cases..." class="text-xs border border-gray-300 rounded-md pl-8 pr-3 py-1.5 w-40 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                    </div>
+                </div>
+            </div>
+            <div class="flex flex-wrap items-center gap-2 mt-3">
+                <select class="text-xs border border-gray-300 rounded-md px-2.5 py-1.5 bg-white text-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                    <option>All Counties</option>
+                    @foreach($topCounties as $county => $count)
+                    <option value="{{ $county }}">{{ $county }}</option>
+                    @endforeach
+                </select>
+                <select class="text-xs border border-gray-300 rounded-md px-2.5 py-1.5 bg-white text-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                    <option>All Categories</option>
+                    @foreach(\App\Models\Incident::SRGBV_CATEGORIES as $key => $label)
+                    <option value="{{ $key }}">{{ $label }}</option>
+                    @endforeach
+                </select>
+                <select class="text-xs border border-gray-300 rounded-md px-2.5 py-1.5 bg-white text-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                    <option>All Risk Levels</option>
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                    <option value="critical">Critical</option>
+                </select>
+                <select class="text-xs border border-gray-300 rounded-md px-2.5 py-1.5 bg-white text-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                    <option>All Statuses</option>
+                    @foreach(\App\Models\Incident::STATUSES as $key => $label)
+                    <option value="{{ $key }}">{{ $label }}</option>
+                    @endforeach
+                </select>
+                <button type="button" class="text-xs border border-gray-300 rounded-md px-2.5 py-1.5 bg-white text-gray-600 hover:bg-gray-50 flex items-center gap-1">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                    Date Range
+                </button>
+                <button type="button" class="text-xs text-blue-600 hover:text-blue-700 font-medium ml-auto">Reset Filters</button>
             </div>
         </div>
 
-        {{-- Table --}}
         <div class="overflow-x-auto">
             <table class="w-full text-sm">
                 <thead class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">
@@ -162,16 +289,16 @@
                         <th class="px-4 py-3 text-left font-medium">County</th>
                         <th class="px-4 py-3 text-left font-medium">Risk</th>
                         <th class="px-4 py-3 text-left font-medium">Status</th>
-                        <th class="px-4 py-3 text-left font-medium">Assigned To</th>
+                        <th class="px-4 py-3 text-left font-medium">Assigned</th>
                         <th class="px-4 py-3 text-left font-medium">Date</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
                     @forelse($recentIncidents as $incident)
                     <tr class="hover:bg-gray-50 cursor-pointer" onclick="window.location='{{ route('sir.incidents.show', $incident) }}'">
-                        <td class="px-4 py-3 font-medium text-gray-900">{{ $incident->incident_number }}</td>
+                        <td class="px-4 py-3 font-medium text-blue-600">{{ $incident->incident_number }}</td>
                         <td class="px-4 py-3 text-gray-700">{{ $incident->category_label }}</td>
-                        <td class="px-4 py-3 text-gray-700">{{ $incident->school_name ?? '—' }}</td>
+                        <td class="px-4 py-3 text-gray-700 max-w-[150px] truncate">{{ $incident->school_name ?? '—' }}</td>
                         <td class="px-4 py-3 text-gray-500">{{ $incident->school_county ?? '—' }}</td>
                         <td class="px-4 py-3">
                             @php
@@ -189,35 +316,41 @@
                         <td class="px-4 py-3">
                             @php
                                 $statusStyles = [
-                                    'reported' => 'text-blue-600',
-                                    'under_review' => 'text-amber-600',
-                                    'under_investigation' => 'text-orange-600',
-                                    'action_taken' => 'text-purple-600',
-                                    'referred' => 'text-indigo-600',
-                                    'resolved' => 'text-green-600',
-                                    'closed' => 'text-gray-500',
+                                    'reported' => 'bg-blue-100 text-blue-700',
+                                    'under_review' => 'bg-amber-100 text-amber-700',
+                                    'under_investigation' => 'bg-orange-100 text-orange-700',
+                                    'action_taken' => 'bg-purple-100 text-purple-700',
+                                    'referred' => 'bg-indigo-100 text-indigo-700',
+                                    'resolved' => 'bg-green-100 text-green-700',
+                                    'closed' => 'bg-gray-100 text-gray-600',
                                 ];
                             @endphp
-                            <span class="inline-flex items-center gap-1 text-xs font-medium {{ $statusStyles[$incident->status] ?? 'text-gray-600' }}">
-                                @if(in_array($incident->status, ['reported', 'under_review']))
-                                <span class="w-1.5 h-1.5 rounded-full bg-current"></span>
-                                @endif
+                            <span class="inline-flex px-2 py-0.5 text-xs font-medium rounded {{ $statusStyles[$incident->status] ?? 'bg-gray-100 text-gray-600' }}">
                                 {{ $incident->status_label }}
                             </span>
                         </td>
-                        <td class="px-4 py-3 text-gray-700">{{ $incident->assignee?->name ?? 'Unassigned' }}</td>
-                        <td class="px-4 py-3 text-gray-500">{{ $incident->created_at->format('m/d/Y') }}</td>
+                        <td class="px-4 py-3 text-gray-600">{{ $incident->assignee?->name ?? '—' }}</td>
+                        <td class="px-4 py-3 text-gray-500">{{ $incident->created_at->format('M d, Y') }}</td>
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="8" class="px-4 py-8 text-center text-gray-400">No SRGBV incidents reported yet.</td>
+                        <td colspan="8" class="px-4 py-12 text-center">
+                            <div class="flex flex-col items-center">
+                                <div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-3">
+                                    <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                </div>
+                                <p class="text-sm text-gray-500">No SRGBV incidents reported yet.</p>
+                                @if($canManage)
+                                <a href="{{ route('sir.incidents.create', ['type' => 'srgbv']) }}" class="mt-2 text-sm text-blue-600 hover:text-blue-700 font-medium">Create first report →</a>
+                                @endif
+                            </div>
+                        </td>
                     </tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
 
-        {{-- Table Footer --}}
         @if($recentIncidents->count() > 0)
         <div class="p-4 border-t border-gray-200 flex items-center justify-between">
             <p class="text-xs text-gray-500">Showing {{ $recentIncidents->count() }} most recent cases</p>
@@ -227,17 +360,74 @@
     </div>
 </div>
 
-{{-- Chart.js --}}
+<style>
+    .county-path {
+        fill: #E0E7FF;
+        stroke: #fff;
+        stroke-width: 2;
+        cursor: pointer;
+        transition: fill 0.2s ease;
+    }
+    .county-path:hover {
+        fill: #A5B4FC;
+    }
+    .county-path.level-1 { fill: #DBEAFE; }
+    .county-path.level-2 { fill: #93C5FD; }
+    .county-path.level-3 { fill: #3B82F6; }
+    .county-path.level-4 { fill: #1D4ED8; }
+</style>
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Trends Line Chart
+    const countyData = @json($countyData ?? []);
+    const maxCount = Math.max(...Object.values(countyData), 1);
+    
+    document.querySelectorAll('.county-path').forEach(path => {
+        const county = path.dataset.county;
+        const count = countyData[county] || 0;
+        const intensity = count / maxCount;
+        
+        if (count === 0) {
+            path.classList.add('level-1');
+        } else if (intensity < 0.25) {
+            path.classList.add('level-1');
+        } else if (intensity < 0.5) {
+            path.classList.add('level-2');
+        } else if (intensity < 0.75) {
+            path.classList.add('level-3');
+        } else {
+            path.classList.add('level-4');
+        }
+        
+        path.addEventListener('mouseenter', function(e) {
+            const tooltip = document.createElement('div');
+            tooltip.className = 'absolute bg-gray-900 text-white text-xs px-2 py-1 rounded pointer-events-none z-50';
+            tooltip.id = 'county-tooltip';
+            tooltip.textContent = `${county}: ${count} cases`;
+            document.body.appendChild(tooltip);
+            tooltip.style.left = (e.pageX + 10) + 'px';
+            tooltip.style.top = (e.pageY - 25) + 'px';
+        });
+        path.addEventListener('mousemove', function(e) {
+            const tooltip = document.getElementById('county-tooltip');
+            if (tooltip) {
+                tooltip.style.left = (e.pageX + 10) + 'px';
+                tooltip.style.top = (e.pageY - 25) + 'px';
+            }
+        });
+        path.addEventListener('mouseleave', function() {
+            const tooltip = document.getElementById('county-tooltip');
+            if (tooltip) tooltip.remove();
+        });
+    });
+
     const trendsCtx = document.getElementById('trendsChart');
     if (trendsCtx) {
         const trendsData = @json($monthlyTrend);
         const labels = Object.keys(trendsData).map(m => {
             const [year, month] = m.split('-');
-            return new Date(year, month - 1).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            return new Date(year, month - 1).toLocaleDateString('en-US', { month: 'short' });
         });
         const values = Object.values(trendsData);
 
@@ -251,9 +441,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     backgroundColor: 'rgba(59, 130, 246, 0.1)',
                     borderWidth: 2,
                     fill: true,
-                    tension: 0.3,
+                    tension: 0.4,
                     pointBackgroundColor: '#3B82F6',
-                    pointRadius: 4,
+                    pointRadius: 3,
+                    pointHoverRadius: 5,
                 }]
             },
             options: {
@@ -261,14 +452,43 @@ document.addEventListener('DOMContentLoaded', function() {
                 maintainAspectRatio: false,
                 plugins: { legend: { display: false } },
                 scales: {
-                    y: { beginAtZero: true, grid: { color: '#f3f4f6' } },
-                    x: { grid: { display: false } }
+                    y: { beginAtZero: true, grid: { color: '#f3f4f6' }, ticks: { font: { size: 10 } } },
+                    x: { grid: { display: false }, ticks: { font: { size: 10 } } }
                 }
             }
         });
     }
 
-    // Gender Donut Chart
+    const categoryCtx = document.getElementById('categoryChart');
+    if (categoryCtx) {
+        const categoryData = @json($byCategory ?? []);
+        const categories = ['physical_violence', 'sexual_violence', 'emotional_abuse', 'bullying'];
+        const colors = ['#EF4444', '#8B5CF6', '#F59E0B', '#3B82F6'];
+        const categoryLabels = ['Physical', 'Sexual', 'Emotional', 'Bullying'];
+
+        new Chart(categoryCtx, {
+            type: 'bar',
+            data: {
+                labels: categoryLabels,
+                datasets: [{
+                    data: categories.map(c => categoryData[c] || 0),
+                    backgroundColor: colors,
+                    borderRadius: 4,
+                    barThickness: 40,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, grid: { color: '#f3f4f6' }, ticks: { font: { size: 10 } } },
+                    x: { grid: { display: false }, ticks: { font: { size: 10 } } }
+                }
+            }
+        });
+    }
+
     const genderCtx = document.getElementById('genderChart');
     if (genderCtx) {
         const genderData = @json($byGender);

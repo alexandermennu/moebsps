@@ -59,6 +59,10 @@ class SirDashboardController extends Controller
         $followUpDue = Incident::srgbv()->requiringFollowUp()->count();
         $immediateAction = Incident::srgbv()->requiringImmediateAction()->count();
 
+        // New stats for dashboard
+        $newToday = Incident::srgbv()->whereDate('created_at', today())->count();
+        $resolvedThisMonth = Incident::srgbv()->closed()->whereMonth('updated_at', now()->month)->whereYear('updated_at', now()->year)->count();
+
         $internalCount = Incident::srgbv()->internal()->count();
         $publicCount = Incident::srgbv()->publicReports()->count();
 
@@ -114,15 +118,16 @@ class SirDashboardController extends Controller
             ->take(5)
             ->get();
 
-        // Top counties
-        $topCounties = Incident::srgbv()
+        // Top counties (for map - get all counties)
+        $countyData = Incident::srgbv()
             ->select('school_county', DB::raw('count(*) as total'))
             ->whereNotNull('school_county')
             ->groupBy('school_county')
-            ->orderByDesc('total')
-            ->take(10)
             ->pluck('total', 'school_county')
             ->toArray();
+
+        // Top counties for display
+        $topCounties = collect($countyData)->sortDesc()->take(10)->toArray();
 
         // Resolution stats
         $resolutionRate = $totalIncidents > 0
@@ -157,6 +162,8 @@ class SirDashboardController extends Controller
             'criticalIncidents' => $criticalIncidents,
             'followUpDue' => $followUpDue,
             'immediateAction' => $immediateAction,
+            'newToday' => $newToday,
+            'resolvedThisMonth' => $resolvedThisMonth,
             'internalCount' => $internalCount,
             'publicCount' => $publicCount,
             'byCategory' => $byCategory,
@@ -165,6 +172,7 @@ class SirDashboardController extends Controller
             'monthlyTrend' => $monthlyTrend,
             'recentIncidents' => $recentIncidents,
             'followUpIncidents' => $followUpIncidents,
+            'countyData' => $countyData,
             'topCounties' => $topCounties,
             'resolutionRate' => $resolutionRate,
             'avgResolutionDays' => $avgResolutionDays ? round($avgResolutionDays) : null,
@@ -191,6 +199,14 @@ class SirDashboardController extends Controller
 
         $internalCount = Incident::where('type', '!=', Incident::TYPE_SRGBV)->internal()->count();
         $publicCount = Incident::where('type', '!=', Incident::TYPE_SRGBV)->publicReports()->count();
+
+        // New stats for enhanced dashboard
+        $newToday = Incident::where('type', '!=', Incident::TYPE_SRGBV)->whereDate('created_at', today())->count();
+        $resolvedThisMonth = Incident::where('type', '!=', Incident::TYPE_SRGBV)
+            ->closed()
+            ->whereMonth('updated_at', now()->month)
+            ->whereYear('updated_at', now()->year)
+            ->count();
 
         // By type (excluding SRGBV)
         $byType = Incident::where('type', '!=', Incident::TYPE_SRGBV)
@@ -249,15 +265,17 @@ class SirDashboardController extends Controller
             ->take(5)
             ->get();
 
-        // Top counties
-        $topCounties = Incident::where('type', '!=', Incident::TYPE_SRGBV)
+        // County data for map
+        $countyData = Incident::where('type', '!=', Incident::TYPE_SRGBV)
             ->select('school_county', DB::raw('count(*) as total'))
             ->whereNotNull('school_county')
             ->groupBy('school_county')
-            ->orderByDesc('total')
-            ->take(10)
             ->pluck('total', 'school_county')
             ->toArray();
+
+        // Top counties (derived from county data)
+        arsort($countyData);
+        $topCounties = array_slice($countyData, 0, 10, true);
 
         // Resolution
         $resolutionRate = $totalIncidents > 0
@@ -284,6 +302,8 @@ class SirDashboardController extends Controller
             'criticalIncidents' => $criticalIncidents,
             'followUpDue' => $followUpDue,
             'immediateAction' => $immediateAction,
+            'newToday' => $newToday,
+            'resolvedThisMonth' => $resolvedThisMonth,
             'internalCount' => $internalCount,
             'publicCount' => $publicCount,
             'byType' => $byType,
@@ -292,6 +312,7 @@ class SirDashboardController extends Controller
             'monthlyTrend' => $monthlyTrend,
             'recentIncidents' => $recentIncidents,
             'followUpIncidents' => $followUpIncidents,
+            'countyData' => $countyData,
             'topCounties' => $topCounties,
             'resolutionRate' => $resolutionRate,
             'avgResolutionDays' => $avgResolutionDays ? round($avgResolutionDays) : null,
