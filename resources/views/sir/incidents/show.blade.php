@@ -32,7 +32,7 @@
                         </div>
                         <h1 class="text-lg font-semibold text-white">{{ $incident->title }}</h1>
                         <p class="text-{{ $incident->type === 'srgbv' ? 'red' : 'blue' }}-100 text-sm mt-0.5">
-                            {{ $incident->category_label }} • {{ $incident->incident_date->format('M d, Y') }} • Reported {{ $incident->created_at->diffForHumans() }}
+                            {{ $incident->category_label }} • {{ $incident->incident_date?->format('M d, Y') ?? 'Date unknown' }} • Reported {{ $incident->created_at->diffForHumans() }}
                         </p>
                     </div>
                 </div>
@@ -509,7 +509,7 @@
                         </div>
                         <div class="border-t border-gray-100 pt-4">
                             <dt class="text-gray-500 mb-1">Incident Date</dt>
-                            <dd class="font-medium text-gray-800">{{ $incident->incident_date->format('M d, Y') }}</dd>
+                            <dd class="font-medium text-gray-800">{{ $incident->incident_date?->format('M d, Y') ?? 'Not specified' }}</dd>
                         </div>
                         <div>
                             <dt class="text-gray-500 mb-1">Reported</dt>
@@ -593,7 +593,7 @@
                         @if($incident->resolution_date)
                         <div>
                             <dt class="text-gray-500 mb-1">Resolution Date</dt>
-                            <dd class="font-medium text-gray-800">{{ $incident->resolution_date->format('M d, Y') }}</dd>
+                            <dd class="font-medium text-gray-800">{{ $incident->resolution_date?->format('M d, Y') }}</dd>
                         </div>
                         @endif
                         @if($incident->referral_agency)
@@ -633,7 +633,7 @@
                         <input type="hidden" name="description" value="{{ $incident->description }}">
                         <input type="hidden" name="priority" value="{{ $incident->priority }}">
                         <input type="hidden" name="status" value="{{ $incident->status }}">
-                        <input type="hidden" name="incident_date" value="{{ $incident->incident_date->format('Y-m-d') }}">
+                        <input type="hidden" name="incident_date" value="{{ $incident->incident_date?->format('Y-m-d') ?? now()->format('Y-m-d') }}">
                         <select name="assigned_to" class="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-{{ $incident->type === 'srgbv' ? 'red' : 'blue' }}-500 bg-white">
                             <option value="">— Unassigned —</option>
                             @foreach($counselors as $counselor)

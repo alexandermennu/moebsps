@@ -122,7 +122,7 @@
                     <h3 class="text-sm font-semibold text-gray-800">{{ $incident->title }}</h3>
                     <p class="text-xs text-gray-500 mt-1">
                         {{ $incident->category_label }}
-                        · {{ $incident->incident_date->format('M d, Y') }}
+                        · {{ $incident->incident_date?->format('M d, Y') ?? 'Date unknown' }}
                         @if($incident->school_name) · {{ $incident->school_name }} @endif
                         @if($incident->school_county) ({{ $incident->school_county }}) @endif
                     </p>
