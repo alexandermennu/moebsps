@@ -7,19 +7,28 @@
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
             <div class="flex items-center gap-2 text-xs text-gray-400 mb-1">
-                <a href="{{ route('sir.dashboard') }}" class="hover:text-gray-600">SIR</a>
+                <a href="{{ route('sir.dashboard') }}" class="hover:text-gray-600 flex items-center gap-1">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+                    SIR
+                </a>
                 <span>›</span>
                 <span class="text-gray-600">Other Incidents</span>
             </div>
             <h2 class="text-xl font-bold text-gray-900">Other Incidents Dashboard</h2>
             <p class="text-sm text-gray-500">Managing Disciplinary, Safety, Infrastructure, Academic, Health & General incidents.</p>
         </div>
-        @if($canManage)
-        <a href="{{ route('sir.incidents.create') }}" class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg text-sm">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-            New Report
-        </a>
-        @endif
+        <div class="flex items-center gap-3">
+            <a href="{{ route('sir.dashboard') }}" class="inline-flex items-center gap-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium px-4 py-2 rounded-lg text-sm transition">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+                Back to SIR
+            </a>
+            @if($canManage)
+            <a href="{{ route('sir.incidents.create') }}" class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg text-sm transition">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                New Report
+            </a>
+            @endif
+        </div>
     </div>
 
     {{-- Alert Banner --}}
@@ -190,24 +199,43 @@
                 </div>
             </div>
             <div class="flex gap-4">
-                {{-- SVG Map of Liberia --}}
-                <div class="flex-1 min-h-[200px]" id="liberiaMapContainer">
-                    <svg viewBox="0 0 400 350" class="w-full h-full" id="liberiaMap">
-                        <path id="county-lofa" d="M120 30 L180 25 L200 50 L190 90 L150 100 L110 80 Z" class="county-path" data-county="Lofa"/>
-                        <path id="county-gbarpolu" d="M60 80 L110 80 L150 100 L140 140 L90 150 L50 120 Z" class="county-path" data-county="Gbarpolu"/>
-                        <path id="county-bong" d="M150 100 L190 90 L230 100 L240 140 L200 160 L140 140 Z" class="county-path" data-county="Bong"/>
-                        <path id="county-nimba" d="M200 50 L260 40 L290 80 L280 130 L230 100 L190 90 Z" class="county-path" data-county="Nimba"/>
-                        <path id="county-grandcapemount" d="M20 120 L50 120 L90 150 L70 190 L30 180 L10 150 Z" class="county-path" data-county="Grand Cape Mount"/>
-                        <path id="county-bomi" d="M50 120 L90 150 L100 180 L70 190 Z" class="county-path" data-county="Bomi"/>
-                        <path id="county-montserrado" d="M70 190 L100 180 L120 200 L100 230 L60 220 Z" class="county-path" data-county="Montserrado"/>
-                        <path id="county-margibi" d="M100 180 L140 170 L160 200 L120 200 Z" class="county-path" data-county="Margibi"/>
-                        <path id="county-grandbassa" d="M120 200 L160 200 L200 220 L180 260 L120 250 L100 230 Z" class="county-path" data-county="Grand Bassa"/>
-                        <path id="county-rivercess" d="M180 260 L200 220 L250 230 L260 270 L220 290 Z" class="county-path" data-county="River Cess"/>
-                        <path id="county-sinoe" d="M220 290 L260 270 L300 280 L310 320 L260 340 L220 320 Z" class="county-path" data-county="Sinoe"/>
-                        <path id="county-grandgedeh" d="M280 130 L340 120 L360 180 L320 220 L260 200 L250 150 Z" class="county-path" data-county="Grand Gedeh"/>
-                        <path id="county-rivergee" d="M260 200 L320 220 L330 260 L300 280 L260 270 L250 230 Z" class="county-path" data-county="River Gee"/>
-                        <path id="county-grandkru" d="M300 280 L330 260 L370 280 L380 320 L340 340 L310 320 Z" class="county-path" data-county="Grand Kru"/>
-                        <path id="county-maryland" d="M340 340 L380 320 L400 340 L390 370 L350 380 L330 360 Z" class="county-path" data-county="Maryland"/>
+                {{-- SVG Map of Liberia (Accurate county boundaries) --}}
+                <div class="flex-1 min-h-[220px]" id="liberiaMapContainer">
+                    <svg viewBox="0 0 500 450" class="w-full h-full" id="liberiaMap">
+                        {{-- Lofa County (Northwest, borders Guinea & Sierra Leone) --}}
+                        <path id="county-lofa" d="M95,20 L145,15 L195,25 L235,45 L245,85 L225,115 L185,125 L145,115 L105,95 L85,55 Z" class="county-path" data-county="Lofa"/>
+                        {{-- Gbarpolu County (West-central) --}}
+                        <path id="county-gbarpolu" d="M45,95 L85,55 L105,95 L145,115 L155,155 L125,185 L75,175 L35,135 Z" class="county-path" data-county="Gbarpolu"/>
+                        {{-- Bong County (Central) --}}
+                        <path id="county-bong" d="M145,115 L185,125 L225,115 L265,135 L275,175 L245,205 L195,215 L155,195 L155,155 Z" class="county-path" data-county="Bong"/>
+                        {{-- Nimba County (Northeast, largest county, borders Guinea & Ivory Coast) --}}
+                        <path id="county-nimba" d="M225,115 L245,85 L285,55 L345,45 L385,75 L395,135 L365,185 L315,195 L275,175 L265,135 Z" class="county-path" data-county="Nimba"/>
+                        {{-- Grand Cape Mount County (Far west coast) --}}
+                        <path id="county-grandcapemount" d="M5,135 L35,135 L75,175 L65,215 L35,235 L5,215 L0,175 Z" class="county-path" data-county="Grand Cape Mount"/>
+                        {{-- Bomi County (West, small) --}}
+                        <path id="county-bomi" d="M35,135 L75,175 L125,185 L115,225 L65,215 Z" class="county-path" data-county="Bomi"/>
+                        {{-- Montserrado County (Capital Monrovia, west coast) --}}
+                        <path id="county-montserrado" d="M65,215 L115,225 L135,255 L115,285 L75,275 L45,255 L35,235 Z" class="county-path" data-county="Montserrado"/>
+                        {{-- Margibi County (Central coast) --}}
+                        <path id="county-margibi" d="M115,225 L155,195 L195,215 L185,255 L135,255 Z" class="county-path" data-county="Margibi"/>
+                        {{-- Grand Bassa County (Central coast) --}}
+                        <path id="county-grandbassa" d="M135,255 L185,255 L245,275 L235,315 L175,335 L115,315 L115,285 Z" class="county-path" data-county="Grand Bassa"/>
+                        {{-- River Cess County (Southeast coast) --}}
+                        <path id="county-rivercess" d="M175,335 L235,315 L285,325 L295,365 L245,385 L195,375 Z" class="county-path" data-county="River Cess"/>
+                        {{-- Sinoe County (Southeast coast) --}}
+                        <path id="county-sinoe" d="M245,385 L295,365 L355,355 L375,395 L335,425 L275,425 L245,405 Z" class="county-path" data-county="Sinoe"/>
+                        {{-- Grand Gedeh County (East, borders Ivory Coast) --}}
+                        <path id="county-grandgedeh" d="M315,195 L365,185 L415,195 L435,255 L405,305 L345,315 L295,295 L285,245 L275,205 Z" class="county-path" data-county="Grand Gedeh"/>
+                        {{-- River Gee County (Southeast) --}}
+                        <path id="county-rivergee" d="M295,295 L345,315 L365,355 L355,355 L295,365 L285,325 Z" class="county-path" data-county="River Gee"/>
+                        {{-- Grand Kru County (South coast) --}}
+                        <path id="county-grandkru" d="M355,355 L365,355 L405,365 L425,405 L395,435 L355,435 L335,425 L375,395 Z" class="county-path" data-county="Grand Kru"/>
+                        {{-- Maryland County (Southeast tip) --}}
+                        <path id="county-maryland" d="M395,435 L425,405 L465,415 L485,445 L455,465 L415,455 Z" class="county-path" data-county="Maryland"/>
+                        {{-- Ocean indication --}}
+                        <path d="M0,280 Q50,270 115,285 Q175,335 245,385 Q335,425 455,465 L485,445 L500,450 L500,480 L0,480 Z" fill="#E0F2FE" stroke="none" opacity="0.5"/>
+                        {{-- Country label --}}
+                        <text x="200" y="170" class="text-[10px] fill-gray-400 font-medium" text-anchor="middle">LIBERIA</text>
                     </svg>
                 </div>
                 {{-- Top Counties List --}}
