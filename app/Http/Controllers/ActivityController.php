@@ -20,18 +20,27 @@ class ActivityController extends Controller
         if ($user->hasPersonalAccessOnly()) {
             $query->where('assigned_to', $user->id);
         } elseif ($user->isDirector()) {
-            // Directors see their division's assignments but NOT those from Office of the Minister
-            $query->byDivision($user->division_id)
-                  ->whereHas('creator', function ($q) {
-                      $q->whereNotIn('role', [
-                          User::ROLE_MINISTER,
-                          User::ROLE_ADMIN_ASSISTANT,
-                          User::ROLE_TECH_ASSISTANT,
-                      ]);
-                  });
+            // Directors see their division's assignments (excluding Office of the Minister)
+            // PLUS any tasks assigned directly to them
+            $query->where(function ($q) use ($user) {
+                $q->where(function ($inner) use ($user) {
+                    $inner->byDivision($user->division_id)
+                          ->whereHas('creator', function ($c) {
+                              $c->whereNotIn('role', [
+                                  User::ROLE_MINISTER,
+                                  User::ROLE_ADMIN_ASSISTANT,
+                                  User::ROLE_TECH_ASSISTANT,
+                              ]);
+                          });
+                })->orWhere('assigned_to', $user->id);
+            });
         } elseif ($user->isDivisionScoped()) {
-            // Other division-scoped users see their division's assignments
-            $query->byDivision($user->division_id);
+            // Division-scoped users see their division's assignments
+            // PLUS any tasks assigned directly to them
+            $query->where(function ($q) use ($user) {
+                $q->byDivision($user->division_id)
+                  ->orWhere('assigned_to', $user->id);
+            });
         }
 
         if ($request->filled('status')) {
@@ -147,17 +156,23 @@ class ActivityController extends Controller
     {
         $user = auth()->user();
 
-        if ($user->hasPersonalAccessOnly() && $activity->assigned_to !== $user->id) {
-            abort(403);
-        }
+        // Assignees can always view their own assigned tasks
+        $isAssignee = $activity->assigned_to === $user->id;
 
-        if ($user->isDivisionScoped() && $activity->division_id !== $user->division_id) {
-            abort(403);
-        }
+        if (!$isAssignee) {
+            if ($user->hasPersonalAccessOnly()) {
+                abort(403);
+            }
 
-        // Directors cannot view assignments created by Office of the Minister
-        if ($user->isDirector() && $activity->creator && $activity->creator->hasFullAccess()) {
-            abort(403);
+            if ($user->isDivisionScoped() && $activity->division_id !== $user->division_id) {
+                abort(403);
+            }
+
+            // Directors cannot view assignments created by Office of the Minister
+            if ($user->isDirector() && $activity->creator && $activity->creator->hasFullAccess()) {
+                abort(403);
+            }
+        }
         }
 
         $activity->load(['division', 'assignee', 'creator', 'comments.user']);
@@ -173,12 +188,12 @@ class ActivityController extends Controller
             abort(403, 'You do not have permission to edit assignments.');
         }
 
-        if ($user->isDirector() && $activity->division_id !== $user->division_id) {
+        if ($user->isDirector() && $activity->division_id !== $user->division_id && $activity->assigned_to !== $user->id) {
             abort(403);
         }
 
-        // Directors cannot edit assignments created by Office of the Minister
-        if ($user->isDirector() && $activity->creator && $activity->creator->hasFullAccess()) {
+        // Directors cannot edit assignments created by Office of the Minister (unless assigned to them)
+        if ($user->isDirector() && $activity->creator && $activity->creator->hasFullAccess() && $activity->assigned_to !== $user->id) {
             abort(403);
         }
 
@@ -219,12 +234,12 @@ class ActivityController extends Controller
             abort(403);
         }
 
-        if ($user->isDirector() && $activity->division_id !== $user->division_id) {
+        if ($user->isDirector() && $activity->division_id !== $user->division_id && $activity->assigned_to !== $user->id) {
             abort(403);
         }
 
-        // Directors cannot edit assignments from Office of the Minister
-        if ($user->isDirector() && $activity->creator && $activity->creator->hasFullAccess()) {
+        // Directors cannot edit assignments from Office of the Minister (unless assigned to them)
+        if ($user->isDirector() && $activity->creator && $activity->creator->hasFullAccess() && $activity->assigned_to !== $user->id) {
             abort(403);
         }
 
