@@ -111,116 +111,6 @@
         </div>
     </div>
 
-    {{-- Charts Row: Trends + Cases by Category --}}
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {{-- SRGBV Trends Chart --}}
-        <div class="bg-white border border-gray-200 rounded-lg p-5">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="text-sm font-semibold text-gray-900">SRGBV Trends</h3>
-                <div class="flex items-center gap-1 text-xs">
-                    <button type="button" class="px-2.5 py-1 rounded bg-blue-100 text-blue-700 font-medium">12M</button>
-                    <button type="button" class="px-2.5 py-1 rounded text-gray-500 hover:bg-gray-100">6M</button>
-                    <button type="button" class="px-2.5 py-1 rounded text-gray-500 hover:bg-gray-100">3M</button>
-                </div>
-            </div>
-            <div class="h-52">
-                <canvas id="trendsChart"></canvas>
-            </div>
-        </div>
-
-        {{-- Cases by Category (Bar Chart) --}}
-        <div class="bg-white border border-gray-200 rounded-lg p-5">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="text-sm font-semibold text-gray-900">Cases by Category</h3>
-                <div class="flex items-center gap-2 text-xs">
-                    <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-sm bg-red-500"></span> Physical</span>
-                    <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-sm bg-purple-500"></span> Sexual</span>
-                    <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-sm bg-amber-500"></span> Emotional</span>
-                    <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-sm bg-blue-500"></span> Bullying</span>
-                </div>
-            </div>
-            <div class="h-52">
-                <canvas id="categoryChart"></canvas>
-            </div>
-        </div>
-    </div>
-
-    {{-- Second Row: Victim Gender + Liberia Map --}}
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {{-- Victim Category Donut --}}
-        <div class="bg-white border border-gray-200 rounded-lg p-5">
-            <h3 class="text-sm font-semibold text-gray-900 mb-4">Victim Category</h3>
-            <div class="flex items-center gap-6">
-                <div class="relative w-36 h-36 shrink-0">
-                    <canvas id="genderChart"></canvas>
-                    <div class="absolute inset-0 flex items-center justify-center">
-                        @php $totalGender = array_sum($byGender) ?: 1; $femalePercent = isset($byGender['female']) ? round(($byGender['female'] / $totalGender) * 100) : 0; @endphp
-                        <div class="text-center">
-                            <span class="text-xl font-bold text-gray-800">{{ $femalePercent }}%</span>
-                            <p class="text-xs text-gray-500">Female</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="space-y-3 flex-1">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-2">
-                            <span class="w-3 h-3 rounded-full bg-blue-500"></span>
-                            <span class="text-sm text-gray-700">Female</span>
-                        </div>
-                        <span class="text-sm font-semibold text-gray-900">{{ $byGender['female'] ?? 0 }} ({{ $femalePercent }}%)</span>
-                    </div>
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-2">
-                            <span class="w-3 h-3 rounded-full bg-amber-400"></span>
-                            <span class="text-sm text-gray-700">Male</span>
-                        </div>
-                        @php $malePercent = isset($byGender['male']) ? round(($byGender['male'] / $totalGender) * 100) : 0; @endphp
-                        <span class="text-sm font-semibold text-gray-900">{{ $byGender['male'] ?? 0 }} ({{ $malePercent }}%)</span>
-                    </div>
-                    <div class="pt-2 border-t border-gray-100">
-                        <div class="flex items-center justify-between">
-                            <span class="text-sm text-gray-500">Total Victims</span>
-                            <span class="text-sm font-semibold text-gray-900">{{ array_sum($byGender) }}</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        {{-- Liberia County Map (Leaflet + GeoJSON) --}}
-        <div class="bg-white border border-gray-200 rounded-lg p-5">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="text-sm font-semibold text-gray-900">Cases by County</h3>
-                <div class="flex items-center gap-1 text-xs text-gray-500">
-                    <span class="w-3 h-3 rounded" style="background:#fee2e2"></span>
-                    <span>Low</span>
-                    <span class="w-3 h-3 rounded ml-1" style="background:#fca5a5"></span>
-                    <span class="w-3 h-3 rounded" style="background:#ef4444"></span>
-                    <span class="w-3 h-3 rounded" style="background:#991b1b"></span>
-                    <span>High</span>
-                </div>
-            </div>
-            <div class="flex gap-4">
-                {{-- Leaflet Map Container --}}
-                <div class="flex-1 h-[280px] rounded-lg overflow-hidden border border-gray-200" id="liberiaMap"></div>
-                {{-- Top Counties List --}}
-                <div class="w-40 shrink-0">
-                    <p class="text-xs text-gray-500 mb-2 font-medium">Top Counties</p>
-                    <div class="space-y-2">
-                        @forelse(array_slice($topCounties, 0, 5, true) as $county => $count)
-                        <div class="flex items-center justify-between text-xs">
-                            <span class="text-gray-700 truncate">{{ $county }}</span>
-                            <span class="font-semibold text-gray-900">{{ $count }}</span>
-                        </div>
-                        @empty
-                        <p class="text-xs text-gray-400">No data yet</p>
-                        @endforelse
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
     {{-- SRGBV Incident Reports --}}
     <div class="bg-white border border-gray-200 rounded-lg">
         {{-- Filter Bar --}}
@@ -360,6 +250,116 @@
             <p class="text-xs text-gray-500">Showing {{ $recentIncidents->count() }} of {{ $totalIncidents }} cases</p>
         </div>
         @endif
+    </div>
+
+    {{-- Charts Row: Trends + Cases by Category --}}
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {{-- SRGBV Trends Chart --}}
+        <div class="bg-white border border-gray-200 rounded-lg p-5">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-sm font-semibold text-gray-900">SRGBV Trends</h3>
+                <div class="flex items-center gap-1 text-xs">
+                    <button type="button" class="px-2.5 py-1 rounded bg-blue-100 text-blue-700 font-medium">12M</button>
+                    <button type="button" class="px-2.5 py-1 rounded text-gray-500 hover:bg-gray-100">6M</button>
+                    <button type="button" class="px-2.5 py-1 rounded text-gray-500 hover:bg-gray-100">3M</button>
+                </div>
+            </div>
+            <div class="h-52">
+                <canvas id="trendsChart"></canvas>
+            </div>
+        </div>
+
+        {{-- Cases by Category (Bar Chart) --}}
+        <div class="bg-white border border-gray-200 rounded-lg p-5">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-sm font-semibold text-gray-900">Cases by Category</h3>
+                <div class="flex items-center gap-2 text-xs">
+                    <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-sm bg-red-500"></span> Physical</span>
+                    <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-sm bg-purple-500"></span> Sexual</span>
+                    <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-sm bg-amber-500"></span> Emotional</span>
+                    <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-sm bg-blue-500"></span> Bullying</span>
+                </div>
+            </div>
+            <div class="h-52">
+                <canvas id="categoryChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    {{-- Second Row: Victim Gender + Liberia Map --}}
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {{-- Victim Category Donut --}}
+        <div class="bg-white border border-gray-200 rounded-lg p-5">
+            <h3 class="text-sm font-semibold text-gray-900 mb-4">Victim Category</h3>
+            <div class="flex items-center gap-6">
+                <div class="relative w-36 h-36 shrink-0">
+                    <canvas id="genderChart"></canvas>
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        @php $totalGender = array_sum($byGender) ?: 1; $femalePercent = isset($byGender['female']) ? round(($byGender['female'] / $totalGender) * 100) : 0; @endphp
+                        <div class="text-center">
+                            <span class="text-xl font-bold text-gray-800">{{ $femalePercent }}%</span>
+                            <p class="text-xs text-gray-500">Female</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="space-y-3 flex-1">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="w-3 h-3 rounded-full bg-blue-500"></span>
+                            <span class="text-sm text-gray-700">Female</span>
+                        </div>
+                        <span class="text-sm font-semibold text-gray-900">{{ $byGender['female'] ?? 0 }} ({{ $femalePercent }}%)</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="w-3 h-3 rounded-full bg-amber-400"></span>
+                            <span class="text-sm text-gray-700">Male</span>
+                        </div>
+                        @php $malePercent = isset($byGender['male']) ? round(($byGender['male'] / $totalGender) * 100) : 0; @endphp
+                        <span class="text-sm font-semibold text-gray-900">{{ $byGender['male'] ?? 0 }} ({{ $malePercent }}%)</span>
+                    </div>
+                    <div class="pt-2 border-t border-gray-100">
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-gray-500">Total Victims</span>
+                            <span class="text-sm font-semibold text-gray-900">{{ array_sum($byGender) }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- Liberia County Map (Leaflet + GeoJSON) --}}
+        <div class="bg-white border border-gray-200 rounded-lg p-5">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-sm font-semibold text-gray-900">Cases by County</h3>
+                <div class="flex items-center gap-1 text-xs text-gray-500">
+                    <span class="w-3 h-3 rounded" style="background:#fee2e2"></span>
+                    <span>Low</span>
+                    <span class="w-3 h-3 rounded ml-1" style="background:#fca5a5"></span>
+                    <span class="w-3 h-3 rounded" style="background:#ef4444"></span>
+                    <span class="w-3 h-3 rounded" style="background:#991b1b"></span>
+                    <span>High</span>
+                </div>
+            </div>
+            <div class="flex gap-4">
+                {{-- Leaflet Map Container --}}
+                <div class="flex-1 h-[280px] rounded-lg overflow-hidden border border-gray-200" id="liberiaMap"></div>
+                {{-- Top Counties List --}}
+                <div class="w-40 shrink-0">
+                    <p class="text-xs text-gray-500 mb-2 font-medium">Top Counties</p>
+                    <div class="space-y-2">
+                        @forelse(array_slice($topCounties, 0, 5, true) as $county => $count)
+                        <div class="flex items-center justify-between text-xs">
+                            <span class="text-gray-700 truncate">{{ $county }}</span>
+                            <span class="font-semibold text-gray-900">{{ $count }}</span>
+                        </div>
+                        @empty
+                        <p class="text-xs text-gray-400">No data yet</p>
+                        @endforelse
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
