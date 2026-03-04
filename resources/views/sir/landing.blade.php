@@ -20,10 +20,11 @@
         </div>
         <div class="relative">
             <div class="flex items-start gap-3">
-                <div class="w-1 h-12 bg-red-600 rounded-full"></div>
+                <div class="w-1 h-16 bg-red-600 rounded-full"></div>
                 <div>
-                    <h1 class="text-xl sm:text-2xl font-bold text-gray-900">Welcome to the School Incident Reporter</h1>
-                    <p class="text-gray-500 mt-1">Choose a module below to review and manage cases efficiently.</p>
+                    <h1 class="text-xl sm:text-2xl font-bold text-gray-900">Welcome to SIR.</h1>
+                    <p class="text-gray-600 font-medium">Strengthening accountability in our schools.</p>
+                    <p class="text-gray-500 text-sm mt-1">Choose a module below to review and manage cases efficiently.</p>
                 </div>
             </div>
         </div>
@@ -34,37 +35,37 @@
         {{-- SRGBV Cases Card --}}
         @if($canAccessSrgbv)
         <div class="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-            <div class="p-6">
-                <div class="flex items-start gap-4 mb-6">
-                    <div class="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center shrink-0">
-                        <svg class="w-7 h-7 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="p-5">
+                <div class="flex items-start gap-3 mb-4">
+                    <div class="w-11 h-11 bg-red-100 rounded-full flex items-center justify-center shrink-0">
+                        <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                         </svg>
                     </div>
                     <div>
-                        <h2 class="text-xl font-bold text-gray-900">SRGBV Cases</h2>
-                        <p class="text-gray-500 text-sm mt-1">Sexual and Gender-Based Violence Reports</p>
+                        <h2 class="text-lg font-bold text-gray-900">SRGBV Cases</h2>
+                        <p class="text-gray-500 text-xs">Sexual and Gender-Based Violence Reports</p>
                     </div>
                 </div>
                 
                 {{-- Stats --}}
-                <div class="grid grid-cols-3 divide-x divide-gray-200 mb-6">
+                <div class="grid grid-cols-3 divide-x divide-gray-200 mb-4">
                     <div class="text-center px-2">
-                        <p class="text-2xl font-bold text-gray-900">{{ $srgbvStats['total'] ?? 0 }}</p>
+                        <p class="text-xl font-bold text-gray-900">{{ $srgbvStats['total'] ?? 0 }}</p>
                         <p class="text-xs text-gray-500">Total</p>
                     </div>
                     <div class="text-center px-2">
-                        <p class="text-2xl font-bold text-blue-600">{{ $srgbvStats['open'] ?? 0 }}</p>
+                        <p class="text-xl font-bold text-blue-600">{{ $srgbvStats['open'] ?? 0 }}</p>
                         <p class="text-xs text-gray-500">Open</p>
                     </div>
                     <div class="text-center px-2">
-                        <p class="text-2xl font-bold text-red-600">{{ $srgbvStats['critical'] ?? 0 }}</p>
+                        <p class="text-xl font-bold text-red-600">{{ $srgbvStats['critical'] ?? 0 }}</p>
                         <p class="text-xs text-gray-500">Critical</p>
                     </div>
                 </div>
                 
                 {{-- Action Button --}}
-                <a href="{{ route('sir.srgbv.cases.index') }}" class="flex items-center justify-center gap-2 w-full bg-red-800 hover:bg-red-900 text-white font-medium py-3 px-4 rounded-lg transition">
+                <a href="{{ route('sir.srgbv.cases.index') }}" class="flex items-center justify-center gap-2 w-full bg-red-800 hover:bg-red-900 text-white font-medium py-2.5 px-4 rounded-lg text-sm transition">
                     View Cases
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
                 </a>
@@ -73,35 +74,35 @@
         @else
         {{-- SRGBV Restricted Card --}}
         <div class="bg-gray-50 border border-gray-200 rounded-xl overflow-hidden opacity-60">
-            <div class="p-6">
-                <div class="flex items-start gap-4 mb-6">
-                    <div class="w-14 h-14 bg-gray-200 rounded-full flex items-center justify-center shrink-0">
-                        <svg class="w-7 h-7 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="p-5">
+                <div class="flex items-start gap-3 mb-4">
+                    <div class="w-11 h-11 bg-gray-200 rounded-full flex items-center justify-center shrink-0">
+                        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                         </svg>
                     </div>
                     <div>
-                        <h2 class="text-xl font-bold text-gray-500">SRGBV Cases</h2>
-                        <p class="text-gray-400 text-sm mt-1">Sexual and Gender-Based Violence Reports</p>
+                        <h2 class="text-lg font-bold text-gray-500">SRGBV Cases</h2>
+                        <p class="text-gray-400 text-xs">Sexual and Gender-Based Violence Reports</p>
                     </div>
                 </div>
                 
-                <div class="grid grid-cols-3 divide-x divide-gray-200 mb-6">
+                <div class="grid grid-cols-3 divide-x divide-gray-200 mb-4">
                     <div class="text-center px-2">
-                        <p class="text-2xl font-bold text-gray-400">—</p>
+                        <p class="text-xl font-bold text-gray-400">—</p>
                         <p class="text-xs text-gray-400">Total</p>
                     </div>
                     <div class="text-center px-2">
-                        <p class="text-2xl font-bold text-gray-400">—</p>
+                        <p class="text-xl font-bold text-gray-400">—</p>
                         <p class="text-xs text-gray-400">Open</p>
                     </div>
                     <div class="text-center px-2">
-                        <p class="text-2xl font-bold text-gray-400">—</p>
+                        <p class="text-xl font-bold text-gray-400">—</p>
                         <p class="text-xs text-gray-400">Critical</p>
                     </div>
                 </div>
                 
-                <div class="flex items-center justify-center gap-2 w-full bg-gray-300 text-gray-500 font-medium py-3 px-4 rounded-lg cursor-not-allowed">
+                <div class="flex items-center justify-center gap-2 w-full bg-gray-300 text-gray-500 font-medium py-2.5 px-4 rounded-lg text-sm cursor-not-allowed">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
                     Access Restricted
                 </div>
@@ -112,37 +113,37 @@
         {{-- Other Incidents Card --}}
         @if($canAccessOther)
         <div class="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-            <div class="p-6">
-                <div class="flex items-start gap-4 mb-6">
-                    <div class="w-14 h-14 bg-blue-100 rounded-full flex items-center justify-center shrink-0">
-                        <svg class="w-7 h-7 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="p-5">
+                <div class="flex items-start gap-3 mb-4">
+                    <div class="w-11 h-11 bg-blue-100 rounded-full flex items-center justify-center shrink-0">
+                        <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                         </svg>
                     </div>
                     <div>
-                        <h2 class="text-xl font-bold text-gray-900">Other Incidents</h2>
-                        <p class="text-gray-500 text-sm mt-1">Disciplinary, Safety, Infrastructure & General Reports</p>
+                        <h2 class="text-lg font-bold text-gray-900">Other Incidents</h2>
+                        <p class="text-gray-500 text-xs">Disciplinary, Safety, Infrastructure & General Reports</p>
                     </div>
                 </div>
                 
                 {{-- Stats --}}
-                <div class="grid grid-cols-3 divide-x divide-gray-200 mb-6">
+                <div class="grid grid-cols-3 divide-x divide-gray-200 mb-4">
                     <div class="text-center px-2">
-                        <p class="text-2xl font-bold text-gray-900">{{ $otherStats['total'] ?? 0 }}</p>
+                        <p class="text-xl font-bold text-gray-900">{{ $otherStats['total'] ?? 0 }}</p>
                         <p class="text-xs text-gray-500">Total</p>
                     </div>
                     <div class="text-center px-2">
-                        <p class="text-2xl font-bold text-blue-600">{{ $otherStats['open'] ?? 0 }}</p>
+                        <p class="text-xl font-bold text-blue-600">{{ $otherStats['open'] ?? 0 }}</p>
                         <p class="text-xs text-gray-500">Open</p>
                     </div>
                     <div class="text-center px-2">
-                        <p class="text-2xl font-bold text-red-600">{{ $otherStats['critical'] ?? 0 }}</p>
+                        <p class="text-xl font-bold text-red-600">{{ $otherStats['critical'] ?? 0 }}</p>
                         <p class="text-xs text-gray-500">Critical</p>
                     </div>
                 </div>
                 
                 {{-- Action Button --}}
-                <a href="{{ route('sir.other.incidents.index') }}" class="flex items-center justify-center gap-2 w-full bg-blue-800 hover:bg-blue-900 text-white font-medium py-3 px-4 rounded-lg transition">
+                <a href="{{ route('sir.other.incidents.index') }}" class="flex items-center justify-center gap-2 w-full bg-blue-800 hover:bg-blue-900 text-white font-medium py-2.5 px-4 rounded-lg text-sm transition">
                     View Reports
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
                 </a>
@@ -151,35 +152,35 @@
         @else
         {{-- Other Incidents Restricted Card --}}
         <div class="bg-gray-50 border border-gray-200 rounded-xl overflow-hidden opacity-60">
-            <div class="p-6">
-                <div class="flex items-start gap-4 mb-6">
-                    <div class="w-14 h-14 bg-gray-200 rounded-full flex items-center justify-center shrink-0">
-                        <svg class="w-7 h-7 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="p-5">
+                <div class="flex items-start gap-3 mb-4">
+                    <div class="w-11 h-11 bg-gray-200 rounded-full flex items-center justify-center shrink-0">
+                        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                         </svg>
                     </div>
                     <div>
-                        <h2 class="text-xl font-bold text-gray-500">Other Incidents</h2>
-                        <p class="text-gray-400 text-sm mt-1">Disciplinary, Safety, Infrastructure & General Reports</p>
+                        <h2 class="text-lg font-bold text-gray-500">Other Incidents</h2>
+                        <p class="text-gray-400 text-xs">Disciplinary, Safety, Infrastructure & General Reports</p>
                     </div>
                 </div>
                 
-                <div class="grid grid-cols-3 divide-x divide-gray-200 mb-6">
+                <div class="grid grid-cols-3 divide-x divide-gray-200 mb-4">
                     <div class="text-center px-2">
-                        <p class="text-2xl font-bold text-gray-400">—</p>
+                        <p class="text-xl font-bold text-gray-400">—</p>
                         <p class="text-xs text-gray-400">Total</p>
                     </div>
                     <div class="text-center px-2">
-                        <p class="text-2xl font-bold text-gray-400">—</p>
+                        <p class="text-xl font-bold text-gray-400">—</p>
                         <p class="text-xs text-gray-400">Open</p>
                     </div>
                     <div class="text-center px-2">
-                        <p class="text-2xl font-bold text-gray-400">—</p>
+                        <p class="text-xl font-bold text-gray-400">—</p>
                         <p class="text-xs text-gray-400">Critical</p>
                     </div>
                 </div>
                 
-                <div class="flex items-center justify-center gap-2 w-full bg-gray-300 text-gray-500 font-medium py-3 px-4 rounded-lg cursor-not-allowed">
+                <div class="flex items-center justify-center gap-2 w-full bg-gray-300 text-gray-500 font-medium py-2.5 px-4 rounded-lg text-sm cursor-not-allowed">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
                     Access Restricted
                 </div>
