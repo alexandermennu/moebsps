@@ -225,11 +225,11 @@
                         
                         {{-- Actions Dropdown --}}
                         @if($canManage)
-                        <div class="relative" x-data="{ open: false }">
-                            <button @click.stop="open = !open" class="p-1.5 rounded hover:bg-gray-200 text-gray-400 hover:text-gray-600 transition opacity-0 group-hover:opacity-100">
+                        <div class="relative group/menu">
+                            <button class="p-1.5 rounded hover:bg-gray-200 text-gray-400 hover:text-gray-600 transition">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"/></svg>
                             </button>
-                            <div x-show="open" @click.away="open = false" x-transition class="absolute right-0 mt-1 w-32 bg-white border border-gray-200 rounded-lg shadow-lg z-10 py-1">
+                            <div class="absolute right-0 mt-1 w-32 bg-white border border-gray-200 rounded-lg shadow-lg z-10 py-1 hidden group-hover/menu:block">
                                 <a href="{{ route('sir.srgbv.cases.show', $incident) }}" class="block px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50">View</a>
                                 <a href="{{ route('sir.srgbv.cases.edit', $incident) }}" class="block px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50">Edit</a>
                                 <form method="POST" action="{{ route('sir.srgbv.cases.destroy', $incident) }}" onsubmit="return confirm('Delete this case permanently?')">

@@ -41,7 +41,7 @@
             <p class="text-sm font-semibold text-orange-800">{{ $immediateAction }} {{ Str::plural('Incident', $immediateAction) }} Require Immediate Attention</p>
             <p class="text-xs text-orange-600">These incidents have been flagged as critical and need urgent response.</p>
         </div>
-        <a href="{{ route('sir.other.incidents.index', ['priority' => 'critical']) }}" class="shrink-0 text-sm font-medium text-orange-700 hover:text-orange-800 flex items-center gap-1">
+        <a href="{{ route('sir.other.dashboard', ['urgent' => '1']) }}" class="shrink-0 text-sm font-medium text-orange-700 hover:text-orange-800 flex items-center gap-1">
             View Cases
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
         </a>
@@ -109,6 +109,175 @@
             <p class="text-2xl font-bold text-gray-900">{{ $avgResolutionDays ?? '—' }}</p>
             <p class="text-xs text-gray-500">Days to Resolve</p>
         </div>
+    </div>
+
+    {{-- Incident Reports --}}
+    <div class="bg-white border border-gray-200 rounded-lg">
+        {{-- Filter Bar --}}
+        <form method="GET" action="{{ route('sir.other.dashboard') }}" class="p-4 border-b border-gray-200">
+            <div class="flex flex-wrap items-end gap-3">
+                <div>
+                    <label class="block text-[11px] text-gray-500 uppercase tracking-wide mb-1">Search</label>
+                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Number, title, name, school..."
+                           class="px-3 py-2 border border-gray-300 rounded-md text-sm w-52 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-[11px] text-gray-500 uppercase tracking-wide mb-1">Type</label>
+                    <select name="type" class="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">All Types</option>
+                        @foreach(\App\Models\Incident::TYPES as $key => $label)
+                        @if($key !== 'srgbv')
+                        <option value="{{ $key }}" {{ request('type') === $key ? 'selected' : '' }}>{{ $label }}</option>
+                        @endif
+                        @endforeach
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-[11px] text-gray-500 uppercase tracking-wide mb-1">Status</label>
+                    <select name="status" class="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">All Statuses</option>
+                        @foreach(\App\Models\Incident::STATUSES as $key => $label)
+                        <option value="{{ $key }}" {{ request('status') === $key ? 'selected' : '' }}>{{ $label }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-[11px] text-gray-500 uppercase tracking-wide mb-1">Priority</label>
+                    <select name="priority" class="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">All Priorities</option>
+                        @foreach(\App\Models\Incident::PRIORITIES as $key => $label)
+                        <option value="{{ $key }}" {{ request('priority') === $key ? 'selected' : '' }}>{{ $label }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-[11px] text-gray-500 uppercase tracking-wide mb-1">From</label>
+                    <input type="date" name="date_from" value="{{ request('date_from') }}" class="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-[11px] text-gray-500 uppercase tracking-wide mb-1">To</label>
+                    <input type="date" name="date_to" value="{{ request('date_to') }}" class="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <button type="submit" class="px-4 py-2 bg-slate-800 text-white text-sm font-medium hover:bg-slate-700 rounded-md">Filter</button>
+                @if(request()->hasAny(['search', 'type', 'status', 'priority', 'date_from', 'date_to']))
+                <a href="{{ route('sir.other.dashboard') }}" class="px-4 py-2 text-gray-500 text-sm hover:text-gray-700">Clear</a>
+                @endif
+            </div>
+        </form>
+
+        {{-- Case Cards List --}}
+        <div class="divide-y divide-gray-100">
+            @forelse($recentIncidents as $incident)
+            <div class="p-4 hover:bg-gray-50 transition group">
+                <div class="flex items-start justify-between gap-4">
+                    <a href="{{ route('sir.other.incidents.show', $incident) }}" class="flex-1 min-w-0">
+                        {{-- Badges Row --}}
+                        <div class="flex flex-wrap items-center gap-1.5 mb-2">
+                            <span class="text-[10px] px-1.5 py-0.5 font-medium bg-gray-100 text-gray-600 rounded">{{ $incident->incident_number }}</span>
+                            @php
+                                $typeColors = [
+                                    'disciplinary' => 'bg-amber-100 text-amber-700',
+                                    'safety' => 'bg-orange-100 text-orange-700',
+                                    'infrastructure' => 'bg-blue-100 text-blue-700',
+                                    'academic' => 'bg-purple-100 text-purple-700',
+                                    'health' => 'bg-teal-100 text-teal-700',
+                                    'other' => 'bg-gray-100 text-gray-700',
+                                ];
+                                $priorityColors = [
+                                    'low' => 'bg-green-100 text-green-700',
+                                    'medium' => 'bg-blue-100 text-blue-700',
+                                    'high' => 'bg-orange-100 text-orange-700',
+                                    'critical' => 'bg-red-100 text-red-700',
+                                ];
+                            @endphp
+                            <span class="text-[10px] px-1.5 py-0.5 font-medium rounded {{ $typeColors[$incident->type] ?? 'bg-gray-100 text-gray-700' }}">{{ $incident->type_label }}</span>
+                            <span class="text-[10px] px-1.5 py-0.5 font-medium rounded {{ $priorityColors[$incident->priority] ?? 'bg-gray-100 text-gray-700' }}">{{ ucfirst($incident->priority) }}</span>
+                            <span class="text-[10px] px-1.5 py-0.5 font-medium bg-blue-100 text-blue-700 rounded">{{ $incident->source_label }}</span>
+                            @if($incident->is_confidential)
+                            <span class="text-[10px] px-1.5 py-0.5 font-medium text-red-600 rounded">Confidential</span>
+                            @endif
+                            @if($incident->immediate_action_required)
+                            <span class="text-[10px] px-1.5 py-0.5 font-medium bg-red-500 text-white rounded">URGENT</span>
+                            @endif
+                        </div>
+
+                        {{-- Title --}}
+                        <h3 class="text-sm font-semibold text-gray-800">{{ $incident->title }}</h3>
+
+                        {{-- Meta Info --}}
+                        <p class="text-xs text-gray-500 mt-1">
+                            {{ $incident->category_label }}
+                            · {{ $incident->incident_date?->format('M d, Y') ?? 'Date unknown' }}
+                            @if($incident->school_name) · {{ $incident->school_name }} @endif
+                            @if($incident->school_county) ({{ $incident->school_county }}) @endif
+                        </p>
+
+                        {{-- Reporter --}}
+                        <p class="text-xs text-gray-400 mt-1">
+                            Reported by: {{ $incident->reporter_role ?? 'Unknown' }}
+                            · {{ $incident->created_at->diffForHumans() }}
+                        </p>
+                    </a>
+
+                    {{-- Right side: Status + Actions --}}
+                    <div class="shrink-0 flex items-center gap-3">
+                        @php
+                            $statusColors = [
+                                'reported' => 'text-blue-600',
+                                'under_review' => 'text-amber-600',
+                                'under_investigation' => 'text-orange-600',
+                                'action_taken' => 'text-purple-600',
+                                'referred' => 'text-indigo-600',
+                                'resolved' => 'text-green-600',
+                                'closed' => 'text-gray-500',
+                            ];
+                        @endphp
+                        <span class="text-xs font-medium {{ $statusColors[$incident->status] ?? 'text-gray-600' }}">{{ $incident->status_label }}</span>
+                        
+                        {{-- Actions Dropdown --}}
+                        @if($canManage)
+                        <div class="relative group/menu">
+                            <button class="p-1.5 rounded hover:bg-gray-200 text-gray-400 hover:text-gray-600 transition">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"/></svg>
+                            </button>
+                            <div class="absolute right-0 mt-1 w-32 bg-white border border-gray-200 rounded-lg shadow-lg z-10 py-1 hidden group-hover/menu:block">
+                                <a href="{{ route('sir.other.incidents.show', $incident) }}" class="block px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50">View</a>
+                                <a href="{{ route('sir.other.incidents.edit', $incident) }}" class="block px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50">Edit</a>
+                                <form method="POST" action="{{ route('sir.other.incidents.destroy', $incident) }}" onsubmit="return confirm('Delete this incident permanently?')">
+                                    @csrf @method('DELETE')
+                                    <button type="submit" class="w-full text-left px-3 py-1.5 text-sm text-red-600 hover:bg-red-50">Delete</button>
+                                </form>
+                            </div>
+                        </div>
+                        @endif
+                    </div>
+                </div>
+            </div>
+            @empty
+            <div class="px-4 py-12 text-center">
+                <div class="flex flex-col items-center">
+                    <div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-3">
+                        <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                    </div>
+                    <p class="text-sm text-gray-500">No incidents found.</p>
+                    @if($canManage)
+                    <a href="{{ route('sir.other.incidents.create') }}" class="mt-2 text-sm text-blue-600 hover:text-blue-700 font-medium">Create first report →</a>
+                    @endif
+                </div>
+            </div>
+            @endforelse
+        </div>
+
+        {{-- Pagination --}}
+        @if($recentIncidents->hasPages())
+        <div class="p-4 border-t border-gray-200">
+            {{ $recentIncidents->links() }}
+        </div>
+        @elseif($recentIncidents->count() > 0)
+        <div class="p-4 border-t border-gray-200 text-center">
+            <p class="text-xs text-gray-500">Showing {{ $recentIncidents->count() }} of {{ $totalIncidents }} incidents</p>
+        </div>
+        @endif
     </div>
 
     {{-- Charts Row: Trends + Incidents by Type --}}
@@ -217,158 +386,6 @@
                 </div>
             </div>
         </div>
-    </div>
-
-    {{-- Incident Reports --}}
-    <div class="bg-white border border-gray-200 rounded-lg">
-        {{-- Filter Bar --}}
-        <form method="GET" action="{{ route('sir.other.dashboard') }}" class="p-4 border-b border-gray-200">
-            <div class="flex flex-wrap items-end gap-3">
-                <div>
-                    <label class="block text-[11px] text-gray-500 uppercase tracking-wide mb-1">Search</label>
-                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Number, title, name, school..."
-                           class="px-3 py-2 border border-gray-300 rounded-md text-sm w-52 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                </div>
-                <div>
-                    <label class="block text-[11px] text-gray-500 uppercase tracking-wide mb-1">Type</label>
-                    <select name="type" class="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <option value="">All Types</option>
-                        @foreach(\App\Models\Incident::TYPES as $key => $label)
-                        @if($key !== 'srgbv')
-                        <option value="{{ $key }}" {{ request('type') === $key ? 'selected' : '' }}>{{ $label }}</option>
-                        @endif
-                        @endforeach
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-[11px] text-gray-500 uppercase tracking-wide mb-1">Status</label>
-                    <select name="status" class="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <option value="">All Statuses</option>
-                        @foreach(\App\Models\Incident::STATUSES as $key => $label)
-                        <option value="{{ $key }}" {{ request('status') === $key ? 'selected' : '' }}>{{ $label }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-[11px] text-gray-500 uppercase tracking-wide mb-1">Priority</label>
-                    <select name="priority" class="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <option value="">All Priorities</option>
-                        @foreach(\App\Models\Incident::PRIORITIES as $key => $label)
-                        <option value="{{ $key }}" {{ request('priority') === $key ? 'selected' : '' }}>{{ $label }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-[11px] text-gray-500 uppercase tracking-wide mb-1">From</label>
-                    <input type="date" name="date_from" value="{{ request('date_from') }}" class="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                </div>
-                <div>
-                    <label class="block text-[11px] text-gray-500 uppercase tracking-wide mb-1">To</label>
-                    <input type="date" name="date_to" value="{{ request('date_to') }}" class="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                </div>
-                <button type="submit" class="px-4 py-2 bg-slate-800 text-white text-sm font-medium hover:bg-slate-700 rounded-md">Filter</button>
-                @if(request()->hasAny(['search', 'type', 'status', 'priority', 'date_from', 'date_to']))
-                <a href="{{ route('sir.other.dashboard') }}" class="px-4 py-2 text-gray-500 text-sm hover:text-gray-700">Clear</a>
-                @endif
-            </div>
-        </form>
-
-        {{-- Case Cards List --}}
-        <div class="divide-y divide-gray-100">
-            @forelse($recentIncidents as $incident)
-            <a href="{{ route('sir.other.incidents.show', $incident) }}" class="block p-4 hover:bg-gray-50 transition">
-                <div class="flex items-start justify-between gap-4">
-                    <div class="flex-1 min-w-0">
-                        {{-- Badges Row --}}
-                        <div class="flex flex-wrap items-center gap-1.5 mb-2">
-                            <span class="text-[10px] px-1.5 py-0.5 font-medium bg-gray-100 text-gray-600 rounded">{{ $incident->incident_number }}</span>
-                            @php
-                                $typeColors = [
-                                    'disciplinary' => 'bg-amber-100 text-amber-700',
-                                    'safety' => 'bg-orange-100 text-orange-700',
-                                    'infrastructure' => 'bg-blue-100 text-blue-700',
-                                    'academic' => 'bg-purple-100 text-purple-700',
-                                    'health' => 'bg-teal-100 text-teal-700',
-                                    'other' => 'bg-gray-100 text-gray-700',
-                                ];
-                                $priorityColors = [
-                                    'low' => 'bg-green-100 text-green-700',
-                                    'medium' => 'bg-blue-100 text-blue-700',
-                                    'high' => 'bg-orange-100 text-orange-700',
-                                    'critical' => 'bg-red-100 text-red-700',
-                                ];
-                            @endphp
-                            <span class="text-[10px] px-1.5 py-0.5 font-medium rounded {{ $typeColors[$incident->type] ?? 'bg-gray-100 text-gray-700' }}">{{ $incident->type_label }}</span>
-                            <span class="text-[10px] px-1.5 py-0.5 font-medium rounded {{ $priorityColors[$incident->priority] ?? 'bg-gray-100 text-gray-700' }}">{{ ucfirst($incident->priority) }}</span>
-                            <span class="text-[10px] px-1.5 py-0.5 font-medium bg-blue-100 text-blue-700 rounded">{{ $incident->source_label }}</span>
-                            @if($incident->is_confidential)
-                            <span class="text-[10px] px-1.5 py-0.5 font-medium text-red-600 rounded">Confidential</span>
-                            @endif
-                            @if($incident->immediate_action_required)
-                            <span class="text-[10px] px-1.5 py-0.5 font-medium bg-red-500 text-white rounded">URGENT</span>
-                            @endif
-                        </div>
-
-                        {{-- Title --}}
-                        <h3 class="text-sm font-semibold text-gray-800">{{ $incident->title }}</h3>
-
-                        {{-- Meta Info --}}
-                        <p class="text-xs text-gray-500 mt-1">
-                            {{ $incident->category_label }}
-                            · {{ $incident->incident_date?->format('M d, Y') ?? 'Date unknown' }}
-                            @if($incident->school_name) · {{ $incident->school_name }} @endif
-                            @if($incident->school_county) ({{ $incident->school_county }}) @endif
-                        </p>
-
-                        {{-- Reporter --}}
-                        <p class="text-xs text-gray-400 mt-1">
-                            Reported by: {{ $incident->reporter_role ?? 'Unknown' }}
-                            · {{ $incident->created_at->diffForHumans() }}
-                        </p>
-                    </div>
-
-                    {{-- Status Badge (right side) --}}
-                    <div class="shrink-0">
-                        @php
-                            $statusColors = [
-                                'reported' => 'text-blue-600',
-                                'under_review' => 'text-amber-600',
-                                'under_investigation' => 'text-orange-600',
-                                'action_taken' => 'text-purple-600',
-                                'referred' => 'text-indigo-600',
-                                'resolved' => 'text-green-600',
-                                'closed' => 'text-gray-500',
-                            ];
-                        @endphp
-                        <span class="text-xs font-medium {{ $statusColors[$incident->status] ?? 'text-gray-600' }}">{{ $incident->status_label }}</span>
-                    </div>
-                </div>
-            </a>
-            @empty
-            <div class="px-4 py-12 text-center">
-                <div class="flex flex-col items-center">
-                    <div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-3">
-                        <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                    </div>
-                    <p class="text-sm text-gray-500">No incidents found.</p>
-                    @if($canManage)
-                    <a href="{{ route('sir.other.incidents.create') }}" class="mt-2 text-sm text-blue-600 hover:text-blue-700 font-medium">Create first report →</a>
-                    @endif
-                </div>
-            </div>
-            @endforelse
-        </div>
-
-        {{-- Pagination --}}
-        @if($recentIncidents->hasPages())
-        <div class="p-4 border-t border-gray-200">
-            {{ $recentIncidents->links() }}
-        </div>
-        @elseif($recentIncidents->count() > 0)
-        <div class="p-4 border-t border-gray-200 text-center">
-            <p class="text-xs text-gray-500">Showing {{ $recentIncidents->count() }} of {{ $totalIncidents }} incidents</p>
-        </div>
-        @endif
     </div>
 </div>
 

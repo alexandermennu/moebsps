@@ -25,15 +25,17 @@
                         <p class="text-{{ $themeColor }}-100 text-sm">Complete all required sections below</p>
                     </div>
                 </div>
-                <a href="{{ route($indexRoute) }}" class="text-white/80 hover:text-white text-sm flex items-center gap-1 transition">
+                <a href="{{ route($dashboardRoute) }}" class="text-white/80 hover:text-white text-sm flex items-center gap-1 transition">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
                     Back to List
                 </a>
             </div>
         </div>
-        
-        {{-- Section Progress Indicator --}}
-        <div class="px-6 py-3 bg-gray-50 border-t border-gray-100">
+    </div>
+
+    {{-- Sticky Section Progress Indicator --}}
+    <div id="progress-bar" class="sticky top-0 z-40 bg-white border border-gray-200 rounded-lg shadow-sm mb-6">
+        <div class="px-6 py-3">
             <div class="flex items-center justify-between text-xs">
                 <div class="flex items-center gap-1 text-gray-600" data-section="1">
                     <span class="w-6 h-6 rounded-full bg-{{ $themeColor }}-600 text-white flex items-center justify-center font-medium text-xs">1</span>
@@ -456,7 +458,7 @@
                     <span>All required fields must be completed</span>
                 </div>
                 <div class="flex items-center gap-3">
-                    <a href="{{ route($indexRoute) }}" class="px-5 py-2.5 bg-white border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50 rounded-lg transition">
+                    <a href="{{ route($dashboardRoute) }}" class="px-5 py-2.5 bg-white border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50 rounded-lg transition">
                         Cancel
                     </a>
                     <button type="submit" class="px-6 py-2.5 bg-red-700 text-white text-sm font-medium hover:bg-red-800 rounded-lg transition flex items-center gap-2">

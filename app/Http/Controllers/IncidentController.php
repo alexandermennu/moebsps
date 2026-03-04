@@ -339,7 +339,7 @@ class IncidentController extends Controller
             ]);
         }
 
-                return redirect()->route($showRoute, $incident)
+        return redirect()->route($showRoute, $incident)
             ->with('success', "Incident {$incident->incident_number} has been reported successfully.");
     }
 

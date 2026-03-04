@@ -51,7 +51,7 @@
                     </div>
                 </div>
                 <div class="flex items-center gap-2">
-                    <a href="{{ route($indexRoute) }}" class="text-white/80 hover:text-white text-sm flex items-center gap-1 transition">
+                    <a href="{{ route($dashboardRoute) }}" class="text-white/80 hover:text-white text-sm flex items-center gap-1 transition">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
                         Back
                     </a>

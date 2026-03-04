@@ -373,6 +373,10 @@ class SirDashboardController extends Controller
             $incidentsQuery->where('priority', $request->priority);
         }
 
+        if ($request->filled('urgent')) {
+            $incidentsQuery->where('immediate_action_required', true);
+        }
+
         if ($request->filled('date_from')) {
             $incidentsQuery->whereDate('created_at', '>=', $request->date_from);
         }
