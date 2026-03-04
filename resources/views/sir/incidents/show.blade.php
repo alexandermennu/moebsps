@@ -351,10 +351,11 @@
                     @if($incident->files->count())
                     <div class="space-y-2">
                         @foreach($incident->files as $file)
+                        @php $fileUrl = $file->getFileUrl(); @endphp
                         <div class="flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition group">
                             <div class="flex items-center gap-3 min-w-0">
-                                @if($file->isImage())
-                                <img src="{{ $file->getFileUrl() }}" alt="" class="w-12 h-12 object-cover rounded-lg shadow-sm">
+                                @if($file->isImage() && $fileUrl)
+                                <img src="{{ $fileUrl }}" alt="" class="w-12 h-12 object-cover rounded-lg shadow-sm">
                                 @else
                                 <div class="w-12 h-12 bg-white border border-gray-200 rounded-lg flex items-center justify-center">
                                     <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
@@ -367,11 +368,16 @@
                                         <span>{{ $file->file_size_formatted }}</span>
                                         <span>•</span>
                                         <span>{{ $file->uploader?->name ?? 'Public' }}</span>
+                                        @if(!$fileUrl)
+                                        <span class="text-red-500">• File missing</span>
+                                        @endif
                                     </p>
                                 </div>
                             </div>
                             <div class="flex items-center gap-3 opacity-0 group-hover:opacity-100 transition">
-                                <a href="{{ $file->getFileUrl() }}" target="_blank" class="text-xs font-medium text-indigo-600 hover:text-indigo-800 transition">View</a>
+                                @if($fileUrl)
+                                <a href="{{ $fileUrl }}" target="_blank" class="text-xs font-medium text-indigo-600 hover:text-indigo-800 transition">View</a>
+                                @endif
                                 @if($canManage || $file->uploaded_by === auth()->id())
                                 <form method="POST" action="{{ route('sir.incidents.files.delete', [$incident, $file]) }}" onsubmit="return confirm('Delete this file?')">
                                     @csrf @method('DELETE')

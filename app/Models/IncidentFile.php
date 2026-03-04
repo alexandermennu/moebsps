@@ -49,17 +49,32 @@ class IncidentFile extends Model
         return in_array($this->file_type, ['image/jpeg', 'image/png', 'image/gif', 'image/webp']);
     }
 
-    public function getFileUrl(): string
+    public function getFileUrl(): ?string
     {
-        $disk = config('filesystems.uploads', 'public');
-        $storage = Storage::disk($disk);
+        try {
+            $disk = config('filesystems.uploads', 'public');
+            $storage = Storage::disk($disk);
 
-        // Use signed temporary URLs for S3 (private buckets)
-        if (config("filesystems.disks.{$disk}.driver") === 's3') {
-            return $storage->temporaryUrl($this->file_path, now()->addHour());
+            // Check if file exists first
+            if (!$storage->exists($this->file_path)) {
+                return null;
+            }
+
+            // Use signed temporary URLs for S3 (private buckets)
+            if (config("filesystems.disks.{$disk}.driver") === 's3') {
+                return $storage->temporaryUrl($this->file_path, now()->addHour());
+            }
+
+            return $storage->url($this->file_path);
+        } catch (\Exception $e) {
+            // Log error but don't crash the page
+            \Log::warning('Failed to generate file URL', [
+                'file_id' => $this->id,
+                'file_path' => $this->file_path,
+                'error' => $e->getMessage(),
+            ]);
+            return null;
         }
-
-        return $storage->url($this->file_path);
     }
 
     public function getCategoryLabelAttribute(): string
