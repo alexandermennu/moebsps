@@ -31,7 +31,7 @@
     </div>
 
     {{-- Module Cards --}}
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 flex-1">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl">
         {{-- SRGBV Cases Card --}}
         @if($canAccessSrgbv)
         <div class="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
