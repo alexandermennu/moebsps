@@ -166,9 +166,9 @@
         {{-- Case Cards List --}}
         <div class="divide-y divide-gray-100">
             @forelse($recentIncidents as $incident)
-            <a href="{{ route('sir.srgbv.cases.show', $incident) }}" class="block p-4 hover:bg-gray-50 transition">
+            <div class="p-4 hover:bg-gray-50 transition group">
                 <div class="flex items-start justify-between gap-4">
-                    <div class="flex-1 min-w-0">
+                    <a href="{{ route('sir.srgbv.cases.show', $incident) }}" class="flex-1 min-w-0">
                         {{-- Badges Row --}}
                         <div class="flex flex-wrap items-center gap-1.5 mb-2">
                             <span class="text-[10px] px-1.5 py-0.5 font-medium bg-gray-100 text-gray-600 rounded">{{ $incident->incident_number }}</span>
@@ -206,10 +206,10 @@
                             Reported by: {{ $incident->reporter_role ?? 'Unknown' }}
                             · {{ $incident->created_at->diffForHumans() }}
                         </p>
-                    </div>
+                    </a>
 
-                    {{-- Status Badge (right side) --}}
-                    <div class="shrink-0">
+                    {{-- Right side: Status + Actions --}}
+                    <div class="shrink-0 flex items-center gap-3">
                         @php
                             $statusColors = [
                                 'reported' => 'text-blue-600',
@@ -222,9 +222,26 @@
                             ];
                         @endphp
                         <span class="text-xs font-medium {{ $statusColors[$incident->status] ?? 'text-gray-600' }}">{{ $incident->status_label }}</span>
+                        
+                        {{-- Actions Dropdown --}}
+                        @if($canManage)
+                        <div class="relative" x-data="{ open: false }">
+                            <button @click.stop="open = !open" class="p-1.5 rounded hover:bg-gray-200 text-gray-400 hover:text-gray-600 transition opacity-0 group-hover:opacity-100">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"/></svg>
+                            </button>
+                            <div x-show="open" @click.away="open = false" x-transition class="absolute right-0 mt-1 w-32 bg-white border border-gray-200 rounded-lg shadow-lg z-10 py-1">
+                                <a href="{{ route('sir.srgbv.cases.show', $incident) }}" class="block px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50">View</a>
+                                <a href="{{ route('sir.srgbv.cases.edit', $incident) }}" class="block px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50">Edit</a>
+                                <form method="POST" action="{{ route('sir.srgbv.cases.destroy', $incident) }}" onsubmit="return confirm('Delete this case permanently?')">
+                                    @csrf @method('DELETE')
+                                    <button type="submit" class="w-full text-left px-3 py-1.5 text-sm text-red-600 hover:bg-red-50">Delete</button>
+                                </form>
+                            </div>
+                        </div>
+                        @endif
                     </div>
                 </div>
-            </a>
+            </div>
             @empty
             <div class="px-4 py-12 text-center">
                 <div class="flex flex-col items-center">
