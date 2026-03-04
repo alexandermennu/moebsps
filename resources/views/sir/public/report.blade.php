@@ -24,6 +24,9 @@
         @csrf
         {{-- Honeypot --}}
         <div style="display:none;"><input type="text" name="website" tabindex="-1" autocomplete="off"></div>
+        {{-- Reporter type (anonymous or verified) --}}
+        <input type="hidden" name="reporter_type" id="reporterType" value="anonymous">
+        <input type="hidden" name="verified_phone" id="verifiedPhone" value="">
 
         {{-- App Header --}}
         <div class="bg-red-800 text-white sticky top-0 z-50 safe-top">
@@ -38,13 +41,13 @@
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                 </a>
             </div>
-            {{-- Progress Dots (hidden on landing) --}}
+            {{-- Progress Dots (hidden on landing/choice) --}}
             <div id="progressDots" class="px-4 pb-3 flex items-center justify-center gap-2 hidden">
-                <span class="progress-dot w-2.5 h-2.5 rounded-full bg-white transition-all" data-step="1"></span>
-                <span class="progress-dot w-2 h-2 rounded-full bg-white/40 transition-all" data-step="2"></span>
+                <span class="progress-dot w-2.5 h-2.5 rounded-full bg-white transition-all" data-step="2"></span>
                 <span class="progress-dot w-2 h-2 rounded-full bg-white/40 transition-all" data-step="3"></span>
                 <span class="progress-dot w-2 h-2 rounded-full bg-white/40 transition-all" data-step="4"></span>
                 <span class="progress-dot w-2 h-2 rounded-full bg-white/40 transition-all" data-step="5"></span>
+                <span class="progress-dot w-2 h-2 rounded-full bg-white/40 transition-all" data-step="6"></span>
             </div>
         </div>
 
@@ -107,8 +110,129 @@
                 </div>
             </div>
 
-            {{-- Step 1: What Happened --}}
+            {{-- Step 1: Anonymous or Verified Choice --}}
             <div class="step" data-step="1">
+                <div class="text-center mb-6">
+                    <div class="w-16 h-16 bg-indigo-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                        <svg class="w-8 h-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                    </div>
+                    <h2 class="text-xl font-bold text-gray-900">How would you like to report?</h2>
+                    <p class="text-sm text-gray-500 mt-1">Choose how to identify yourself</p>
+                </div>
+
+                <div class="space-y-4">
+                    {{-- Anonymous Option --}}
+                    <button type="button" id="chooseAnonymous" class="w-full text-left bg-white border-2 border-gray-200 rounded-xl p-5 hover:border-gray-300 hover:bg-gray-50 transition group">
+                        <div class="flex items-start gap-4">
+                            <div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0 group-hover:bg-gray-200 transition">
+                                <svg class="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="font-semibold text-gray-900 text-lg">Stay Anonymous</h3>
+                                <p class="text-sm text-gray-500 mt-1">Report without providing your identity. You'll still get a tracking code.</p>
+                            </div>
+                            <svg class="w-5 h-5 text-gray-400 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                        </div>
+                    </button>
+
+                    {{-- Verified Option --}}
+                    <button type="button" id="chooseVerified" class="w-full text-left bg-white border-2 border-green-200 rounded-xl p-5 hover:border-green-300 hover:bg-green-50 transition group">
+                        <div class="flex items-start gap-4">
+                            <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 group-hover:bg-green-200 transition">
+                                <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="font-semibold text-gray-900 text-lg">Verify with Phone</h3>
+                                <p class="text-sm text-gray-500 mt-1">Quick SMS verification. Helps us follow up and prioritize your report.</p>
+                                <span class="inline-flex items-center gap-1 mt-2 text-xs font-medium text-green-700 bg-green-100 px-2 py-1 rounded-full">
+                                    <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                                    Recommended
+                                </span>
+                            </div>
+                            <svg class="w-5 h-5 text-gray-400 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                        </div>
+                    </button>
+                </div>
+
+                <p class="text-xs text-gray-400 text-center mt-6">Your choice does not affect how we handle your report. All reports are taken seriously.</p>
+            </div>
+
+            {{-- Step 1.5: Phone Input (only for verified) --}}
+            <div class="step" data-step="1.5">
+                <div class="text-center mb-6">
+                    <div class="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                        <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+                    </div>
+                    <h2 class="text-xl font-bold text-gray-900">Enter your phone number</h2>
+                    <p class="text-sm text-gray-500 mt-1">We'll send you a verification code</p>
+                </div>
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Phone Number *</label>
+                        <div class="flex gap-2">
+                            <div class="w-20 px-4 py-3.5 bg-gray-100 border border-gray-200 rounded-xl text-base text-center text-gray-600 font-medium">+231</div>
+                            <input type="tel" id="phoneInput" placeholder="770 000 000" class="flex-1 px-4 py-3.5 bg-white border border-gray-200 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent" autocomplete="tel">
+                        </div>
+                        <p class="text-xs text-gray-400 mt-2">Enter your Liberian mobile number</p>
+                    </div>
+
+                    <div id="phoneError" class="hidden bg-red-50 border border-red-200 rounded-xl p-3">
+                        <p class="text-sm text-red-600" id="phoneErrorText">Please enter a valid phone number</p>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Step 1.6: OTP Verification --}}
+            <div class="step" data-step="1.6">
+                <div class="text-center mb-6">
+                    <div class="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                        <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    </div>
+                    <h2 class="text-xl font-bold text-gray-900">Enter verification code</h2>
+                    <p class="text-sm text-gray-500 mt-1">Sent to <span id="displayPhone" class="font-medium text-gray-700">+231 770 000 000</span></p>
+                </div>
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">6-Digit Code *</label>
+                        <div class="flex justify-center gap-2">
+                            <input type="text" maxlength="1" class="otp-input w-12 h-14 text-center text-2xl font-bold bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent" data-index="0">
+                            <input type="text" maxlength="1" class="otp-input w-12 h-14 text-center text-2xl font-bold bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent" data-index="1">
+                            <input type="text" maxlength="1" class="otp-input w-12 h-14 text-center text-2xl font-bold bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent" data-index="2">
+                            <span class="flex items-center text-gray-300">-</span>
+                            <input type="text" maxlength="1" class="otp-input w-12 h-14 text-center text-2xl font-bold bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent" data-index="3">
+                            <input type="text" maxlength="1" class="otp-input w-12 h-14 text-center text-2xl font-bold bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent" data-index="4">
+                            <input type="text" maxlength="1" class="otp-input w-12 h-14 text-center text-2xl font-bold bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent" data-index="5">
+                        </div>
+                    </div>
+
+                    <div id="otpError" class="hidden bg-red-50 border border-red-200 rounded-xl p-3">
+                        <p class="text-sm text-red-600" id="otpErrorText">Invalid code. Please try again.</p>
+                    </div>
+
+                    <div class="text-center pt-4">
+                        <p class="text-sm text-gray-500">Didn't receive the code?</p>
+                        <button type="button" id="resendOtp" class="text-sm font-medium text-green-600 hover:text-green-700 disabled:text-gray-400 disabled:cursor-not-allowed mt-1" disabled>
+                            Resend code <span id="resendTimer">(60s)</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Step 2: What Happened (was step 1) --}}
+            <div class="step" data-step="2">
+                {{-- Verified badge (shown if phone verified) --}}
+                <div id="verifiedBadge" class="hidden mb-4 bg-green-50 border border-green-200 rounded-xl p-3 flex items-center gap-3">
+                    <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                        <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-green-800">Phone verified</p>
+                        <p class="text-xs text-green-600" id="verifiedPhoneDisplay">+231 770 000 000</p>
+                    </div>
+                </div>
+
                 <div class="text-center mb-6">
                     <div class="w-16 h-16 bg-red-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
                         <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
@@ -142,8 +266,8 @@
                 </div>
             </div>
 
-            {{-- Step 2: Where --}}
-            <div class="step" data-step="2">
+            {{-- Step 3: Where --}}
+            <div class="step" data-step="3">
                 <div class="text-center mb-6">
                     <div class="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
                         <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
@@ -180,8 +304,8 @@
                 </div>
             </div>
 
-            {{-- Step 3: Details --}}
-            <div class="step" data-step="3">
+            {{-- Step 4: Details --}}
+            <div class="step" data-step="4">
                 <div class="text-center mb-6">
                     <div class="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
                         <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
@@ -203,8 +327,8 @@
                 </div>
             </div>
 
-            {{-- Step 4: People Involved --}}
-            <div class="step" data-step="4">
+            {{-- Step 5: People Involved --}}
+            <div class="step" data-step="5">
                 <div class="text-center mb-6">
                     <div class="w-16 h-16 bg-amber-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
                         <svg class="w-8 h-8 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
@@ -240,8 +364,8 @@
                 </div>
             </div>
 
-            {{-- Step 5: Your Info & Submit --}}
-            <div class="step" data-step="5">
+            {{-- Step 6: Your Info & Submit --}}
+            <div class="step" data-step="6">
                 <div class="text-center mb-6">
                     <div class="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
                         <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
@@ -303,6 +427,14 @@
                 <button type="button" id="startBtn" class="flex-1 py-3.5 bg-red-700 text-white font-semibold rounded-xl transition hover:bg-red-800">
                     Get Started
                 </button>
+                <button type="button" id="sendOtpBtn" class="flex-1 py-3.5 bg-green-600 text-white font-semibold rounded-xl transition hover:bg-green-700 hidden">
+                    <span id="sendOtpText">Send Code</span>
+                    <span id="sendOtpLoading" class="hidden">Sending...</span>
+                </button>
+                <button type="button" id="verifyOtpBtn" class="flex-1 py-3.5 bg-green-600 text-white font-semibold rounded-xl transition hover:bg-green-700 hidden">
+                    <span id="verifyOtpText">Verify</span>
+                    <span id="verifyOtpLoading" class="hidden">Verifying...</span>
+                </button>
                 <button type="button" id="nextBtn" class="flex-1 py-3.5 bg-red-700 text-white font-semibold rounded-xl transition hover:bg-red-800 hidden">
                     Next
                 </button>
@@ -342,13 +474,17 @@
 
     // Step Navigation
     let currentStep = 0;
-    const totalSteps = 5;
+    let reporterType = 'anonymous'; // 'anonymous' or 'verified'
+    let verifiedPhone = '';
+    const totalSteps = 6;
     const steps = document.querySelectorAll('.step');
     const dots = document.querySelectorAll('.progress-dot');
     const progressDots = document.getElementById('progressDots');
     const prevBtn = document.getElementById('prevBtn');
     const nextBtn = document.getElementById('nextBtn');
     const startBtn = document.getElementById('startBtn');
+    const sendOtpBtn = document.getElementById('sendOtpBtn');
+    const verifyOtpBtn = document.getElementById('verifyOtpBtn');
     const submitBtn = document.getElementById('submitBtn');
     const backBtn = document.getElementById('backBtn');
     const stepTitle = document.getElementById('stepTitle');
@@ -357,27 +493,31 @@
 
     const stepTitles = {
         0: 'Report Incident',
-        1: 'What Happened?',
-        2: 'Location',
-        3: 'Details',
-        4: 'People Involved',
-        5: 'Your Info'
+        1: 'Identify Yourself',
+        1.5: 'Phone Number',
+        1.6: 'Verification',
+        2: 'What Happened?',
+        3: 'Location',
+        4: 'Details',
+        5: 'People Involved',
+        6: 'Your Info'
     };
 
     function updateUI() {
         // Update steps
         steps.forEach(step => {
-            const stepNum = parseInt(step.dataset.step);
+            const stepNum = parseFloat(step.dataset.step);
             step.classList.remove('active', 'exiting');
             if (stepNum === currentStep) {
                 step.classList.add('active');
             }
         });
 
-        // Show/hide progress dots (hidden on landing)
-        progressDots.classList.toggle('hidden', currentStep === 0);
+        // Show/hide progress dots (hidden on landing, choice, phone, otp)
+        const isFormStep = currentStep >= 2;
+        progressDots.classList.toggle('hidden', !isFormStep);
 
-        // Update dots
+        // Update dots (only for steps 2-6)
         dots.forEach(dot => {
             const dotStep = parseInt(dot.dataset.step);
             if (dotStep === currentStep) {
@@ -392,27 +532,39 @@
             }
         });
 
-        // Update buttons
+        // Update buttons based on current step
         const isLanding = currentStep === 0;
+        const isChoice = currentStep === 1;
+        const isPhoneInput = currentStep === 1.5;
+        const isOtpVerify = currentStep === 1.6;
         const isLast = currentStep === totalSteps;
         
         startBtn.classList.toggle('hidden', !isLanding);
-        prevBtn.classList.toggle('hidden', currentStep <= 1);
+        sendOtpBtn.classList.toggle('hidden', !isPhoneInput);
+        verifyOtpBtn.classList.toggle('hidden', !isOtpVerify);
+        prevBtn.classList.toggle('hidden', currentStep < 2 || currentStep === 2);
         backBtn.classList.toggle('hidden', currentStep <= 0);
-        nextBtn.classList.toggle('hidden', isLanding || isLast);
+        nextBtn.classList.toggle('hidden', isLanding || isChoice || isPhoneInput || isOtpVerify || isLast);
         submitBtn.classList.toggle('hidden', !isLast);
         
         // Track link only on landing
         trackLink.classList.toggle('hidden', !isLanding);
-        footerText.classList.toggle('hidden', isLanding);
+        footerText.classList.toggle('hidden', isLanding || isChoice);
 
         // Update title
         stepTitle.textContent = stepTitles[currentStep] || 'Report Incident';
+
+        // Show verified badge on step 2 if verified
+        const verifiedBadge = document.getElementById('verifiedBadge');
+        if (verifiedBadge) {
+            verifiedBadge.classList.toggle('hidden', reporterType !== 'verified' || currentStep !== 2);
+        }
     }
 
     function validateStep(step) {
-        if (step === 0) return true; // Landing page has no validation
+        if (step === 0 || step === 1) return true;
         const currentStepEl = document.querySelector(`.step[data-step="${step}"]`);
+        if (!currentStepEl) return true;
         const requiredFields = currentStepEl.querySelectorAll('[required]');
         let valid = true;
         
@@ -429,10 +581,9 @@
         return valid;
     }
 
+    // Next button
     nextBtn.addEventListener('click', () => {
-        if (!validateStep(currentStep)) {
-            return;
-        }
+        if (!validateStep(currentStep)) return;
         if (currentStep < totalSteps) {
             currentStep++;
             updateUI();
@@ -440,25 +591,225 @@
         }
     });
 
+    // Start button (landing → choice)
     startBtn.addEventListener('click', () => {
         currentStep = 1;
         updateUI();
         window.scrollTo({ top: 0, behavior: 'smooth' });
     });
 
+    // Anonymous choice
+    document.getElementById('chooseAnonymous').addEventListener('click', () => {
+        reporterType = 'anonymous';
+        document.getElementById('reporterType').value = 'anonymous';
+        currentStep = 2;
+        updateUI();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    // Verified choice
+    document.getElementById('chooseVerified').addEventListener('click', () => {
+        reporterType = 'verified';
+        document.getElementById('reporterType').value = 'verified';
+        currentStep = 1.5;
+        updateUI();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    // Back button (prev for form steps)
     prevBtn.addEventListener('click', () => {
-        if (currentStep > 1) {
+        if (currentStep > 2) {
             currentStep--;
             updateUI();
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     });
 
+    // Header back button
     backBtn.addEventListener('click', () => {
-        if (currentStep > 0) {
+        if (currentStep === 1.5) {
+            currentStep = 1;
+        } else if (currentStep === 1.6) {
+            currentStep = 1.5;
+        } else if (currentStep === 2) {
+            currentStep = 1;
+        } else if (currentStep > 0) {
             currentStep--;
-            updateUI();
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        updateUI();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    // Phone input & OTP
+    const phoneInput = document.getElementById('phoneInput');
+    const phoneError = document.getElementById('phoneError');
+    const phoneErrorText = document.getElementById('phoneErrorText');
+    const otpInputs = document.querySelectorAll('.otp-input');
+    const otpError = document.getElementById('otpError');
+    const otpErrorText = document.getElementById('otpErrorText');
+    const displayPhone = document.getElementById('displayPhone');
+    const resendOtp = document.getElementById('resendOtp');
+    const resendTimer = document.getElementById('resendTimer');
+    let resendCountdown = 60;
+    let resendInterval;
+
+    // Send OTP
+    sendOtpBtn.addEventListener('click', async () => {
+        const phone = phoneInput.value.replace(/\D/g, '');
+        if (phone.length < 7) {
+            phoneError.classList.remove('hidden');
+            phoneErrorText.textContent = 'Please enter a valid phone number';
+            return;
+        }
+        phoneError.classList.add('hidden');
+        
+        // Show loading
+        document.getElementById('sendOtpText').classList.add('hidden');
+        document.getElementById('sendOtpLoading').classList.remove('hidden');
+        sendOtpBtn.disabled = true;
+
+        try {
+            const response = await fetch('{{ route("sir.public.otp.send") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ phone: '+231' + phone })
+            });
+            const data = await response.json();
+            
+            if (data.success) {
+                verifiedPhone = '+231' + phone;
+                displayPhone.textContent = verifiedPhone;
+                currentStep = 1.6;
+                updateUI();
+                startResendTimer();
+                otpInputs[0].focus();
+            } else {
+                phoneError.classList.remove('hidden');
+                phoneErrorText.textContent = data.message || 'Failed to send code. Try again.';
+            }
+        } catch (e) {
+            phoneError.classList.remove('hidden');
+            phoneErrorText.textContent = 'Network error. Please try again.';
+        }
+
+        // Reset button
+        document.getElementById('sendOtpText').classList.remove('hidden');
+        document.getElementById('sendOtpLoading').classList.add('hidden');
+        sendOtpBtn.disabled = false;
+    });
+
+    // OTP input handling
+    otpInputs.forEach((input, index) => {
+        input.addEventListener('input', (e) => {
+            const value = e.target.value;
+            if (value && index < otpInputs.length - 1) {
+                otpInputs[index + 1].focus();
+            }
+            // Auto-verify when all filled
+            const code = Array.from(otpInputs).map(i => i.value).join('');
+            if (code.length === 6) {
+                verifyOtpBtn.click();
+            }
+        });
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Backspace' && !input.value && index > 0) {
+                otpInputs[index - 1].focus();
+            }
+        });
+        // Allow paste
+        input.addEventListener('paste', (e) => {
+            e.preventDefault();
+            const paste = (e.clipboardData || window.clipboardData).getData('text');
+            const digits = paste.replace(/\D/g, '').slice(0, 6);
+            digits.split('').forEach((d, i) => {
+                if (otpInputs[i]) otpInputs[i].value = d;
+            });
+            if (digits.length === 6) verifyOtpBtn.click();
+        });
+    });
+
+    // Verify OTP
+    verifyOtpBtn.addEventListener('click', async () => {
+        const code = Array.from(otpInputs).map(i => i.value).join('');
+        if (code.length !== 6) {
+            otpError.classList.remove('hidden');
+            otpErrorText.textContent = 'Please enter the complete 6-digit code';
+            return;
+        }
+        otpError.classList.add('hidden');
+
+        document.getElementById('verifyOtpText').classList.add('hidden');
+        document.getElementById('verifyOtpLoading').classList.remove('hidden');
+        verifyOtpBtn.disabled = true;
+
+        try {
+            const response = await fetch('{{ route("sir.public.otp.verify") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ phone: verifiedPhone, code: code })
+            });
+            const data = await response.json();
+
+            if (data.success) {
+                // Success! Store verified phone and proceed
+                document.getElementById('verifiedPhone').value = verifiedPhone;
+                document.getElementById('verifiedPhoneDisplay').textContent = verifiedPhone;
+                
+                // Pre-fill phone in step 6
+                const phoneField = document.querySelector('input[name="public_reporter_phone"]');
+                if (phoneField) {
+                    phoneField.value = verifiedPhone;
+                    phoneField.readOnly = true;
+                    phoneField.classList.add('bg-gray-100');
+                }
+                
+                currentStep = 2;
+                updateUI();
+                clearInterval(resendInterval);
+            } else {
+                otpError.classList.remove('hidden');
+                otpErrorText.textContent = data.message || 'Invalid code. Please try again.';
+                otpInputs.forEach(i => i.value = '');
+                otpInputs[0].focus();
+            }
+        } catch (e) {
+            otpError.classList.remove('hidden');
+            otpErrorText.textContent = 'Network error. Please try again.';
+        }
+
+        document.getElementById('verifyOtpText').classList.remove('hidden');
+        document.getElementById('verifyOtpLoading').classList.add('hidden');
+        verifyOtpBtn.disabled = false;
+    });
+
+    // Resend timer
+    function startResendTimer() {
+        resendCountdown = 60;
+        resendOtp.disabled = true;
+        resendTimer.textContent = `(${resendCountdown}s)`;
+        
+        resendInterval = setInterval(() => {
+            resendCountdown--;
+            if (resendCountdown <= 0) {
+                clearInterval(resendInterval);
+                resendOtp.disabled = false;
+                resendTimer.textContent = '';
+            } else {
+                resendTimer.textContent = `(${resendCountdown}s)`;
+            }
+        }, 1000);
+    }
+
+    // Resend OTP
+    resendOtp.addEventListener('click', () => {
+        if (!resendOtp.disabled) {
+            sendOtpBtn.click();
         }
     });
 

@@ -54,17 +54,27 @@ class PublicIncidentController extends Controller
             'risk_level' => ['nullable', Rule::in(array_keys(Incident::RISK_LEVELS))],
             'immediate_action_required' => 'boolean',
             'files.*' => 'nullable|file|max:5120', // 5MB limit for public
+            'reporter_type' => 'nullable|string|in:anonymous,verified',
+            'verified_phone' => 'nullable|string|max:50',
         ]);
 
         $trackingCode = Incident::generateTrackingCode();
+
+        // Determine priority: verified reporters may get slightly higher default
+        $priority = 'medium';
+        $reporterType = $request->input('reporter_type', 'anonymous');
+        $verifiedPhone = $request->input('verified_phone');
+        
+        // If phone was verified through OTP, use that phone
+        $reporterPhone = $verifiedPhone ?: ($validated['public_reporter_phone'] ?? null);
 
         $incident = Incident::create([
             'incident_number' => Incident::generateIncidentNumber('public'),
             'type' => $validated['type'],
             'category' => $validated['category'],
-            'source' => Incident::SOURCE_PUBLIC,
+            'source' => $reporterType === 'verified' ? Incident::SOURCE_PUBLIC : Incident::SOURCE_PUBLIC,
             'status' => Incident::STATUS_REPORTED,
-            'priority' => 'medium', // Default for public reports — staff can escalate
+            'priority' => $priority,
             'title' => $validated['title'],
             'description' => $validated['description'],
             'incident_date' => $validated['incident_date'],
@@ -81,9 +91,10 @@ class PublicIncidentController extends Controller
             'perpetrator_type' => $validated['perpetrator_type'] ?? null,
             'perpetrator_description' => $validated['perpetrator_description'] ?? null,
             'public_reporter_name' => $validated['public_reporter_name'] ?? null,
-            'public_reporter_phone' => $validated['public_reporter_phone'] ?? null,
+            'public_reporter_phone' => $reporterPhone,
             'public_reporter_email' => $validated['public_reporter_email'] ?? null,
             'public_reporter_relationship' => $validated['public_reporter_relationship'] ?? null,
+            'public_reporter_verified' => $reporterType === 'verified',
             'tracking_code' => $trackingCode,
             'is_confidential' => $request->boolean('is_confidential', true),
             'risk_level' => $validated['risk_level'] ?? null,
@@ -145,6 +156,102 @@ class PublicIncidentController extends Controller
         return view('sir.public.track', [
             'incident' => $incident,
             'trackingCode' => $request->tracking_code,
+        ]);
+    }
+
+    /**
+     * Send OTP to phone number for verification.
+     */
+    public function sendOtp(Request $request)
+    {
+        $request->validate([
+            'phone' => 'required|string|max:20',
+        ]);
+
+        $phone = preg_replace('/\D/', '', $request->phone);
+        
+        // Generate 6-digit OTP
+        $otp = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+        
+        // Store OTP in session (expires in 10 minutes)
+        session([
+            'otp_code' => $otp,
+            'otp_phone' => $phone,
+            'otp_expires' => now()->addMinutes(10),
+        ]);
+
+        // In production, integrate with SMS gateway (e.g., Twilio, Africa's Talking)
+        // For now, we'll simulate success. In dev, you can check logs.
+        \Log::info("OTP for {$phone}: {$otp}");
+
+        // TODO: Send actual SMS
+        // Example with Twilio:
+        // $twilio = new \Twilio\Rest\Client(config('services.twilio.sid'), config('services.twilio.token'));
+        // $twilio->messages->create($request->phone, [
+        //     'from' => config('services.twilio.from'),
+        //     'body' => "Your MOE incident report verification code is: {$otp}"
+        // ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Verification code sent',
+            // In development, return the OTP for testing
+            'debug_otp' => app()->environment('local') ? $otp : null,
+        ]);
+    }
+
+    /**
+     * Verify OTP code.
+     */
+    public function verifyOtp(Request $request)
+    {
+        $request->validate([
+            'phone' => 'required|string|max:20',
+            'code' => 'required|string|size:6',
+        ]);
+
+        $phone = preg_replace('/\D/', '', $request->phone);
+        $storedOtp = session('otp_code');
+        $storedPhone = session('otp_phone');
+        $expires = session('otp_expires');
+
+        // Validate OTP
+        if (!$storedOtp || !$storedPhone || !$expires) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No verification code found. Please request a new one.',
+            ]);
+        }
+
+        if (now()->isAfter($expires)) {
+            session()->forget(['otp_code', 'otp_phone', 'otp_expires']);
+            return response()->json([
+                'success' => false,
+                'message' => 'Code expired. Please request a new one.',
+            ]);
+        }
+
+        if ($storedPhone !== $phone) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Phone number mismatch.',
+            ]);
+        }
+
+        if ($storedOtp !== $request->code) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid code. Please try again.',
+            ]);
+        }
+
+        // OTP verified! Clear session and mark as verified
+        session()->forget(['otp_code', 'otp_phone', 'otp_expires']);
+        session(['verified_phone' => $request->phone]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Phone verified successfully',
         ]);
     }
 }

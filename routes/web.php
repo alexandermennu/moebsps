@@ -48,6 +48,10 @@ Route::prefix('sir/public')->name('sir.public.')->middleware('throttle:10,1')->g
     Route::get('/confirm', [PublicIncidentController::class, 'confirm'])->name('confirm');
     Route::get('/track', [PublicIncidentController::class, 'trackForm'])->name('track.form');
     Route::post('/track', [PublicIncidentController::class, 'track'])->name('track');
+    
+    // OTP verification
+    Route::post('/otp/send', [PublicIncidentController::class, 'sendOtp'])->name('otp.send');
+    Route::post('/otp/verify', [PublicIncidentController::class, 'verifyOtp'])->name('otp.verify');
 });
 
 /*

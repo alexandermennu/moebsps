@@ -18,6 +18,7 @@ use Illuminate\Support\Str;
     'victim_contact', 'victim_parent_guardian', 'victim_parent_contact',
     'perpetrator_name', 'perpetrator_type', 'perpetrator_description',
     'public_reporter_name', 'public_reporter_phone', 'public_reporter_email', 'public_reporter_relationship',
+    'public_reporter_verified',
     'tracking_code',
     'reported_by', 'assigned_to', 'division_id', 'is_confidential',
     'resolution', 'resolution_date', 'referral_agency', 'referral_details',
