@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\SrgbvCase;
+use App\Models\Incident;
 use App\Models\User;
 use Illuminate\Http\Request;
 
@@ -18,10 +18,10 @@ class CasesReportController extends Controller
             || $user->isCounselor()
             || (in_array($user->role, [User::ROLE_SUPERVISOR, User::ROLE_COORDINATOR]) && $user->division && $user->division->code === 'CGPC');
 
-        // Quick counts
-        $srgbvOpenCount = $canAccessSrgbv ? SrgbvCase::open()->count() : 0;
-        $srgbvTotalCount = $canAccessSrgbv ? SrgbvCase::count() : 0;
-        $srgbvCriticalCount = $canAccessSrgbv ? SrgbvCase::critical()->open()->count() : 0;
+        // Quick counts using Incident model (migrated from SrgbvCase)
+        $srgbvOpenCount = $canAccessSrgbv ? Incident::srgbv()->open()->count() : 0;
+        $srgbvTotalCount = $canAccessSrgbv ? Incident::srgbv()->count() : 0;
+        $srgbvCriticalCount = $canAccessSrgbv ? Incident::srgbv()->critical()->open()->count() : 0;
 
         return view('cases.report', [
             'canAccessSrgbv' => $canAccessSrgbv,

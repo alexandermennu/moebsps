@@ -14,8 +14,6 @@ use App\Http\Controllers\Admin\DivisionController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\StaffApprovalController;
 use App\Http\Controllers\StaffController;
-use App\Http\Controllers\SrgbvCaseController;
-use App\Http\Controllers\SrgbvDashboardController;
 use App\Http\Controllers\CasesReportController;
 use App\Http\Controllers\TrackedActivityController;
 use App\Http\Controllers\ProfileController;
@@ -129,20 +127,16 @@ Route::middleware(['auth', 'active'])->group(function () {
     // Cases Report Landing (legacy — redirects to SIR)
     Route::get('/cases-report', [CasesReportController::class, 'index'])->name('cases-report');
 
-    // SRGBV Case Management (legacy — kept for backward compatibility)
+    // SRGBV Legacy Redirects → SIR System
     Route::prefix('srgbv')->name('srgbv.')->group(function () {
-        Route::get('/dashboard', [SrgbvDashboardController::class, 'index'])->name('dashboard');
-        Route::get('/cases', [SrgbvCaseController::class, 'index'])->name('cases.index');
-        Route::get('/cases/create', [SrgbvCaseController::class, 'create'])->name('cases.create');
-        Route::post('/cases', [SrgbvCaseController::class, 'store'])->name('cases.store');
-        Route::get('/cases/{srgbvCase}', [SrgbvCaseController::class, 'show'])->name('cases.show');
-        Route::get('/cases/{srgbvCase}/edit', [SrgbvCaseController::class, 'edit'])->name('cases.edit');
-        Route::put('/cases/{srgbvCase}', [SrgbvCaseController::class, 'update'])->name('cases.update');
-        Route::post('/cases/{srgbvCase}/notes', [SrgbvCaseController::class, 'addNote'])->name('cases.notes');
-        Route::post('/cases/{srgbvCase}/files', [SrgbvCaseController::class, 'uploadFiles'])->name('cases.files');
-        Route::delete('/cases/{srgbvCase}/files/{file}', [SrgbvCaseController::class, 'deleteFile'])->name('cases.files.delete');
-        Route::patch('/cases/{srgbvCase}/status', [SrgbvCaseController::class, 'updateStatus'])->name('cases.status');
-        Route::delete('/cases/{srgbvCase}', [SrgbvCaseController::class, 'destroy'])->name('cases.destroy');
+        Route::get('/dashboard', fn() => redirect()->route('sir.srgbv.dashboard'))->name('dashboard');
+        Route::get('/cases', fn() => redirect()->route('sir.incidents.index', ['type' => 'srgbv']))->name('cases.index');
+        Route::get('/cases/create', fn() => redirect()->route('sir.incidents.create', ['type' => 'srgbv']))->name('cases.create');
+        Route::get('/cases/{legacyId}', function ($legacyId) {
+            $incident = \App\Models\Incident::where('legacy_srgbv_id', $legacyId)->first();
+            if ($incident) return redirect()->route('sir.incidents.show', $incident);
+            return redirect()->route('sir.incidents.index', ['type' => 'srgbv'])->with('error', 'Case not found.');
+        })->name('cases.show');
     });
 
     // ── SIR (School Incident Reporter) ──────────────────────
