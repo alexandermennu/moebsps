@@ -38,8 +38,8 @@
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                 </a>
             </div>
-            {{-- Progress Dots --}}
-            <div class="px-4 pb-3 flex items-center justify-center gap-2">
+            {{-- Progress Dots (hidden on landing) --}}
+            <div id="progressDots" class="px-4 pb-3 flex items-center justify-center gap-2 hidden">
                 <span class="progress-dot w-2.5 h-2.5 rounded-full bg-white transition-all" data-step="1"></span>
                 <span class="progress-dot w-2 h-2 rounded-full bg-white/40 transition-all" data-step="2"></span>
                 <span class="progress-dot w-2 h-2 rounded-full bg-white/40 transition-all" data-step="3"></span>
@@ -61,8 +61,54 @@
         {{-- Steps Container --}}
         <div class="flex-1 overflow-y-auto px-4 py-6">
             
+            {{-- Landing Page --}}
+            <div class="step active" data-step="0">
+                <div class="text-center pt-8">
+                    {{-- Logo/Icon --}}
+                    <div class="w-24 h-24 bg-gradient-to-br from-red-600 to-red-800 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+                        <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                    </div>
+                    
+                    <h2 class="text-2xl font-bold text-gray-900 mb-2">Report a School Incident</h2>
+                    <p class="text-gray-500 mb-8">Ministry of Education · Republic of Liberia</p>
+
+                    {{-- Features --}}
+                    <div class="space-y-4 text-left max-w-sm mx-auto mb-8">
+                        <div class="flex items-start gap-4 bg-white rounded-xl p-4 shadow-sm">
+                            <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-gray-900">Safe & Confidential</h4>
+                                <p class="text-sm text-gray-500">Your report is protected. You may remain anonymous.</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start gap-4 bg-white rounded-xl p-4 shadow-sm">
+                            <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-gray-900">Track Your Report</h4>
+                                <p class="text-sm text-gray-500">Get a tracking code to follow up on your case.</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start gap-4 bg-white rounded-xl p-4 shadow-sm">
+                            <div class="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-gray-900">Quick & Easy</h4>
+                                <p class="text-sm text-gray-500">Takes only 2-3 minutes to complete.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             {{-- Step 1: What Happened --}}
-            <div class="step active" data-step="1">
+            <div class="step" data-step="1">
                 <div class="text-center mb-6">
                     <div class="w-16 h-16 bg-red-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
                         <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
@@ -254,14 +300,21 @@
                 <button type="button" id="prevBtn" class="flex-1 py-3.5 bg-gray-100 text-gray-700 font-semibold rounded-xl transition hover:bg-gray-200 hidden">
                     Back
                 </button>
-                <button type="button" id="nextBtn" class="flex-1 py-3.5 bg-red-700 text-white font-semibold rounded-xl transition hover:bg-red-800">
+                <button type="button" id="startBtn" class="flex-1 py-3.5 bg-red-700 text-white font-semibold rounded-xl transition hover:bg-red-800">
+                    Get Started
+                </button>
+                <button type="button" id="nextBtn" class="flex-1 py-3.5 bg-red-700 text-white font-semibold rounded-xl transition hover:bg-red-800 hidden">
                     Next
                 </button>
                 <button type="submit" id="submitBtn" class="flex-1 py-3.5 bg-green-600 text-white font-semibold rounded-xl transition hover:bg-green-700 hidden">
                     Submit Report
                 </button>
             </div>
-            <p class="text-xs text-gray-400 text-center mt-3">Ministry of Education · Republic of Liberia</p>
+            {{-- Track link on landing only --}}
+            <div id="trackLink" class="mt-3">
+                <a href="{{ route('sir.public.track.form') }}" class="block text-center text-sm text-blue-600 hover:underline">Already submitted a report? Track it here →</a>
+            </div>
+            <p id="footerText" class="text-xs text-gray-400 text-center mt-3 hidden">Ministry of Education · Republic of Liberia</p>
         </div>
     </form>
 
@@ -288,17 +341,22 @@
     if (typeSelect.value) updateCategories();
 
     // Step Navigation
-    let currentStep = 1;
+    let currentStep = 0;
     const totalSteps = 5;
     const steps = document.querySelectorAll('.step');
     const dots = document.querySelectorAll('.progress-dot');
+    const progressDots = document.getElementById('progressDots');
     const prevBtn = document.getElementById('prevBtn');
     const nextBtn = document.getElementById('nextBtn');
+    const startBtn = document.getElementById('startBtn');
     const submitBtn = document.getElementById('submitBtn');
     const backBtn = document.getElementById('backBtn');
     const stepTitle = document.getElementById('stepTitle');
+    const trackLink = document.getElementById('trackLink');
+    const footerText = document.getElementById('footerText');
 
     const stepTitles = {
+        0: 'Report Incident',
         1: 'What Happened?',
         2: 'Location',
         3: 'Details',
@@ -316,6 +374,9 @@
             }
         });
 
+        // Show/hide progress dots (hidden on landing)
+        progressDots.classList.toggle('hidden', currentStep === 0);
+
         // Update dots
         dots.forEach(dot => {
             const dotStep = parseInt(dot.dataset.step);
@@ -332,16 +393,25 @@
         });
 
         // Update buttons
-        prevBtn.classList.toggle('hidden', currentStep === 1);
-        backBtn.classList.toggle('hidden', currentStep === 1);
-        nextBtn.classList.toggle('hidden', currentStep === totalSteps);
-        submitBtn.classList.toggle('hidden', currentStep !== totalSteps);
+        const isLanding = currentStep === 0;
+        const isLast = currentStep === totalSteps;
+        
+        startBtn.classList.toggle('hidden', !isLanding);
+        prevBtn.classList.toggle('hidden', currentStep <= 1);
+        backBtn.classList.toggle('hidden', currentStep <= 0);
+        nextBtn.classList.toggle('hidden', isLanding || isLast);
+        submitBtn.classList.toggle('hidden', !isLast);
+        
+        // Track link only on landing
+        trackLink.classList.toggle('hidden', !isLanding);
+        footerText.classList.toggle('hidden', isLanding);
 
         // Update title
         stepTitle.textContent = stepTitles[currentStep] || 'Report Incident';
     }
 
     function validateStep(step) {
+        if (step === 0) return true; // Landing page has no validation
         const currentStepEl = document.querySelector(`.step[data-step="${step}"]`);
         const requiredFields = currentStepEl.querySelectorAll('[required]');
         let valid = true;
@@ -370,6 +440,12 @@
         }
     });
 
+    startBtn.addEventListener('click', () => {
+        currentStep = 1;
+        updateUI();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
     prevBtn.addEventListener('click', () => {
         if (currentStep > 1) {
             currentStep--;
@@ -379,7 +455,7 @@
     });
 
     backBtn.addEventListener('click', () => {
-        if (currentStep > 1) {
+        if (currentStep > 0) {
             currentStep--;
             updateUI();
             window.scrollTo({ top: 0, behavior: 'smooth' });
