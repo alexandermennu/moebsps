@@ -130,13 +130,6 @@ class SirDashboardController extends Controller
             ->pluck('total', 'month')
             ->toArray();
 
-        // Recent SRGBV incidents
-        $recentIncidents = Incident::srgbv()
-            ->with(['reporter', 'assignee'])
-            ->latest()
-            ->take(8)
-            ->get();
-
         // Follow-up due
         $followUpIncidents = Incident::srgbv()
             ->requiringFollowUp()
@@ -179,6 +172,44 @@ class SirDashboardController extends Controller
             ->groupBy('victim_gender')
             ->pluck('total', 'victim_gender')
             ->toArray();
+
+        // Build filtered query for cases list
+        $casesQuery = Incident::srgbv()->with(['reporter', 'assignee']);
+
+        // Apply filters
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $casesQuery->where(function ($q) use ($search) {
+                $q->where('incident_number', 'like', "%{$search}%")
+                  ->orWhere('title', 'like', "%{$search}%")
+                  ->orWhere('school_name', 'like', "%{$search}%")
+                  ->orWhere('victim_name', 'like', "%{$search}%")
+                  ->orWhere('perpetrator_name', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('source')) {
+            $casesQuery->where('source', $request->source);
+        }
+
+        if ($request->filled('status')) {
+            $casesQuery->where('status', $request->status);
+        }
+
+        if ($request->filled('priority')) {
+            $casesQuery->where('priority', $request->priority);
+        }
+
+        if ($request->filled('date_from')) {
+            $casesQuery->whereDate('created_at', '>=', $request->date_from);
+        }
+
+        if ($request->filled('date_to')) {
+            $casesQuery->whereDate('created_at', '<=', $request->date_to);
+        }
+
+        // Paginate results
+        $recentIncidents = $casesQuery->latest()->paginate(15)->withQueryString();
 
         return view('sir.srgbv-dashboard', [
             'user' => $user,
@@ -272,13 +303,6 @@ class SirDashboardController extends Controller
             ->pluck('total', 'month')
             ->toArray();
 
-        // Recent
-        $recentIncidents = Incident::where('type', '!=', Incident::TYPE_SRGBV)
-            ->with(['reporter', 'assignee'])
-            ->latest()
-            ->take(8)
-            ->get();
-
         // Follow-up due
         $followUpIncidents = Incident::where('type', '!=', Incident::TYPE_SRGBV)
             ->where('follow_up_required', true)
@@ -319,6 +343,42 @@ class SirDashboardController extends Controller
             ->whereNotNull('resolution_date')
             ->selectRaw("$avgDaysExpr as avg_days")
             ->value('avg_days');
+
+        // Build filtered query for incidents list
+        $incidentsQuery = Incident::where('type', '!=', Incident::TYPE_SRGBV)->with(['reporter', 'assignee']);
+
+        // Apply filters
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $incidentsQuery->where(function ($q) use ($search) {
+                $q->where('incident_number', 'like', "%{$search}%")
+                  ->orWhere('title', 'like', "%{$search}%")
+                  ->orWhere('school_name', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('type')) {
+            $incidentsQuery->where('type', $request->type);
+        }
+
+        if ($request->filled('status')) {
+            $incidentsQuery->where('status', $request->status);
+        }
+
+        if ($request->filled('priority')) {
+            $incidentsQuery->where('priority', $request->priority);
+        }
+
+        if ($request->filled('date_from')) {
+            $incidentsQuery->whereDate('created_at', '>=', $request->date_from);
+        }
+
+        if ($request->filled('date_to')) {
+            $incidentsQuery->whereDate('created_at', '<=', $request->date_to);
+        }
+
+        // Paginate results
+        $recentIncidents = $incidentsQuery->latest()->paginate(15)->withQueryString();
 
         return view('sir.other-dashboard', [
             'user' => $user,
