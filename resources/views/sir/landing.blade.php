@@ -65,7 +65,7 @@
                 </div>
                 
                 {{-- Action Button --}}
-                <a href="{{ route('sir.srgbv.cases.index') }}" class="flex items-center justify-center gap-2 w-full bg-red-800 hover:bg-red-900 text-white font-medium py-2.5 px-4 rounded-lg text-sm transition">
+                <a href="{{ route('sir.srgbv.dashboard') }}" class="flex items-center justify-center gap-2 w-full bg-red-800 hover:bg-red-900 text-white font-medium py-2.5 px-4 rounded-lg text-sm transition">
                     View Cases
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
                 </a>
@@ -143,7 +143,7 @@
                 </div>
                 
                 {{-- Action Button --}}
-                <a href="{{ route('sir.other.incidents.index') }}" class="flex items-center justify-center gap-2 w-full bg-blue-800 hover:bg-blue-900 text-white font-medium py-2.5 px-4 rounded-lg text-sm transition">
+                <a href="{{ route('sir.other.dashboard') }}" class="flex items-center justify-center gap-2 w-full bg-blue-800 hover:bg-blue-900 text-white font-medium py-2.5 px-4 rounded-lg text-sm transition">
                     View Reports
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
                 </a>
