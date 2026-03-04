@@ -72,14 +72,23 @@ class IncidentController extends Controller
     public function index(Request $request)
     {
         $user = $request->user();
-        if (!$user->canAccessSir()) abort(403);
-
-        $module = $request->query('module'); // 'srgbv', 'other', or null (all accessible)
+        $module = $request->route('module') ?? $request->query('module'); // Get from route defaults or query
+        
+        // Check module-specific access
+        if ($module === 'srgbv' && !$user->canAccessSrgbv()) abort(403);
+        if ($module === 'other' && !$user->canAccessOtherIncidents()) abort(403);
+        if (!$module && !$user->canAccessSir()) abort(403);
 
         $query = Incident::with(['reporter', 'assignee', 'division']);
 
-        // Scope by module access
-        $this->scopeByAccess($query, $user, $module);
+        // Scope by module
+        if ($module === 'srgbv') {
+            $query->where('type', Incident::TYPE_SRGBV);
+        } elseif ($module === 'other') {
+            $query->where('type', '!=', Incident::TYPE_SRGBV);
+        } else {
+            $this->scopeByAccess($query, $user, null);
+        }
 
         // Scope for non-manager users
         if (!$user->hasFullAccess() && !($user->isDirector() && $user->division && in_array($user->division->code, ['CGPC', 'CEDP']))) {
@@ -91,7 +100,7 @@ class IncidentController extends Controller
         }
 
         // Filters
-        if ($request->filled('type')) {
+        if ($request->filled('type') && $module !== 'srgbv') {
             $query->where('type', $request->type);
         }
         if ($request->filled('source')) {
@@ -125,11 +134,30 @@ class IncidentController extends Controller
 
         $incidents = $query->latest()->paginate(15)->withQueryString();
 
+        // Calculate stats for the current module
+        $statsQuery = Incident::query();
+        if ($module === 'srgbv') {
+            $statsQuery->where('type', Incident::TYPE_SRGBV);
+        } elseif ($module === 'other') {
+            $statsQuery->where('type', '!=', Incident::TYPE_SRGBV);
+        } else {
+            $this->scopeByAccess($statsQuery, $user, null);
+        }
+
+        $openCount = (clone $statsQuery)->open()->count();
+        $criticalCount = (clone $statsQuery)->critical()->open()->count();
+        $closedCount = (clone $statsQuery)->closed()->count();
+        $publicCount = (clone $statsQuery)->publicReports()->count();
+
         return view('sir.incidents.index', [
             'incidents' => $incidents,
             'user' => $user,
-            'module' => $module,
+            'module' => $module ?? 'other', // Default to 'other' for legacy routes
             'canManage' => $this->canManageIncidents($user),
+            'openCount' => $openCount,
+            'criticalCount' => $criticalCount,
+            'closedCount' => $closedCount,
+            'publicCount' => $publicCount,
         ]);
     }
 
@@ -139,7 +167,12 @@ class IncidentController extends Controller
     public function create(Request $request)
     {
         $user = auth()->user();
-        if (!$user->canAccessSir()) abort(403);
+        $module = $request->route('module') ?? $request->query('module');
+        
+        // Check module-specific access
+        if ($module === 'srgbv' && !$user->canAccessSrgbv()) abort(403);
+        if ($module === 'other' && !$user->canAccessOtherIncidents()) abort(403);
+        if (!$module && !$user->canAccessSir()) abort(403);
 
         $counselors = User::where('role', User::ROLE_COUNSELOR)
             ->where('is_active', true)
@@ -148,14 +181,15 @@ class IncidentController extends Controller
 
         $cgpcDivision = Division::where('code', 'CGPC')->first();
 
-        // Pre-select type if passed via query string
-        $selectedType = $request->query('type', null);
+        // Pre-select type based on module
+        $selectedType = $module === 'srgbv' ? Incident::TYPE_SRGBV : $request->query('type', null);
 
         return view('sir.incidents.create', [
             'user' => $user,
             'counselors' => $counselors,
             'cgpcDivision' => $cgpcDivision,
             'selectedType' => $selectedType,
+            'module' => $module,
         ]);
     }
 
@@ -263,6 +297,11 @@ class IncidentController extends Controller
             }
         }
 
+        // Determine module and route for notifications
+        $module = $incident->type === Incident::TYPE_SRGBV ? 'srgbv' : 'other';
+        $showRoute = $module === 'srgbv' ? 'sir.srgbv.cases.show' : 'sir.other.incidents.show';
+        $incidentLink = route($showRoute, $incident);
+
         // Notify CGPC director and full-access users
         $notifyUsers = User::where('is_active', true)
             ->where('approval_status', 'approved')
@@ -285,7 +324,7 @@ class IncidentController extends Controller
                 'type' => 'incident',
                 'title' => 'New Incident Reported',
                 'message' => "{$user->name} reported a {$incident->priority} priority {$typeLabel} incident: {$incident->title} ({$incident->incident_number})",
-                'link' => route('sir.incidents.show', $incident),
+                'link' => $incidentLink,
             ]);
         }
 
@@ -296,20 +335,32 @@ class IncidentController extends Controller
                 'type' => 'incident',
                 'title' => 'Incident Assigned to You',
                 'message' => "You have been assigned to incident {$incident->incident_number}: {$incident->title}",
-                'link' => route('sir.incidents.show', $incident),
+                'link' => $incidentLink,
             ]);
         }
 
-        return redirect()->route('sir.incidents.show', $incident)
+                return redirect()->route($showRoute, $incident)
             ->with('success', "Incident {$incident->incident_number} has been reported successfully.");
+    }
+
+    /**
+     * Get the appropriate route name for an incident based on its type.
+     */
+    private function getIncidentRoute(Incident $incident, string $action = 'show'): string
+    {
+        $module = $incident->type === Incident::TYPE_SRGBV ? 'srgbv' : 'other';
+        $entity = $module === 'srgbv' ? 'cases' : 'incidents';
+        return "sir.{$module}.{$entity}.{$action}";
     }
 
     /**
      * Show incident details.
      */
-    public function show(Incident $incident)
+    public function show(Request $request, Incident $incident)
     {
         $user = auth()->user();
+        $module = $request->route('module') ?? ($incident->type === Incident::TYPE_SRGBV ? 'srgbv' : 'other');
+        
         if (!$this->canAccessIncidentType($user, $incident->type)) abort(403);
 
         $incident->load([
@@ -333,6 +384,7 @@ class IncidentController extends Controller
             'incident' => $incident,
             'notes' => $notes,
             'user' => $user,
+            'module' => $module,
             'canManage' => $this->canManageIncidents($user),
             'counselors' => $counselors,
         ]);
@@ -341,9 +393,11 @@ class IncidentController extends Controller
     /**
      * Show the edit form (managers only).
      */
-    public function edit(Incident $incident)
+    public function edit(Request $request, Incident $incident)
     {
         $user = auth()->user();
+        $module = $request->route('module') ?? ($incident->type === Incident::TYPE_SRGBV ? 'srgbv' : 'other');
+        
         if (!$this->canManageIncidents($user)) abort(403);
         if (!$this->canAccessIncidentType($user, $incident->type)) abort(403);
 

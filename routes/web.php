@@ -130,31 +130,65 @@ Route::middleware(['auth', 'active'])->group(function () {
     // SRGBV Legacy Redirects → SIR System
     Route::prefix('srgbv')->name('srgbv.')->group(function () {
         Route::get('/dashboard', fn() => redirect()->route('sir.srgbv.dashboard'))->name('dashboard');
-        Route::get('/cases', fn() => redirect()->route('sir.incidents.index', ['type' => 'srgbv']))->name('cases.index');
-        Route::get('/cases/create', fn() => redirect()->route('sir.incidents.create', ['type' => 'srgbv']))->name('cases.create');
+        Route::get('/cases', fn() => redirect()->route('sir.srgbv.cases.index'))->name('cases.index');
+        Route::get('/cases/create', fn() => redirect()->route('sir.srgbv.cases.create'))->name('cases.create');
         Route::get('/cases/{legacyId}', function ($legacyId) {
             $incident = \App\Models\Incident::where('legacy_srgbv_id', $legacyId)->first();
-            if ($incident) return redirect()->route('sir.incidents.show', $incident);
-            return redirect()->route('sir.incidents.index', ['type' => 'srgbv'])->with('error', 'Case not found.');
+            if ($incident) return redirect()->route('sir.srgbv.cases.show', $incident);
+            return redirect()->route('sir.srgbv.cases.index')->with('error', 'Case not found.');
         })->name('cases.show');
     });
 
-    // ── SIR (School Incident Reporter) ──────────────────────
+    // ══════════════════════════════════════════════════════════════════════
+    // SIR (School Incident Reporter) - Separated Modules
+    // ══════════════════════════════════════════════════════════════════════
     Route::prefix('sir')->name('sir.')->group(function () {
+        
+        // Landing Page (shows both modules)
+        Route::get('/', fn() => redirect()->route('sir.dashboard'));
         Route::get('/dashboard', [SirDashboardController::class, 'index'])->name('dashboard');
-        Route::get('/srgbv', [SirDashboardController::class, 'srgbvDashboard'])->name('srgbv.dashboard');
-        Route::get('/other', [SirDashboardController::class, 'otherDashboard'])->name('other.dashboard');
-        Route::get('/incidents', [IncidentController::class, 'index'])->name('incidents.index');
-        Route::get('/incidents/create', [IncidentController::class, 'create'])->name('incidents.create');
-        Route::post('/incidents', [IncidentController::class, 'store'])->name('incidents.store');
-        Route::get('/incidents/{incident}', [IncidentController::class, 'show'])->name('incidents.show');
-        Route::get('/incidents/{incident}/edit', [IncidentController::class, 'edit'])->name('incidents.edit');
-        Route::put('/incidents/{incident}', [IncidentController::class, 'update'])->name('incidents.update');
-        Route::post('/incidents/{incident}/notes', [IncidentController::class, 'addNote'])->name('incidents.notes');
-        Route::post('/incidents/{incident}/files', [IncidentController::class, 'uploadFiles'])->name('incidents.files');
-        Route::delete('/incidents/{incident}/files/{file}', [IncidentController::class, 'deleteFile'])->name('incidents.files.delete');
-        Route::patch('/incidents/{incident}/status', [IncidentController::class, 'updateStatus'])->name('incidents.status');
-        Route::delete('/incidents/{incident}', [IncidentController::class, 'destroy'])->name('incidents.destroy');
+
+        // ── SRGBV Module ────────────────────────────────────────────────────
+        Route::prefix('srgbv')->name('srgbv.')->group(function () {
+            Route::get('/dashboard', [SirDashboardController::class, 'srgbvDashboard'])->name('dashboard');
+            Route::get('/cases', [IncidentController::class, 'index'])->name('cases.index')->defaults('module', 'srgbv');
+            Route::get('/cases/create', [IncidentController::class, 'create'])->name('cases.create')->defaults('module', 'srgbv');
+            Route::post('/cases', [IncidentController::class, 'store'])->name('cases.store')->defaults('module', 'srgbv');
+            Route::get('/cases/{incident}', [IncidentController::class, 'show'])->name('cases.show')->defaults('module', 'srgbv');
+            Route::get('/cases/{incident}/edit', [IncidentController::class, 'edit'])->name('cases.edit')->defaults('module', 'srgbv');
+            Route::put('/cases/{incident}', [IncidentController::class, 'update'])->name('cases.update')->defaults('module', 'srgbv');
+            Route::post('/cases/{incident}/notes', [IncidentController::class, 'addNote'])->name('cases.notes')->defaults('module', 'srgbv');
+            Route::post('/cases/{incident}/files', [IncidentController::class, 'uploadFiles'])->name('cases.files')->defaults('module', 'srgbv');
+            Route::delete('/cases/{incident}/files/{file}', [IncidentController::class, 'deleteFile'])->name('cases.files.delete')->defaults('module', 'srgbv');
+            Route::patch('/cases/{incident}/status', [IncidentController::class, 'updateStatus'])->name('cases.status')->defaults('module', 'srgbv');
+            Route::delete('/cases/{incident}', [IncidentController::class, 'destroy'])->name('cases.destroy')->defaults('module', 'srgbv');
+        });
+
+        // ── Other Incidents Module ─────────────────────────────────────────
+        Route::prefix('other')->name('other.')->group(function () {
+            Route::get('/dashboard', [SirDashboardController::class, 'otherDashboard'])->name('dashboard');
+            Route::get('/incidents', [IncidentController::class, 'index'])->name('incidents.index')->defaults('module', 'other');
+            Route::get('/incidents/create', [IncidentController::class, 'create'])->name('incidents.create')->defaults('module', 'other');
+            Route::post('/incidents', [IncidentController::class, 'store'])->name('incidents.store')->defaults('module', 'other');
+            Route::get('/incidents/{incident}', [IncidentController::class, 'show'])->name('incidents.show')->defaults('module', 'other');
+            Route::get('/incidents/{incident}/edit', [IncidentController::class, 'edit'])->name('incidents.edit')->defaults('module', 'other');
+            Route::put('/incidents/{incident}', [IncidentController::class, 'update'])->name('incidents.update')->defaults('module', 'other');
+            Route::post('/incidents/{incident}/notes', [IncidentController::class, 'addNote'])->name('incidents.notes')->defaults('module', 'other');
+            Route::post('/incidents/{incident}/files', [IncidentController::class, 'uploadFiles'])->name('incidents.files')->defaults('module', 'other');
+            Route::delete('/incidents/{incident}/files/{file}', [IncidentController::class, 'deleteFile'])->name('incidents.files.delete')->defaults('module', 'other');
+            Route::patch('/incidents/{incident}/status', [IncidentController::class, 'updateStatus'])->name('incidents.status')->defaults('module', 'other');
+            Route::delete('/incidents/{incident}', [IncidentController::class, 'destroy'])->name('incidents.destroy')->defaults('module', 'other');
+        });
+
+        // ── Legacy combined routes (redirect to appropriate module) ────────
+        Route::get('/incidents', fn() => redirect()->route('sir.dashboard'))->name('incidents.index');
+        Route::get('/incidents/create', fn() => redirect()->route('sir.dashboard'))->name('incidents.create');
+        Route::get('/incidents/{incident}', function (\App\Models\Incident $incident) {
+            if ($incident->type === 'srgbv') {
+                return redirect()->route('sir.srgbv.cases.show', $incident);
+            }
+            return redirect()->route('sir.other.incidents.show', $incident);
+        })->name('incidents.show');
     });
 
     /*

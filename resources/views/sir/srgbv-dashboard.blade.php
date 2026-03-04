@@ -23,7 +23,7 @@
                 Back to SIR
             </a>
             @if($canManage)
-            <a href="{{ route('sir.incidents.create', ['type' => 'srgbv']) }}" class="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white font-medium px-4 py-2 rounded-lg text-sm transition">
+            <a href="{{ route('sir.srgbv.cases.create') }}" class="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white font-medium px-4 py-2 rounded-lg text-sm transition">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                 New Report
             </a>
@@ -41,7 +41,7 @@
             <p class="text-sm font-semibold text-red-800">{{ $immediateAction }} High Risk {{ Str::plural('Case', $immediateAction) }} Require Immediate Attention</p>
             <p class="text-xs text-red-600">These cases have been flagged as critical and need urgent review.</p>
         </div>
-        <a href="{{ route('sir.incidents.index', ['module' => 'srgbv', 'priority' => 'critical']) }}" class="shrink-0 text-sm font-medium text-red-700 hover:text-red-800 flex items-center gap-1">
+        <a href="{{ route('sir.srgbv.cases.index', ['priority' => 'critical']) }}" class="shrink-0 text-sm font-medium text-red-700 hover:text-red-800 flex items-center gap-1">
             View Cases
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
         </a>
@@ -286,7 +286,7 @@
                 </thead>
                 <tbody class="divide-y divide-gray-100">
                     @forelse($recentIncidents as $incident)
-                    <tr class="hover:bg-gray-50 cursor-pointer" onclick="window.location='{{ route('sir.incidents.show', $incident) }}'">
+                    <tr class="hover:bg-gray-50 cursor-pointer" onclick="window.location='{{ route('sir.srgbv.cases.show', $incident) }}'">
                         <td class="px-4 py-3 font-medium text-blue-600">{{ $incident->incident_number }}</td>
                         <td class="px-4 py-3 text-gray-700">{{ $incident->category_label }}</td>
                         <td class="px-4 py-3 text-gray-700 max-w-[150px] truncate">{{ $incident->school_name ?? '—' }}</td>
@@ -332,7 +332,7 @@
                                 </div>
                                 <p class="text-sm text-gray-500">No SRGBV incidents reported yet.</p>
                                 @if($canManage)
-                                <a href="{{ route('sir.incidents.create', ['type' => 'srgbv']) }}" class="mt-2 text-sm text-blue-600 hover:text-blue-700 font-medium">Create first report →</a>
+                                <a href="{{ route('sir.srgbv.cases.create') }}" class="mt-2 text-sm text-blue-600 hover:text-blue-700 font-medium">Create first report →</a>
                                 @endif
                             </div>
                         </td>
@@ -345,7 +345,7 @@
         @if($recentIncidents->count() > 0)
         <div class="p-4 border-t border-gray-200 flex items-center justify-between">
             <p class="text-xs text-gray-500">Showing {{ $recentIncidents->count() }} most recent cases</p>
-            <a href="{{ route('sir.incidents.index', ['module' => 'srgbv']) }}" class="text-xs text-blue-600 hover:text-blue-700 font-medium">View all SRGBV cases →</a>
+            <a href="{{ route('sir.srgbv.cases.index') }}" class="text-xs text-blue-600 hover:text-blue-700 font-medium">View all SRGBV cases →</a>
         </div>
         @endif
     </div>

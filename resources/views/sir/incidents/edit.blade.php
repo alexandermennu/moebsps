@@ -2,6 +2,13 @@
 @section('title', 'Edit ' . $incident->incident_number)
 @section('page-title', 'Edit Incident')
 @section('content')
+@php
+    $isSrgbv = $incident->type === 'srgbv';
+    $module = $module ?? ($isSrgbv ? 'srgbv' : 'other');
+    $showRoute = $isSrgbv ? 'sir.srgbv.cases.show' : 'sir.other.incidents.show';
+    $updateRoute = $isSrgbv ? 'sir.srgbv.cases.update' : 'sir.other.incidents.update';
+    $themeColor = $isSrgbv ? 'red' : 'blue';
+@endphp
 <div class="max-w-5xl mx-auto">
     {{-- Page Header with Progress --}}
     <div class="bg-white border border-gray-200 rounded-lg mb-6 overflow-hidden shadow-sm">
@@ -14,11 +21,11 @@
                         </svg>
                     </div>
                     <div>
-                        <h1 class="text-lg font-semibold text-white">Edit Incident Report</h1>
+                        <h1 class="text-lg font-semibold text-white">Edit {{ $isSrgbv ? 'SRGBV Case' : 'Incident' }}</h1>
                         <p class="text-amber-100 text-sm">{{ $incident->incident_number }} • {{ $incident->title }}</p>
                     </div>
                 </div>
-                <a href="{{ route('sir.incidents.show', $incident) }}" class="text-white/80 hover:text-white text-sm flex items-center gap-1 transition">
+                <a href="{{ route($showRoute, $incident) }}" class="text-white/80 hover:text-white text-sm flex items-center gap-1 transition">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
                     Back to Details
                 </a>
@@ -97,7 +104,7 @@
     </div>
     @endif
 
-    <form method="POST" action="{{ route('sir.incidents.update', $incident) }}" enctype="multipart/form-data" class="space-y-6">
+    <form method="POST" action="{{ route($updateRoute, $incident) }}" enctype="multipart/form-data" class="space-y-6">
         @csrf @method('PUT')
 
         {{-- Section 1: Classification --}}
@@ -506,7 +513,7 @@
                     <span>Changes will be saved immediately</span>
                 </div>
                 <div class="flex items-center gap-3">
-                    <a href="{{ route('sir.incidents.show', $incident) }}" class="px-5 py-2.5 bg-white border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50 rounded-lg transition">
+                    <a href="{{ route($showRoute, $incident) }}" class="px-5 py-2.5 bg-white border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50 rounded-lg transition">
                         Cancel
                     </a>
                     <button type="submit" class="px-6 py-2.5 bg-amber-600 text-white text-sm font-medium hover:bg-amber-700 rounded-lg transition flex items-center gap-2">

@@ -2,10 +2,17 @@
 @section('title', 'Report Incident')
 @section('page-title', 'Report Incident')
 @section('content')
+@php
+    $isSrgbv = ($module ?? 'other') === 'srgbv';
+    $indexRoute = $isSrgbv ? 'sir.srgbv.cases.index' : 'sir.other.incidents.index';
+    $storeRoute = $isSrgbv ? 'sir.srgbv.cases.store' : 'sir.other.incidents.store';
+    $dashboardRoute = $isSrgbv ? 'sir.srgbv.dashboard' : 'sir.other.dashboard';
+    $themeColor = $isSrgbv ? 'red' : 'blue';
+@endphp
 <div class="max-w-5xl mx-auto">
     {{-- Page Header with Progress --}}
     <div class="bg-white border border-gray-200 rounded-lg mb-6 overflow-hidden shadow-sm">
-        <div class="bg-gradient-to-r from-red-700 to-red-800 px-6 py-4">
+        <div class="bg-gradient-to-r from-{{ $themeColor }}-700 to-{{ $themeColor }}-800 px-6 py-4">
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
@@ -14,11 +21,11 @@
                         </svg>
                     </div>
                     <div>
-                        <h1 class="text-lg font-semibold text-white">Report New Incident</h1>
-                        <p class="text-red-100 text-sm">Complete all required sections below</p>
+                        <h1 class="text-lg font-semibold text-white">Report New {{ $isSrgbv ? 'SRGBV Case' : 'Incident' }}</h1>
+                        <p class="text-{{ $themeColor }}-100 text-sm">Complete all required sections below</p>
                     </div>
                 </div>
-                <a href="{{ route('sir.incidents.index') }}" class="text-white/80 hover:text-white text-sm flex items-center gap-1 transition">
+                <a href="{{ route($indexRoute) }}" class="text-white/80 hover:text-white text-sm flex items-center gap-1 transition">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
                     Back to List
                 </a>
@@ -29,7 +36,7 @@
         <div class="px-6 py-3 bg-gray-50 border-t border-gray-100">
             <div class="flex items-center justify-between text-xs">
                 <div class="flex items-center gap-1 text-gray-600" data-section="1">
-                    <span class="w-6 h-6 rounded-full bg-red-600 text-white flex items-center justify-center font-medium text-xs">1</span>
+                    <span class="w-6 h-6 rounded-full bg-{{ $themeColor }}-600 text-white flex items-center justify-center font-medium text-xs">1</span>
                     <span class="hidden sm:inline font-medium">Classification</span>
                 </div>
                 <div class="flex-1 h-0.5 bg-gray-200 mx-1.5"></div>
@@ -92,7 +99,7 @@
     </div>
     @endif
 
-    <form method="POST" action="{{ route('sir.incidents.store') }}" enctype="multipart/form-data" class="space-y-6">
+    <form method="POST" action="{{ route($storeRoute) }}" enctype="multipart/form-data" class="space-y-6">
         @csrf
 
         {{-- Section 1: Incident Classification --}}
@@ -449,7 +456,7 @@
                     <span>All required fields must be completed</span>
                 </div>
                 <div class="flex items-center gap-3">
-                    <a href="{{ route('sir.incidents.index') }}" class="px-5 py-2.5 bg-white border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50 rounded-lg transition">
+                    <a href="{{ route($indexRoute) }}" class="px-5 py-2.5 bg-white border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50 rounded-lg transition">
                         Cancel
                     </a>
                     <button type="submit" class="px-6 py-2.5 bg-red-700 text-white text-sm font-medium hover:bg-red-800 rounded-lg transition flex items-center gap-2">

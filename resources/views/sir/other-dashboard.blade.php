@@ -23,7 +23,7 @@
                 Back to SIR
             </a>
             @if($canManage)
-            <a href="{{ route('sir.incidents.create') }}" class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg text-sm transition">
+            <a href="{{ route('sir.other.incidents.create') }}" class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg text-sm transition">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                 New Report
             </a>
@@ -41,7 +41,7 @@
             <p class="text-sm font-semibold text-orange-800">{{ $immediateAction }} {{ Str::plural('Incident', $immediateAction) }} Require Immediate Attention</p>
             <p class="text-xs text-orange-600">These incidents have been flagged as critical and need urgent response.</p>
         </div>
-        <a href="{{ route('sir.incidents.index', ['module' => 'other', 'priority' => 'critical']) }}" class="shrink-0 text-sm font-medium text-orange-700 hover:text-orange-800 flex items-center gap-1">
+        <a href="{{ route('sir.other.incidents.index', ['priority' => 'critical']) }}" class="shrink-0 text-sm font-medium text-orange-700 hover:text-orange-800 flex items-center gap-1">
             View Cases
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
         </a>
@@ -293,7 +293,7 @@
                 </thead>
                 <tbody class="divide-y divide-gray-100">
                     @forelse($recentIncidents as $incident)
-                    <tr class="hover:bg-gray-50 cursor-pointer" onclick="window.location='{{ route('sir.incidents.show', $incident) }}'">
+                    <tr class="hover:bg-gray-50 cursor-pointer" onclick="window.location='{{ route('sir.other.incidents.show', $incident) }}'">
                         <td class="px-4 py-3 font-medium text-blue-600">{{ $incident->incident_number }}</td>
                         <td class="px-4 py-3">
                             @php
@@ -353,7 +353,7 @@
                                 </div>
                                 <p class="text-sm text-gray-500">No incidents reported yet.</p>
                                 @if($canManage)
-                                <a href="{{ route('sir.incidents.create') }}" class="mt-2 text-sm text-blue-600 hover:text-blue-700 font-medium">Create first report →</a>
+                                <a href="{{ route('sir.other.incidents.create') }}" class="mt-2 text-sm text-blue-600 hover:text-blue-700 font-medium">Create first report →</a>
                                 @endif
                             </div>
                         </td>
@@ -366,7 +366,7 @@
         @if($recentIncidents->count() > 0)
         <div class="p-4 border-t border-gray-200 flex items-center justify-between">
             <p class="text-xs text-gray-500">Showing {{ $recentIncidents->count() }} most recent incidents</p>
-            <a href="{{ route('sir.incidents.index', ['module' => 'other']) }}" class="text-xs text-blue-600 hover:text-blue-700 font-medium">View all incidents →</a>
+            <a href="{{ route('sir.other.incidents.index') }}" class="text-xs text-blue-600 hover:text-blue-700 font-medium">View all incidents →</a>
         </div>
         @endif
     </div>

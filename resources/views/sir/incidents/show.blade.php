@@ -2,15 +2,29 @@
 @section('title', $incident->incident_number)
 @section('page-title', 'Incident ' . $incident->incident_number)
 @section('content')
+@php
+    $isSrgbv = $incident->type === 'srgbv';
+    $module = $module ?? ($isSrgbv ? 'srgbv' : 'other');
+    $indexRoute = $isSrgbv ? 'sir.srgbv.cases.index' : 'sir.other.incidents.index';
+    $editRoute = $isSrgbv ? 'sir.srgbv.cases.edit' : 'sir.other.incidents.edit';
+    $updateRoute = $isSrgbv ? 'sir.srgbv.cases.update' : 'sir.other.incidents.update';
+    $destroyRoute = $isSrgbv ? 'sir.srgbv.cases.destroy' : 'sir.other.incidents.destroy';
+    $statusRoute = $isSrgbv ? 'sir.srgbv.cases.status' : 'sir.other.incidents.status';
+    $notesRoute = $isSrgbv ? 'sir.srgbv.cases.notes' : 'sir.other.incidents.notes';
+    $filesRoute = $isSrgbv ? 'sir.srgbv.cases.files' : 'sir.other.incidents.files';
+    $filesDeleteRoute = $isSrgbv ? 'sir.srgbv.cases.files.delete' : 'sir.other.incidents.files.delete';
+    $dashboardRoute = $isSrgbv ? 'sir.srgbv.dashboard' : 'sir.other.dashboard';
+    $themeColor = $isSrgbv ? 'red' : 'blue';
+@endphp
 <div class="max-w-7xl mx-auto space-y-6">
     {{-- Incident Header Card --}}
     <div class="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
         {{-- Header with gradient --}}
-        <div class="bg-gradient-to-r from-{{ $incident->type === 'srgbv' ? 'red-700' : 'blue-700' }} to-{{ $incident->type === 'srgbv' ? 'red-800' : 'blue-800' }} px-6 py-4">
+        <div class="bg-gradient-to-r from-{{ $themeColor }}-700 to-{{ $themeColor }}-800 px-6 py-4">
             <div class="flex items-start justify-between">
                 <div class="flex items-center gap-4">
                     <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
-                        @if($incident->type === 'srgbv')
+                        @if($isSrgbv)
                         <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
                         </svg>
@@ -31,18 +45,18 @@
                             @endif
                         </div>
                         <h1 class="text-lg font-semibold text-white">{{ $incident->title }}</h1>
-                        <p class="text-{{ $incident->type === 'srgbv' ? 'red' : 'blue' }}-100 text-sm mt-0.5">
+                        <p class="text-{{ $themeColor }}-100 text-sm mt-0.5">
                             {{ $incident->category_label }} • {{ $incident->incident_date?->format('M d, Y') ?? 'Date unknown' }} • Reported {{ $incident->created_at?->diffForHumans() ?? 'recently' }}
                         </p>
                     </div>
                 </div>
                 <div class="flex items-center gap-2">
-                    <a href="{{ route('sir.incidents.index') }}" class="text-white/80 hover:text-white text-sm flex items-center gap-1 transition">
+                    <a href="{{ route($indexRoute) }}" class="text-white/80 hover:text-white text-sm flex items-center gap-1 transition">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
                         Back
                     </a>
                     @if($canManage)
-                    <a href="{{ route('sir.incidents.edit', $incident) }}" class="px-3 py-1.5 bg-white/20 hover:bg-white/30 text-white text-sm font-medium rounded-lg transition flex items-center gap-1">
+                    <a href="{{ route($editRoute, $incident) }}" class="px-3 py-1.5 bg-white/20 hover:bg-white/30 text-white text-sm font-medium rounded-lg transition flex items-center gap-1">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                         Edit
                     </a>
@@ -64,10 +78,10 @@
             {{-- Quick Status Change --}}
             @if($canManage && $incident->isOpen())
             <div class="ml-auto flex items-center gap-2">
-                <form method="POST" action="{{ route('sir.incidents.status', $incident) }}" class="flex items-center gap-2">
+                <form method="POST" action="{{ route($statusRoute, $incident) }}" class="flex items-center gap-2">
                     @csrf @method('PATCH')
                     <span class="text-xs text-gray-500">Quick Status:</span>
-                    <select name="status" class="text-xs px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-{{ $incident->type === 'srgbv' ? 'red' : 'blue' }}-500 bg-white">
+                    <select name="status" class="text-xs px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-{{ $themeColor }}-500 bg-white">
                         @foreach(\App\Models\Incident::STATUSES as $key => $label)
                         <option value="{{ $key }}" {{ $incident->status === $key ? 'selected' : '' }}>{{ $label }}</option>
                         @endforeach
@@ -325,7 +339,7 @@
                 </div>
                 <div class="p-6">
                     {{-- Upload form --}}
-                    <form method="POST" action="{{ route('sir.incidents.files', $incident) }}" enctype="multipart/form-data" class="mb-5">
+                    <form method="POST" action="{{ route($filesRoute, $incident) }}" enctype="multipart/form-data" class="mb-5">
                         @csrf
                         <div class="border-2 border-dashed border-gray-200 rounded-lg p-4 hover:border-indigo-300 transition-colors bg-gray-50/50">
                             <div class="flex flex-col sm:flex-row items-center gap-3">
@@ -379,7 +393,7 @@
                                 <a href="{{ $fileUrl }}" target="_blank" class="text-xs font-medium text-indigo-600 hover:text-indigo-800 transition">View</a>
                                 @endif
                                 @if($canManage || $file->uploaded_by === auth()->id())
-                                <form method="POST" action="{{ route('sir.incidents.files.delete', [$incident, $file]) }}" onsubmit="return confirm('Delete this file?')">
+                                <form method="POST" action="{{ route($filesDeleteRoute, [$incident, $file]) }}" onsubmit="return confirm('Delete this file?')">
                                     @csrf @method('DELETE')
                                     <button class="text-xs font-medium text-red-600 hover:text-red-800 transition">Delete</button>
                                 </form>
@@ -417,7 +431,7 @@
                 </div>
                 <div class="p-6">
                     {{-- Add Note --}}
-                    <form method="POST" action="{{ route('sir.incidents.notes', $incident) }}" class="mb-6">
+                    <form method="POST" action="{{ route($notesRoute, $incident) }}" class="mb-6">
                         @csrf
                         <div class="bg-gray-50 rounded-lg p-4 border border-gray-100">
                             <textarea name="note" rows="3" required placeholder="Add a note about this incident..." class="w-full px-4 py-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent resize-none bg-white"></textarea>
@@ -631,7 +645,7 @@
                     </div>
                 </div>
                 <div class="p-5">
-                    <form method="POST" action="{{ route('sir.incidents.update', $incident) }}">
+                    <form method="POST" action="{{ route($updateRoute, $incident) }}">
                         @csrf @method('PUT')
                         <input type="hidden" name="type" value="{{ $incident->type }}">
                         <input type="hidden" name="category" value="{{ $incident->category }}">
@@ -640,7 +654,7 @@
                         <input type="hidden" name="priority" value="{{ $incident->priority }}">
                         <input type="hidden" name="status" value="{{ $incident->status }}">
                         <input type="hidden" name="incident_date" value="{{ $incident->incident_date?->format('Y-m-d') ?? now()->format('Y-m-d') }}">
-                        <select name="assigned_to" class="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-{{ $incident->type === 'srgbv' ? 'red' : 'blue' }}-500 bg-white">
+                        <select name="assigned_to" class="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-{{ $themeColor }}-500 bg-white">
                             <option value="">— Unassigned —</option>
                             @foreach($counselors as $counselor)
                             <option value="{{ $counselor->id }}" {{ $incident->assigned_to == $counselor->id ? 'selected' : '' }}>{{ $counselor->name }}</option>
@@ -700,7 +714,7 @@
                 <div class="p-5">
                     <h3 class="text-sm font-semibold text-red-800 mb-2">Danger Zone</h3>
                     <p class="text-xs text-gray-500 mb-3">Once deleted, this incident cannot be recovered.</p>
-                    <form method="POST" action="{{ route('sir.incidents.destroy', $incident) }}" onsubmit="return confirm('Permanently delete this incident? This action cannot be undone.')">
+                    <form method="POST" action="{{ route($destroyRoute, $incident) }}" onsubmit="return confirm('Permanently delete this incident? This action cannot be undone.')">
                         @csrf @method('DELETE')
                         <button class="w-full px-4 py-2.5 bg-white border border-red-300 text-red-600 text-sm font-medium hover:bg-red-50 rounded-lg transition flex items-center justify-center gap-2">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>

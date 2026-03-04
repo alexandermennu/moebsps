@@ -9,10 +9,22 @@
             <h2 class="text-xl font-bold text-gray-900">School Incident Reporter</h2>
             <p class="text-sm text-gray-500">Track, manage, and resolve school-related incidents across Liberia.</p>
         </div>
-        <a href="{{ route('sir.incidents.create') }}" class="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white font-medium px-4 py-2 rounded-lg text-sm">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-            Report Incident
-        </a>
+        @if($canAccessSrgbv || $canAccessOther)
+        <div class="flex items-center gap-2">
+            @if($canAccessSrgbv)
+            <a href="{{ route('sir.srgbv.cases.create') }}" class="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white font-medium px-4 py-2 rounded-lg text-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                Report SRGBV
+            </a>
+            @endif
+            @if($canAccessOther)
+            <a href="{{ route('sir.other.incidents.create') }}" class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg text-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                Report Incident
+            </a>
+            @endif
+        </div>
+        @endif
     </div>
 
     {{-- Urgent Alert Banner --}}
@@ -25,10 +37,12 @@
             <p class="text-sm font-semibold text-red-800">{{ $urgentCount }} {{ Str::plural('Case', $urgentCount) }} Require Immediate Attention</p>
             <p class="text-xs text-red-600">Critical incidents flagged for urgent review and action.</p>
         </div>
-        <a href="{{ route('sir.incidents.index', ['priority' => 'critical']) }}" class="shrink-0 text-sm font-medium text-red-700 hover:text-red-800 flex items-center gap-1">
-            View All
+        @if($canAccessSrgbv)
+        <a href="{{ route('sir.srgbv.cases.index', ['priority' => 'critical']) }}" class="shrink-0 text-sm font-medium text-red-700 hover:text-red-800 flex items-center gap-1">
+            View SRGBV
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
         </a>
+        @endif
     </div>
     @endif
 
@@ -105,6 +119,31 @@
                 @endif
             </div>
         </a>
+        @else
+        {{-- SRGBV Restricted Card --}}
+        <div class="relative bg-gray-50 border border-gray-200 rounded-lg overflow-hidden opacity-75">
+            <div class="bg-gradient-to-r from-gray-400 to-gray-500 px-5 py-4 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z"/></svg>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold text-white">SRGBV</h3>
+                        <p class="text-sm text-gray-200">School-Related Gender-Based Violence</p>
+                    </div>
+                </div>
+                <span class="inline-flex items-center gap-1 bg-gray-600/50 text-white text-xs font-medium px-2 py-1 rounded">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                    Restricted
+                </span>
+            </div>
+            <div class="p-5">
+                <p class="text-sm text-gray-500 mb-4">Track and manage reports of physical violence, sexual violence, emotional abuse, and bullying in schools.</p>
+                <div class="text-center py-4">
+                    <p class="text-xs text-gray-400">Access restricted to CGPC Division and Counselors</p>
+                </div>
+            </div>
+        </div>
         @endif
 
         {{-- Other Incidents Module Card --}}
@@ -146,6 +185,31 @@
                 @endif
             </div>
         </a>
+        @else
+        {{-- Other Incidents Restricted Card --}}
+        <div class="relative bg-gray-50 border border-gray-200 rounded-lg overflow-hidden opacity-75">
+            <div class="bg-gradient-to-r from-gray-400 to-gray-500 px-5 py-4 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold text-white">Other Incidents</h3>
+                        <p class="text-sm text-gray-200">General School Incident Reports</p>
+                    </div>
+                </div>
+                <span class="inline-flex items-center gap-1 bg-gray-600/50 text-white text-xs font-medium px-2 py-1 rounded">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                    Restricted
+                </span>
+            </div>
+            <div class="p-5">
+                <p class="text-sm text-gray-500 mb-4">Manage disciplinary issues, safety concerns, infrastructure problems, academic incidents, and health emergencies.</p>
+                <div class="text-center py-4">
+                    <p class="text-xs text-gray-400">Access restricted to CEDP Division</p>
+                </div>
+            </div>
+        </div>
         @endif
     </div>
 
@@ -155,13 +219,22 @@
         <div class="px-5 py-4 border-b border-gray-200 flex items-center justify-between">
             <div>
                 <h3 class="text-sm font-semibold text-gray-900">Recent Activity</h3>
-                <p class="text-xs text-gray-500">Latest incidents across all modules</p>
+                <p class="text-xs text-gray-500">Latest incidents you have access to</p>
             </div>
-            <a href="{{ route('sir.incidents.index') }}" class="text-xs text-blue-600 hover:text-blue-700 font-medium">View All →</a>
+            @if($canAccessSrgbv)
+            <a href="{{ route('sir.srgbv.cases.index') }}" class="text-xs text-red-600 hover:text-red-700 font-medium">View SRGBV Cases →</a>
+            @elseif($canAccessOther)
+            <a href="{{ route('sir.other.incidents.index') }}" class="text-xs text-blue-600 hover:text-blue-700 font-medium">View Incidents →</a>
+            @endif
         </div>
         <div class="divide-y divide-gray-100">
             @foreach($recentIncidents as $incident)
-            <a href="{{ route('sir.incidents.show', $incident) }}" class="flex items-center gap-4 px-5 py-3 hover:bg-gray-50 transition">
+            @php
+                $incidentRoute = $incident->type === 'srgbv' 
+                    ? route('sir.srgbv.cases.show', $incident) 
+                    : route('sir.other.incidents.show', $incident);
+            @endphp
+            <a href="{{ $incidentRoute }}" class="flex items-center gap-4 px-5 py-3 hover:bg-gray-50 transition">
                 <div class="w-9 h-9 rounded-full flex items-center justify-center shrink-0 {{ $incident->type === 'srgbv' ? 'bg-red-100' : 'bg-blue-100' }}">
                     @if($incident->type === 'srgbv')
                     <svg class="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z"/></svg>
@@ -215,22 +288,34 @@
                 <p class="text-xs text-gray-500">Common tasks and reports</p>
             </div>
             <div class="flex flex-wrap gap-2">
-                <a href="{{ route('sir.incidents.index') }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-300 text-gray-700 text-xs font-medium hover:bg-gray-50 rounded-md">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
-                    All Incidents
+                @if($canAccessSrgbv)
+                <a href="{{ route('sir.srgbv.cases.index') }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-300 text-gray-700 text-xs font-medium hover:bg-gray-50 rounded-md">
+                    <svg class="w-3.5 h-3.5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
+                    SRGBV Cases
                 </a>
-                <a href="{{ route('sir.incidents.index', ['status' => 'reported']) }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-300 text-gray-700 text-xs font-medium hover:bg-gray-50 rounded-md">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                    Pending Review
+                <a href="{{ route('sir.srgbv.cases.index', ['priority' => 'critical']) }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-300 text-gray-700 text-xs font-medium hover:bg-gray-50 rounded-md">
+                    <svg class="w-3.5 h-3.5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                    Critical SRGBV
                 </a>
-                <a href="{{ route('sir.incidents.index', ['priority' => 'critical']) }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-300 text-gray-700 text-xs font-medium hover:bg-gray-50 rounded-md">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-                    Critical Cases
+                <a href="{{ route('sir.srgbv.cases.create') }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-600 text-white text-xs font-medium hover:bg-red-700 rounded-md">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Report SRGBV
                 </a>
-                <a href="{{ route('sir.incidents.create') }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-600 text-white text-xs font-medium hover:bg-red-700 rounded-md">
+                @endif
+                @if($canAccessOther)
+                <a href="{{ route('sir.other.incidents.index') }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-300 text-gray-700 text-xs font-medium hover:bg-gray-50 rounded-md">
+                    <svg class="w-3.5 h-3.5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
+                    Other Incidents
+                </a>
+                <a href="{{ route('sir.other.incidents.index', ['priority' => 'critical']) }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-300 text-gray-700 text-xs font-medium hover:bg-gray-50 rounded-md">
+                    <svg class="w-3.5 h-3.5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                    Critical Incidents
+                </a>
+                <a href="{{ route('sir.other.incidents.create') }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white text-xs font-medium hover:bg-blue-700 rounded-md">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                     Report Incident
                 </a>
+                @endif
             </div>
         </div>
     </div>
