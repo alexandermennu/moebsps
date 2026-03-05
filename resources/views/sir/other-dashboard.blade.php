@@ -214,7 +214,8 @@
 
                         {{-- Reporter --}}
                         <p class="text-xs text-gray-400 mt-1">
-                            Reported by: {{ $incident->reporter_role ?? 'Unknown' }}
+                            Reported by: {{ $incident->reporter?->role_label ?? ($incident->isPublicReport() ? 'Public Report' : 'Unknown') }}
+                            @if($incident->reporter) ({{ $incident->reporter->name }}) @elseif($incident->public_reporter_name) ({{ $incident->public_reporter_name }}) @endif
                             · {{ $incident->created_at->diffForHumans() }}
                         </p>
                     </a>
