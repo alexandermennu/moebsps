@@ -233,14 +233,13 @@
             @endforelse
         </div>
 
-        {{-- Pagination --}}
-        @if($recentIncidents->hasPages())
-        <div class="p-4 border-t border-gray-200">
-            {{ $recentIncidents->links() }}
-        </div>
-        @elseif($recentIncidents->count() > 0)
-        <div class="p-4 border-t border-gray-200 text-center">
-            <p class="text-xs text-gray-500">Showing {{ $recentIncidents->count() }} of {{ $totalIncidents }} incidents</p>
+        {{-- View All Link (only if there are more incidents) --}}
+        @if($totalIncidents > 3)
+        <div class="px-4 py-3 border-t border-gray-100 bg-gray-50/50">
+            <a href="{{ route('sir.other.incidents.index') }}" class="flex items-center justify-center gap-2 text-sm text-gray-600 hover:text-blue-600 font-medium transition">
+                View all {{ $totalIncidents }} incidents
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+            </a>
         </div>
         @endif
     </div>
