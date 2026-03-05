@@ -17,78 +17,88 @@
     $themeColor = $isSrgbv ? 'red' : 'blue';
 @endphp
 <div class="max-w-7xl mx-auto space-y-6">
+    {{-- Breadcrumb & Actions --}}
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+            <div class="flex items-center gap-2 text-xs text-gray-400 mb-1">
+                <a href="{{ route('sir.dashboard') }}" class="hover:text-gray-600">SIR</a>
+                <span>›</span>
+                <a href="{{ route($dashboardRoute) }}" class="hover:text-gray-600">{{ $isSrgbv ? 'SRGBV' : 'Other Incidents' }}</a>
+                <span>›</span>
+                <span class="text-gray-600">{{ $incident->incident_number }}</span>
+            </div>
+            <h2 class="text-xl font-bold text-gray-900">{{ $incident->title }}</h2>
+            <p class="text-sm text-gray-500">{{ $incident->category_label }} • {{ $incident->incident_date?->format('M d, Y') ?? 'Date unknown' }} • Reported {{ $incident->created_at?->diffForHumans() ?? 'recently' }}</p>
+        </div>
+        <div class="flex items-center gap-3">
+            <a href="{{ route($dashboardRoute) }}" class="inline-flex items-center gap-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium px-4 py-2 rounded-lg text-sm transition">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+                Back
+            </a>
+            @if($canManage)
+            <a href="{{ route($editRoute, $incident) }}" class="inline-flex items-center gap-2 bg-{{ $themeColor }}-600 hover:bg-{{ $themeColor }}-700 text-white font-medium px-4 py-2 rounded-lg text-sm transition">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                Edit
+            </a>
+            @endif
+        </div>
+    </div>
+
     {{-- Incident Header Card --}}
-    <div class="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
-        {{-- Header with gradient --}}
-        <div class="bg-gradient-to-r from-{{ $themeColor }}-700 to-{{ $themeColor }}-800 px-6 py-4">
-            <div class="flex items-start justify-between">
+    <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
+        {{-- Header Bar --}}
+        <div class="px-6 py-4 border-b border-gray-100">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div class="flex items-center gap-4">
-                    <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                    <div class="w-12 h-12 bg-{{ $themeColor }}-100 rounded-lg flex items-center justify-center">
                         @if($isSrgbv)
-                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-6 h-6 text-{{ $themeColor }}-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
                         </svg>
                         @else
-                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-6 h-6 text-{{ $themeColor }}-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                         </svg>
                         @endif
                     </div>
                     <div>
                         <div class="flex items-center gap-2 mb-1">
-                            <span class="text-xs font-mono bg-white/20 text-white px-2 py-0.5 rounded">{{ $incident->incident_number }}</span>
+                            <span class="text-xs font-mono bg-gray-100 text-gray-700 px-2 py-0.5 rounded">{{ $incident->incident_number }}</span>
                             @if($incident->immediate_action_required)
-                            <span class="text-xs bg-red-500 text-white px-2 py-0.5 rounded font-semibold animate-pulse">URGENT</span>
+                            <span class="text-xs bg-red-600 text-white px-2 py-0.5 rounded font-semibold">URGENT</span>
                             @endif
                             @if($incident->is_confidential)
-                            <span class="text-xs bg-purple-500 text-white px-2 py-0.5 rounded">Confidential</span>
+                            <span class="text-xs bg-purple-600 text-white px-2 py-0.5 rounded">Confidential</span>
                             @endif
                         </div>
-                        <h1 class="text-lg font-semibold text-white">{{ $incident->title }}</h1>
-                        <p class="text-{{ $themeColor }}-100 text-sm mt-0.5">
-                            {{ $incident->category_label }} • {{ $incident->incident_date?->format('M d, Y') ?? 'Date unknown' }} • Reported {{ $incident->created_at?->diffForHumans() ?? 'recently' }}
-                        </p>
+                        <h1 class="text-lg font-semibold text-gray-900">{{ $incident->title }}</h1>
                     </div>
                 </div>
-                <div class="flex items-center gap-2">
-                    <a href="{{ route($dashboardRoute) }}" class="text-white/80 hover:text-white text-sm flex items-center gap-1 transition">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
-                        Back
-                    </a>
-                    @if($canManage)
-                    <a href="{{ route($editRoute, $incident) }}" class="px-3 py-1.5 bg-white/20 hover:bg-white/30 text-white text-sm font-medium rounded-lg transition flex items-center gap-1">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                        Edit
-                    </a>
-                    @endif
-                </div>
-            </div>
-        </div>
-
-        {{-- Status badges bar --}}
-        <div class="px-6 py-3 bg-gray-50 border-t border-gray-100 flex flex-wrap items-center gap-2">
-            <span class="text-xs px-2.5 py-1 font-medium rounded-full bg-{{ $incident->type_color }}-100 text-{{ $incident->type_color }}-700">{{ $incident->type_label }}</span>
-            <span class="text-xs px-2.5 py-1 font-medium rounded-full bg-{{ $incident->priority_color }}-100 text-{{ $incident->priority_color }}-700">{{ $incident->priority_label }}</span>
-            <span class="text-xs px-2.5 py-1 font-medium rounded-full bg-{{ $incident->status_color }}-100 text-{{ $incident->status_color }}-700">{{ $incident->status_label }}</span>
-            <span class="text-xs px-2.5 py-1 font-medium rounded-full bg-{{ $incident->source_color }}-100 text-{{ $incident->source_color }}-700">{{ $incident->source_label }}</span>
-            @if($incident->is_recurring)
-            <span class="text-xs px-2.5 py-1 font-medium rounded-full bg-amber-100 text-amber-700">Recurring</span>
-            @endif
-            
-            {{-- Quick Status Change --}}
-            @if($canManage && $incident->isOpen())
-            <div class="ml-auto flex items-center gap-2">
+                
+                {{-- Quick Status Change --}}
+                @if($canManage && $incident->isOpen())
                 <form method="POST" action="{{ route($statusRoute, $incident) }}" class="flex items-center gap-2">
                     @csrf @method('PATCH')
-                    <span class="text-xs text-gray-500">Quick Status:</span>
-                    <select name="status" class="text-xs px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-{{ $themeColor }}-500 bg-white">
+                    <span class="text-xs text-gray-500">Status:</span>
+                    <select name="status" class="text-sm px-3 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-{{ $themeColor }}-500 bg-white">
                         @foreach(\App\Models\Incident::STATUSES as $key => $label)
                         <option value="{{ $key }}" {{ $incident->status === $key ? 'selected' : '' }}>{{ $label }}</option>
                         @endforeach
                     </select>
-                    <button class="text-xs px-2.5 py-1 bg-gray-800 text-white hover:bg-gray-700 rounded-md transition">Update</button>
+                    <button class="px-3 py-1.5 bg-gray-800 text-white text-sm font-medium hover:bg-gray-700 rounded-lg transition">Update</button>
                 </form>
+                @endif
             </div>
+        </div>
+
+        {{-- Status badges bar --}}
+        <div class="px-6 py-3 bg-gray-50 flex flex-wrap items-center gap-2">
+            <span class="text-xs px-2.5 py-1 font-medium rounded-lg bg-{{ $incident->type_color }}-100 text-{{ $incident->type_color }}-700">{{ $incident->type_label }}</span>
+            <span class="text-xs px-2.5 py-1 font-medium rounded-lg bg-{{ $incident->priority_color }}-100 text-{{ $incident->priority_color }}-700">{{ $incident->priority_label }}</span>
+            <span class="text-xs px-2.5 py-1 font-medium rounded-lg bg-{{ $incident->status_color }}-100 text-{{ $incident->status_color }}-700">{{ $incident->status_label }}</span>
+            <span class="text-xs px-2.5 py-1 font-medium rounded-lg bg-{{ $incident->source_color }}-100 text-{{ $incident->source_color }}-700">{{ $incident->source_label }}</span>
+            @if($incident->is_recurring)
+            <span class="text-xs px-2.5 py-1 font-medium rounded-lg bg-amber-100 text-amber-700">Recurring</span>
             @endif
         </div>
     </div>
@@ -97,8 +107,8 @@
         {{-- Main Content (2/3) --}}
         <div class="lg:col-span-2 space-y-6">
             {{-- Description --}}
-            <div class="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
-                <div class="bg-gradient-to-r from-gray-50 to-white px-6 py-4 border-b border-gray-100">
+            <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100">
                     <div class="flex items-center gap-3">
                         <div class="w-8 h-8 rounded-lg bg-gray-100 text-gray-600 flex items-center justify-center">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -127,8 +137,8 @@
 
             {{-- School Information --}}
             @if($incident->school_name || $incident->school_county || $incident->incident_location)
-            <div class="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
-                <div class="bg-gradient-to-r from-gray-50 to-white px-6 py-4 border-b border-gray-100">
+            <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100">
                     <div class="flex items-center gap-3">
                         <div class="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -177,8 +187,8 @@
 
             {{-- Affected Person --}}
             @if($incident->victim_name)
-            <div class="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
-                <div class="bg-gradient-to-r from-gray-50 to-white px-6 py-4 border-b border-gray-100">
+            <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100">
                     <div class="flex items-center gap-3">
                         <div class="w-8 h-8 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -237,8 +247,8 @@
 
             {{-- Perpetrator --}}
             @if($incident->perpetrator_name || $incident->perpetrator_type)
-            <div class="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
-                <div class="bg-gradient-to-r from-gray-50 to-white px-6 py-4 border-b border-gray-100">
+            <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100">
                     <div class="flex items-center gap-3">
                         <div class="w-8 h-8 rounded-lg bg-orange-100 text-orange-600 flex items-center justify-center">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -275,8 +285,8 @@
 
             {{-- Public Reporter Info --}}
             @if($incident->isPublicReport() && ($incident->public_reporter_name || $incident->public_reporter_phone || $incident->public_reporter_email))
-            <div class="bg-white border border-green-200 rounded-lg overflow-hidden shadow-sm">
-                <div class="bg-gradient-to-r from-green-50 to-white px-6 py-4 border-b border-green-100">
+            <div class="bg-white border border-green-200 rounded-lg overflow-hidden">
+                <div class="px-6 py-4 border-b border-green-100 bg-green-50">
                     <div class="flex items-center gap-3">
                         <div class="w-8 h-8 rounded-lg bg-green-100 text-green-600 flex items-center justify-center">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -323,8 +333,8 @@
             @endif
 
             {{-- Files & Evidence --}}
-            <div class="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
-                <div class="bg-gradient-to-r from-gray-50 to-white px-6 py-4 border-b border-gray-100">
+            <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-3">
                             <div class="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center">
@@ -334,7 +344,7 @@
                             </div>
                             <h3 class="text-sm font-semibold text-gray-900">Files & Evidence</h3>
                         </div>
-                        <span class="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full font-medium">{{ $incident->files->count() }} file{{ $incident->files->count() !== 1 ? 's' : '' }}</span>
+                        <span class="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-lg font-medium">{{ $incident->files->count() }} file{{ $incident->files->count() !== 1 ? 's' : '' }}</span>
                     </div>
                 </div>
                 <div class="p-6">
@@ -415,8 +425,8 @@
             </div>
 
             {{-- Case Notes Timeline --}}
-            <div class="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
-                <div class="bg-gradient-to-r from-gray-50 to-white px-6 py-4 border-b border-gray-100">
+            <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-3">
                             <div class="w-8 h-8 rounded-lg bg-teal-100 text-teal-600 flex items-center justify-center">
@@ -426,7 +436,7 @@
                             </div>
                             <h3 class="text-sm font-semibold text-gray-900">Notes & Activity</h3>
                         </div>
-                        <span class="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full font-medium">{{ $notes->count() }} note{{ $notes->count() !== 1 ? 's' : '' }}</span>
+                        <span class="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-lg font-medium">{{ $notes->count() }} note{{ $notes->count() !== 1 ? 's' : '' }}</span>
                     </div>
                 </div>
                 <div class="p-6">
@@ -468,9 +478,9 @@
                             
                             <div class="flex items-center flex-wrap gap-2 mb-2">
                                 <span class="text-sm font-semibold text-gray-800">{{ $note->user?->name ?? 'Unknown User' }}</span>
-                                <span class="text-xs px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full">{{ $note->note_type_label }}</span>
+                                <span class="text-xs px-2 py-0.5 bg-gray-100 text-gray-600 rounded-lg">{{ $note->note_type_label }}</span>
                                 @if($note->is_private)
-                                <span class="text-xs px-2 py-0.5 bg-amber-100 text-amber-700 rounded-full flex items-center gap-1">
+                                <span class="text-xs px-2 py-0.5 bg-amber-100 text-amber-700 rounded-lg flex items-center gap-1">
                                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
                                     Private
                                 </span>
@@ -496,8 +506,8 @@
         {{-- Sidebar (1/3) --}}
         <div class="space-y-6">
             {{-- Details Card --}}
-            <div class="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
-                <div class="bg-gradient-to-r from-gray-50 to-white px-5 py-4 border-b border-gray-100">
+            <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
+                <div class="px-5 py-4 border-b border-gray-100">
                     <div class="flex items-center gap-2">
                         <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
@@ -509,7 +519,7 @@
                     <dl class="space-y-4 text-sm">
                         <div class="flex items-center justify-between">
                             <dt class="text-gray-500">Status</dt>
-                            <dd><span class="inline-block px-2.5 py-1 text-xs font-medium bg-{{ $incident->status_color }}-100 text-{{ $incident->status_color }}-700 rounded-full">{{ $incident->status_label }}</span></dd>
+                            <dd><span class="inline-block px-2.5 py-1 text-xs font-medium bg-{{ $incident->status_color }}-100 text-{{ $incident->status_color }}-700 rounded-lg">{{ $incident->status_label }}</span></dd>
                         </div>
                         <div class="flex items-center justify-between">
                             <dt class="text-gray-500">Type</dt>
@@ -521,7 +531,7 @@
                         </div>
                         <div class="flex items-center justify-between">
                             <dt class="text-gray-500">Priority</dt>
-                            <dd><span class="inline-block px-2.5 py-1 text-xs font-medium bg-{{ $incident->priority_color }}-100 text-{{ $incident->priority_color }}-700 rounded-full">{{ $incident->priority_label }}</span></dd>
+                            <dd><span class="inline-block px-2.5 py-1 text-xs font-medium bg-{{ $incident->priority_color }}-100 text-{{ $incident->priority_color }}-700 rounded-lg">{{ $incident->priority_label }}</span></dd>
                         </div>
                         <div class="flex items-center justify-between">
                             <dt class="text-gray-500">Source</dt>
@@ -557,10 +567,13 @@
 
             {{-- Risk Assessment --}}
             @if($incident->risk_level || $incident->immediate_action_required || $incident->safety_plan)
-            <div class="bg-white border border-{{ $incident->risk_level === 'immediate_danger' ? 'red' : ($incident->risk_level === 'high' ? 'orange' : 'amber') }}-200 rounded-lg overflow-hidden shadow-sm">
-                <div class="bg-gradient-to-r from-{{ $incident->risk_level === 'immediate_danger' ? 'red' : ($incident->risk_level === 'high' ? 'orange' : 'amber') }}-50 to-white px-5 py-4 border-b border-{{ $incident->risk_level === 'immediate_danger' ? 'red' : ($incident->risk_level === 'high' ? 'orange' : 'amber') }}-100">
+            @php
+                $riskColor = $incident->risk_level === 'immediate_danger' ? 'red' : ($incident->risk_level === 'high' ? 'orange' : 'amber');
+            @endphp
+            <div class="bg-white border border-{{ $riskColor }}-200 rounded-lg overflow-hidden">
+                <div class="px-5 py-4 border-b border-{{ $riskColor }}-100 bg-{{ $riskColor }}-50">
                     <div class="flex items-center gap-2">
-                        <svg class="w-4 h-4 text-{{ $incident->risk_level === 'immediate_danger' ? 'red' : ($incident->risk_level === 'high' ? 'orange' : 'amber') }}-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-4 h-4 text-{{ $riskColor }}-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
                         </svg>
                         <h3 class="text-sm font-semibold text-gray-900">Risk Assessment</h3>
@@ -571,7 +584,7 @@
                         @if($incident->risk_level)
                         <div>
                             <dt class="text-gray-500 mb-1">Risk Level</dt>
-                            <dd><span class="px-2.5 py-1 text-xs font-medium bg-{{ $incident->risk_level_color }}-100 text-{{ $incident->risk_level_color }}-700 rounded-full">{{ $incident->risk_level_label }}</span></dd>
+                            <dd><span class="px-2.5 py-1 text-xs font-medium bg-{{ $incident->risk_level_color }}-100 text-{{ $incident->risk_level_color }}-700 rounded-lg">{{ $incident->risk_level_label }}</span></dd>
                         </div>
                         @endif
                         @if($incident->safety_plan)
@@ -587,8 +600,8 @@
 
             {{-- Follow-Up --}}
             @if($incident->follow_up_required || $incident->resolution)
-            <div class="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
-                <div class="bg-gradient-to-r from-gray-50 to-white px-5 py-4 border-b border-gray-100">
+            <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
+                <div class="px-5 py-4 border-b border-gray-100">
                     <div class="flex items-center gap-2">
                         <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
@@ -635,8 +648,8 @@
 
             {{-- Quick Assign (for managers) --}}
             @if($canManage)
-            <div class="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
-                <div class="bg-gradient-to-r from-gray-50 to-white px-5 py-4 border-b border-gray-100">
+            <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
+                <div class="px-5 py-4 border-b border-gray-100">
                     <div class="flex items-center gap-2">
                         <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
@@ -670,8 +683,8 @@
             @endif
 
             {{-- Status Progress --}}
-            <div class="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
-                <div class="bg-gradient-to-r from-gray-50 to-white px-5 py-4 border-b border-gray-100">
+            <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
+                <div class="px-5 py-4 border-b border-gray-100">
                     <div class="flex items-center gap-2">
                         <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
@@ -720,7 +733,7 @@
 
             {{-- Delete Action --}}
             @if($canManage)
-            <div class="bg-white border border-red-200 rounded-lg overflow-hidden shadow-sm">
+            <div class="bg-white border border-red-200 rounded-lg overflow-hidden">
                 <div class="p-5">
                     <h3 class="text-sm font-semibold text-red-800 mb-2">Danger Zone</h3>
                     <p class="text-xs text-gray-500 mb-3">Once deleted, this incident cannot be recovered.</p>
