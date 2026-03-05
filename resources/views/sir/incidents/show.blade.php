@@ -683,12 +683,22 @@
                     @php
                         $statusOrder = ['reported', 'under_review', 'under_investigation', 'action_taken', 'referred', 'resolved', 'closed'];
                         $currentIndex = array_search($incident->status, $statusOrder);
+                        $progressColor = $incident->type === 'srgbv' ? 'red' : 'blue';
                     @endphp
                     <div class="space-y-3">
                         @foreach($statusOrder as $index => $status)
                         <div class="flex items-center gap-3">
                             <div class="relative flex items-center justify-center">
-                                <div class="w-5 h-5 rounded-full border-2 transition-all {{ $index < $currentIndex ? 'bg-green-500 border-green-500' : ($index === $currentIndex ? 'bg-{{ $incident->type === "srgbv" ? "red" : "blue" }}-500 border-{{ $incident->type === "srgbv" ? "red" : "blue" }}-500 ring-4 ring-{{ $incident->type === "srgbv" ? "red" : "blue" }}-100' : 'border-gray-300 bg-white') }} flex items-center justify-center">
+                                @php
+                                    if ($index < $currentIndex) {
+                                        $dotClass = 'bg-green-500 border-green-500';
+                                    } elseif ($index === $currentIndex) {
+                                        $dotClass = "bg-{$progressColor}-500 border-{$progressColor}-500 ring-4 ring-{$progressColor}-100";
+                                    } else {
+                                        $dotClass = 'border-gray-300 bg-white';
+                                    }
+                                @endphp
+                                <div class="w-5 h-5 rounded-full border-2 transition-all {{ $dotClass }} flex items-center justify-center">
                                     @if($index < $currentIndex)
                                     <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
                                     @elseif($index === $currentIndex)
