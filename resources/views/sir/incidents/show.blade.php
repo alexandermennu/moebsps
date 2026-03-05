@@ -378,45 +378,104 @@
                     </form>
 
                     @if($incident->files->count())
-                    <div class="space-y-2">
-                        @foreach($incident->files as $file)
-                        @php $fileUrl = $file->getFileUrl(); @endphp
-                        <div class="flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition group">
-                            <div class="flex items-center gap-3 min-w-0">
-                                @if($file->isImage() && $fileUrl)
-                                <img src="{{ $fileUrl }}" alt="" class="w-12 h-12 object-cover rounded-lg shadow-sm">
-                                @else
-                                <div class="w-12 h-12 bg-white border border-gray-200 rounded-lg flex items-center justify-center">
-                                    <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+                    @php
+                        $imageFiles = $incident->files->filter(fn($f) => $f->isImage() && $f->getFileUrl());
+                        $documentFiles = $incident->files->filter(fn($f) => !$f->isImage() || !$f->getFileUrl());
+                    @endphp
+
+                    {{-- Image Gallery Grid --}}
+                    @if($imageFiles->count())
+                    <div class="mb-5">
+                        <p class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-3">Images ({{ $imageFiles->count() }})</p>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3" id="image-gallery">
+                            @foreach($imageFiles as $index => $file)
+                            @php $fileUrl = $file->getFileUrl(); @endphp
+                            <div class="relative group aspect-square">
+                                <img 
+                                    src="{{ $fileUrl }}" 
+                                    alt="{{ $file->file_name }}" 
+                                    class="w-full h-full object-cover rounded-lg cursor-pointer hover:opacity-90 transition shadow-sm gallery-image"
+                                    data-index="{{ $index }}"
+                                    data-url="{{ $fileUrl }}"
+                                    data-name="{{ $file->file_name }}"
+                                    data-category="{{ $file->category_label }}"
+                                    data-size="{{ $file->file_size_formatted }}"
+                                    data-uploader="{{ $file->uploader?->name ?? 'Public' }}"
+                                    onclick="openLightbox({{ $index }})"
+                                >
+                                {{-- Overlay with info --}}
+                                <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent rounded-lg opacity-0 group-hover:opacity-100 transition pointer-events-none">
+                                    <div class="absolute bottom-0 left-0 right-0 p-2">
+                                        <p class="text-xs text-white truncate">{{ $file->file_name }}</p>
+                                        <p class="text-[10px] text-gray-300">{{ $file->category_label }}</p>
+                                    </div>
                                 </div>
-                                @endif
-                                <div class="min-w-0">
-                                    <p class="text-sm font-medium text-gray-800 truncate">{{ $file->file_name }}</p>
-                                    <p class="text-xs text-gray-400 flex items-center gap-1.5">
-                                        <span class="bg-gray-200 px-1.5 py-0.5 rounded text-gray-600">{{ $file->category_label }}</span>
-                                        <span>{{ $file->file_size_formatted }}</span>
-                                        <span>•</span>
-                                        <span>{{ $file->uploader?->name ?? 'Public' }}</span>
-                                        @if(!$fileUrl)
-                                        <span class="text-red-500">• File missing</span>
-                                        @endif
-                                    </p>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-3 opacity-0 group-hover:opacity-100 transition">
-                                @if($fileUrl)
-                                <a href="{{ $fileUrl }}" target="_blank" class="text-xs font-medium text-indigo-600 hover:text-indigo-800 transition">View</a>
-                                @endif
+                                {{-- Delete button --}}
                                 @if($canManage || $file->uploaded_by === auth()->id())
-                                <form method="POST" action="{{ route($filesDeleteRoute, [$incident, $file]) }}" onsubmit="return confirm('Delete this file?')">
+                                <form method="POST" action="{{ route($filesDeleteRoute, [$incident, $file]) }}" onsubmit="return confirm('Delete this file?')" class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition">
                                     @csrf @method('DELETE')
-                                    <button class="text-xs font-medium text-red-600 hover:text-red-800 transition">Delete</button>
+                                    <button class="w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-lg">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                    </button>
                                 </form>
                                 @endif
                             </div>
+                            @endforeach
                         </div>
-                        @endforeach
                     </div>
+                    @endif
+
+                    {{-- Documents List --}}
+                    @if($documentFiles->count())
+                    <div>
+                        <p class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-3">Documents ({{ $documentFiles->count() }})</p>
+                        <div class="space-y-2">
+                            @foreach($documentFiles as $file)
+                            @php $fileUrl = $file->getFileUrl(); @endphp
+                            <div class="flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition group">
+                                <div class="flex items-center gap-3 min-w-0">
+                                    <div class="w-10 h-10 bg-white border border-gray-200 rounded-lg flex items-center justify-center shrink-0">
+                                        @php
+                                            $ext = strtolower(pathinfo($file->file_name, PATHINFO_EXTENSION));
+                                            $iconColor = match($ext) {
+                                                'pdf' => 'text-red-500',
+                                                'doc', 'docx' => 'text-blue-500',
+                                                'xls', 'xlsx' => 'text-green-500',
+                                                'ppt', 'pptx' => 'text-orange-500',
+                                                default => 'text-gray-400'
+                                            };
+                                        @endphp
+                                        <svg class="w-5 h-5 {{ $iconColor }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+                                    </div>
+                                    <div class="min-w-0">
+                                        <p class="text-sm font-medium text-gray-800 truncate">{{ $file->file_name }}</p>
+                                        <p class="text-xs text-gray-400 flex items-center gap-1.5">
+                                            <span class="bg-gray-200 px-1.5 py-0.5 rounded text-gray-600">{{ $file->category_label }}</span>
+                                            <span>{{ $file->file_size_formatted }}</span>
+                                            <span>•</span>
+                                            <span>{{ $file->uploader?->name ?? 'Public' }}</span>
+                                            @if(!$fileUrl)
+                                            <span class="text-red-500">• File missing</span>
+                                            @endif
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-3 opacity-0 group-hover:opacity-100 transition">
+                                    @if($fileUrl)
+                                    <a href="{{ $fileUrl }}" target="_blank" class="text-xs font-medium text-indigo-600 hover:text-indigo-800 transition">Download</a>
+                                    @endif
+                                    @if($canManage || $file->uploaded_by === auth()->id())
+                                    <form method="POST" action="{{ route($filesDeleteRoute, [$incident, $file]) }}" onsubmit="return confirm('Delete this file?')">
+                                        @csrf @method('DELETE')
+                                        <button class="text-xs font-medium text-red-600 hover:text-red-800 transition">Delete</button>
+                                    </form>
+                                    @endif
+                                </div>
+                            </div>
+                            @endforeach
+                        </div>
+                    </div>
+                    @endif
                     @else
                     <div class="text-center py-8">
                         <div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
@@ -426,6 +485,47 @@
                         <p class="text-xs text-gray-400 mt-1">Upload evidence files using the form above</p>
                     </div>
                     @endif
+                </div>
+            </div>
+
+            {{-- Lightbox Modal --}}
+            <div id="lightbox-modal" class="fixed inset-0 z-50 hidden">
+                {{-- Backdrop --}}
+                <div class="absolute inset-0 bg-black/90" onclick="closeLightbox()"></div>
+                
+                {{-- Content --}}
+                <div class="relative h-full flex flex-col">
+                    {{-- Header --}}
+                    <div class="flex items-center justify-between p-4 text-white shrink-0">
+                        <div>
+                            <p id="lightbox-filename" class="font-medium"></p>
+                            <p id="lightbox-meta" class="text-sm text-gray-400"></p>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <span id="lightbox-counter" class="text-sm text-gray-400"></span>
+                            <a id="lightbox-download" href="#" target="_blank" class="text-sm text-indigo-400 hover:text-indigo-300">Download</a>
+                            <button onclick="closeLightbox()" class="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    {{-- Image Container --}}
+                    <div class="flex-1 flex items-center justify-center px-16 py-4 min-h-0">
+                        <img id="lightbox-image" src="" alt="" class="max-w-full max-h-full object-contain rounded-lg shadow-2xl">
+                    </div>
+                    
+                    {{-- Navigation --}}
+                    <div class="absolute left-4 top-1/2 -translate-y-1/2">
+                        <button id="lightbox-prev" onclick="navigateLightbox(-1)" class="w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition text-white disabled:opacity-30 disabled:cursor-not-allowed">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                        </button>
+                    </div>
+                    <div class="absolute right-4 top-1/2 -translate-y-1/2">
+                        <button id="lightbox-next" onclick="navigateLightbox(1)" class="w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition text-white disabled:opacity-30 disabled:cursor-not-allowed">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -755,4 +855,66 @@
         </div>
     </div>
 </div>
+
+{{-- Lightbox JavaScript --}}
+<script>
+    // Gallery images data
+    const galleryImages = [];
+    document.querySelectorAll('.gallery-image').forEach((img, index) => {
+        galleryImages.push({
+            url: img.dataset.url,
+            name: img.dataset.name,
+            category: img.dataset.category,
+            size: img.dataset.size,
+            uploader: img.dataset.uploader
+        });
+    });
+    
+    let currentImageIndex = 0;
+    
+    function openLightbox(index) {
+        if (galleryImages.length === 0) return;
+        currentImageIndex = index;
+        updateLightbox();
+        document.getElementById('lightbox-modal').classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+    
+    function closeLightbox() {
+        document.getElementById('lightbox-modal').classList.add('hidden');
+        document.body.style.overflow = '';
+    }
+    
+    function navigateLightbox(direction) {
+        currentImageIndex += direction;
+        if (currentImageIndex < 0) currentImageIndex = galleryImages.length - 1;
+        if (currentImageIndex >= galleryImages.length) currentImageIndex = 0;
+        updateLightbox();
+    }
+    
+    function updateLightbox() {
+        const img = galleryImages[currentImageIndex];
+        if (!img) return;
+        
+        document.getElementById('lightbox-image').src = img.url;
+        document.getElementById('lightbox-filename').textContent = img.name;
+        document.getElementById('lightbox-meta').textContent = `${img.category} • ${img.size} • Uploaded by ${img.uploader}`;
+        document.getElementById('lightbox-counter').textContent = `${currentImageIndex + 1} / ${galleryImages.length}`;
+        document.getElementById('lightbox-download').href = img.url;
+        
+        // Update navigation buttons
+        document.getElementById('lightbox-prev').disabled = galleryImages.length <= 1;
+        document.getElementById('lightbox-next').disabled = galleryImages.length <= 1;
+    }
+    
+    // Keyboard navigation
+    document.addEventListener('keydown', function(e) {
+        const modal = document.getElementById('lightbox-modal');
+        if (modal.classList.contains('hidden')) return;
+        
+        if (e.key === 'Escape') closeLightbox();
+        if (e.key === 'ArrowLeft') navigateLightbox(-1);
+        if (e.key === 'ArrowRight') navigateLightbox(1);
+    });
+</script>
 @endsection
