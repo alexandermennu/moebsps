@@ -358,36 +358,45 @@ class IncidentController extends Controller
      */
     public function show(Request $request, Incident $incident)
     {
-        $user = auth()->user();
-        $module = $request->route('module') ?? ($incident->type === Incident::TYPE_SRGBV ? 'srgbv' : 'other');
-        
-        if (!$this->canAccessIncidentType($user, $incident->type)) abort(403);
+        try {
+            $user = auth()->user();
+            $module = $request->route('module') ?? ($incident->type === Incident::TYPE_SRGBV ? 'srgbv' : 'other');
+            
+            if (!$this->canAccessIncidentType($user, $incident->type)) abort(403);
 
-        $incident->load([
-            'reporter', 'assignee', 'division',
-            'notes' => fn($q) => $q->with('user'),
-            'files' => fn($q) => $q->with('uploader'),
-        ]);
+            $incident->load([
+                'reporter', 'assignee', 'division',
+                'notes' => fn($q) => $q->with('user'),
+                'files' => fn($q) => $q->with('uploader'),
+            ]);
 
-        // Non-managers see only non-private notes
-        $notes = $incident->notes;
-        if (!$this->canManageIncidents($user)) {
-            $notes = $notes->where('is_private', false);
+            // Non-managers see only non-private notes
+            $notes = $incident->notes ?? collect();
+            if (!$this->canManageIncidents($user)) {
+                $notes = $notes->where('is_private', false);
+            }
+
+            $counselors = User::where('role', User::ROLE_COUNSELOR)
+                ->where('is_active', true)
+                ->where('approval_status', 'approved')
+                ->get();
+
+            return view('sir.incidents.show', [
+                'incident' => $incident,
+                'notes' => $notes,
+                'user' => $user,
+                'module' => $module,
+                'canManage' => $this->canManageIncidents($user),
+                'counselors' => $counselors,
+            ]);
+        } catch (\Throwable $e) {
+            \Log::error('Incident show error', [
+                'incident_id' => $incident->id ?? 'N/A',
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            throw $e;
         }
-
-        $counselors = User::where('role', User::ROLE_COUNSELOR)
-            ->where('is_active', true)
-            ->where('approval_status', 'approved')
-            ->get();
-
-        return view('sir.incidents.show', [
-            'incident' => $incident,
-            'notes' => $notes,
-            'user' => $user,
-            'module' => $module,
-            'canManage' => $this->canManageIncidents($user),
-            'counselors' => $counselors,
-        ]);
     }
 
     /**
