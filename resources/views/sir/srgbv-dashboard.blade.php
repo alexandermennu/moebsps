@@ -22,6 +22,10 @@
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
                 Back to SIR
             </a>
+            <a href="{{ route('sir.srgbv.cases.index') }}" class="inline-flex items-center gap-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium px-4 py-2 rounded-lg text-sm transition">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
+                View All Cases
+            </a>
             @if($canManage)
             <a href="{{ route('sir.srgbv.cases.create') }}" class="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white font-medium px-4 py-2 rounded-lg text-sm transition">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
@@ -111,57 +115,19 @@
         </div>
     </div>
 
-    {{-- SRGBV Incident Reports --}}
+    {{-- Recent Cases Preview --}}
     <div class="bg-white border border-gray-200 rounded-lg">
-        {{-- Filter Bar --}}
-        <form method="GET" action="{{ route('sir.srgbv.dashboard') }}" class="p-4 border-b border-gray-200">
-            <div class="flex flex-wrap items-end gap-3">
-                <div>
-                    <label class="block text-[11px] text-gray-500 uppercase tracking-wide mb-1">Search</label>
-                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Number, title, name, school..."
-                           class="px-3 py-2 border border-gray-300 rounded-md text-sm w-52 focus:outline-none focus:ring-2 focus:ring-red-500">
-                </div>
-                <div>
-                    <label class="block text-[11px] text-gray-500 uppercase tracking-wide mb-1">Source</label>
-                    <select name="source" class="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-red-500">
-                        <option value="">All Sources</option>
-                        @foreach(\App\Models\Incident::SOURCES as $key => $label)
-                        <option value="{{ $key }}" {{ request('source') === $key ? 'selected' : '' }}>{{ $label }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-[11px] text-gray-500 uppercase tracking-wide mb-1">Status</label>
-                    <select name="status" class="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-red-500">
-                        <option value="">All Statuses</option>
-                        @foreach(\App\Models\Incident::STATUSES as $key => $label)
-                        <option value="{{ $key }}" {{ request('status') === $key ? 'selected' : '' }}>{{ $label }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-[11px] text-gray-500 uppercase tracking-wide mb-1">Priority</label>
-                    <select name="priority" class="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-red-500">
-                        <option value="">All Priorities</option>
-                        @foreach(\App\Models\Incident::PRIORITIES as $key => $label)
-                        <option value="{{ $key }}" {{ request('priority') === $key ? 'selected' : '' }}>{{ $label }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-[11px] text-gray-500 uppercase tracking-wide mb-1">From</label>
-                    <input type="date" name="date_from" value="{{ request('date_from') }}" class="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-red-500">
-                </div>
-                <div>
-                    <label class="block text-[11px] text-gray-500 uppercase tracking-wide mb-1">To</label>
-                    <input type="date" name="date_to" value="{{ request('date_to') }}" class="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-red-500">
-                </div>
-                <button type="submit" class="px-4 py-2 bg-slate-800 text-white text-sm font-medium hover:bg-slate-700 rounded-md">Filter</button>
-                @if(request()->hasAny(['search', 'source', 'status', 'priority', 'date_from', 'date_to']))
-                <a href="{{ route('sir.srgbv.dashboard') }}" class="px-4 py-2 text-gray-500 text-sm hover:text-gray-700">Clear</a>
-                @endif
+        {{-- Section Header --}}
+        <div class="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
+            <div>
+                <h3 class="text-sm font-semibold text-gray-900">Recent Cases</h3>
+                <p class="text-xs text-gray-500">Latest 3 SRGBV reports</p>
             </div>
-        </form>
+            <a href="{{ route('sir.srgbv.cases.index') }}" class="text-sm text-red-600 hover:text-red-700 font-medium flex items-center gap-1">
+                View All Cases
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            </a>
+        </div>
 
         {{-- Case Cards List --}}
         <div class="divide-y divide-gray-100">
@@ -258,14 +224,13 @@
             @endforelse
         </div>
 
-        {{-- Pagination --}}
-        @if($recentIncidents->hasPages())
-        <div class="p-4 border-t border-gray-200">
-            {{ $recentIncidents->links() }}
-        </div>
-        @elseif($recentIncidents->count() > 0)
-        <div class="p-4 border-t border-gray-200 text-center">
-            <p class="text-xs text-gray-500">Showing {{ $recentIncidents->count() }} of {{ $totalIncidents }} cases</p>
+        {{-- View All Link (only if there are more cases) --}}
+        @if($totalIncidents > 3)
+        <div class="px-4 py-3 border-t border-gray-100 bg-gray-50/50">
+            <a href="{{ route('sir.srgbv.cases.index') }}" class="flex items-center justify-center gap-2 text-sm text-gray-600 hover:text-red-600 font-medium transition">
+                View all {{ $totalIncidents }} cases
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+            </a>
         </div>
         @endif
     </div>
