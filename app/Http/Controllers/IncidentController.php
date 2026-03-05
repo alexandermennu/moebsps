@@ -623,14 +623,84 @@ class IncidentController extends Controller
     }
 
     /**
+     * Export cases list as PDF.
+     */
+    public function exportList(Request $request)
+    {
+        $user = $request->user();
+        $module = $request->route('module') ?? $request->query('module');
+        
+        if ($module === 'srgbv' && !$user->canAccessSrgbv()) abort(403);
+        if ($module === 'other' && !$user->canAccessOtherIncidents()) abort(403);
+
+        $query = Incident::with(['reporter', 'assignee']);
+
+        if ($module === 'srgbv') {
+            $query->where('type', Incident::TYPE_SRGBV);
+        } elseif ($module === 'other') {
+            $query->where('type', '!=', Incident::TYPE_SRGBV);
+        }
+
+        // Apply same filters as index
+        if ($request->filled('status')) $query->where('status', $request->status);
+        if ($request->filled('priority')) $query->where('priority', $request->priority);
+        if ($request->filled('source')) $query->where('source', $request->source);
+        if ($request->filled('date_from')) $query->where('incident_date', '>=', $request->date_from);
+        if ($request->filled('date_to')) $query->where('incident_date', '<=', $request->date_to);
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('incident_number', 'like', "%{$search}%")
+                  ->orWhere('title', 'like', "%{$search}%")
+                  ->orWhere('school_name', 'like', "%{$search}%");
+            });
+        }
+
+        $incidents = $query->latest()->get();
+        $format = $request->query('format', 'pdf');
+        $moduleLabel = $module === 'srgbv' ? 'SRGBV Cases' : 'Other Incidents';
+
+        return view('sir.exports.cases-list', [
+            'incidents' => $incidents,
+            'module' => $module,
+            'moduleLabel' => $moduleLabel,
+            'format' => $format,
+            'exportDate' => now(),
+            'user' => $user,
+        ]);
+    }
+
+    /**
+     * Export single case details as PDF/Word.
+     */
+    public function exportCase(Request $request, Incident $incident)
+    {
+        $user = $request->user();
+        
+        if ($incident->type === Incident::TYPE_SRGBV && !$user->canAccessSrgbv()) abort(403);
+        if ($incident->type !== Incident::TYPE_SRGBV && !$user->canAccessOtherIncidents()) abort(403);
+
+        $incident->load(['reporter', 'assignee', 'division', 'notes.user', 'files']);
+        $format = $request->query('format', 'pdf');
+
+        return view('sir.exports.case-detail', [
+            'incident' => $incident,
+            'format' => $format,
+            'exportDate' => now(),
+            'user' => $user,
+        ]);
+    }
+
+    /**
      * Delete an incident.
      */
-    public function destroy(Incident $incident)
+    public function destroy(Incident $incident, Request $request)
     {
         $user = auth()->user();
         if (!$this->canManageIncidents($user)) abort(403);
 
         $incidentNumber = $incident->incident_number;
+        $module = $request->route()->defaults['module'] ?? ($incident->type === 'srgbv' ? 'srgbv' : 'other');
 
         // Delete files from storage
         foreach ($incident->files as $file) {
@@ -639,7 +709,10 @@ class IncidentController extends Controller
 
         $incident->delete();
 
-        return redirect()->route('sir.incidents.index')
+        // Redirect to appropriate module's cases list
+        $redirectRoute = $module === 'srgbv' ? 'sir.srgbv.cases.index' : 'sir.other.incidents.index';
+
+        return redirect()->route($redirectRoute)
             ->with('success', "Incident {$incidentNumber} has been permanently deleted.");
     }
 }

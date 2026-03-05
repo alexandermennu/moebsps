@@ -1,3 +1,6 @@
+@php
+    $incident = \App\Models\Incident::where('tracking_code', $trackingCode)->first();
+@endphp
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -34,15 +37,17 @@
                 <p class="text-sm text-gray-500 mt-1">Your report has been received and will be reviewed by the Ministry of Education.</p>
             </div>
 
+            @if($incident)
             <div class="text-sm text-gray-600">
                 <p class="mb-1">Incident Number:</p>
                 <p class="text-lg font-mono font-bold text-gray-900">{{ $incident->incident_number }}</p>
             </div>
+            @endif
 
-            @if($incident->tracking_code)
+            @if($trackingCode && $trackingCode !== 'SUBMITTED')
             <div class="bg-amber-50 border border-amber-200 rounded-md p-6">
                 <p class="text-sm text-amber-800 font-medium mb-2">Your Tracking Code</p>
-                <p class="text-3xl font-mono font-bold text-amber-900 tracking-wider">{{ $incident->tracking_code }}</p>
+                <p class="text-3xl font-mono font-bold text-amber-900 tracking-wider">{{ $trackingCode }}</p>
                 <p class="text-xs text-amber-600 mt-3">Save this code! You can use it to check the status of your report at any time.</p>
             </div>
             @endif
@@ -53,7 +58,7 @@
                     <li class="flex items-start gap-2"><span class="w-5 h-5 bg-red-100 text-red-700 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">1</span> Your report is reviewed by a counselor</li>
                     <li class="flex items-start gap-2"><span class="w-5 h-5 bg-red-100 text-red-700 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">2</span> An investigation may be opened</li>
                     <li class="flex items-start gap-2"><span class="w-5 h-5 bg-red-100 text-red-700 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">3</span> Appropriate action is taken</li>
-                    @if($incident->tracking_code)
+                    @if($trackingCode && $trackingCode !== 'SUBMITTED')
                     <li class="flex items-start gap-2"><span class="w-5 h-5 bg-red-100 text-red-700 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">4</span> You can track progress with your code</li>
                     @endif
                 </ol>
@@ -61,7 +66,7 @@
 
             <div class="flex items-center justify-center gap-4 pt-4">
                 <a href="{{ route('sir.public.report') }}" class="px-6 py-2.5 bg-white border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50 rounded-md">Submit Another Report</a>
-                @if($incident->tracking_code)
+                @if($trackingCode && $trackingCode !== 'SUBMITTED')
                 <a href="{{ route('sir.public.track.form') }}" class="px-6 py-2.5 bg-red-700 text-white text-sm font-medium hover:bg-red-800 rounded-md">Track Your Report</a>
                 @endif
             </div>

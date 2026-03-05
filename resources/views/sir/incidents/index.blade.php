@@ -7,6 +7,10 @@
     $indexRoute = $isSrgbv ? 'sir.srgbv.cases.index' : 'sir.other.incidents.index';
     $createRoute = $isSrgbv ? 'sir.srgbv.cases.create' : 'sir.other.incidents.create';
     $showRoute = $isSrgbv ? 'sir.srgbv.cases.show' : 'sir.other.incidents.show';
+    $editRoute = $isSrgbv ? 'sir.srgbv.cases.edit' : 'sir.other.incidents.edit';
+    $destroyRoute = $isSrgbv ? 'sir.srgbv.cases.destroy' : 'sir.other.incidents.destroy';
+    $exportRoute = $isSrgbv ? 'sir.srgbv.cases.export' : 'sir.other.incidents.export';
+    $exportSingleRoute = $isSrgbv ? 'sir.srgbv.cases.export-single' : 'sir.other.incidents.export-single';
     $dashboardRoute = $isSrgbv ? 'sir.srgbv.dashboard' : 'sir.other.dashboard';
     $themeColor = $isSrgbv ? 'red' : 'blue';
 @endphp
@@ -25,10 +29,17 @@
             <p class="text-sm text-gray-500">{{ $isSrgbv ? 'School-Related Gender-Based Violence reports.' : 'General school incident reports.' }}</p>
         </div>
         <div class="flex gap-2">
-            <a href="{{ route($dashboardRoute) }}" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50 rounded-md">Dashboard</a>
-            <a href="{{ route($createRoute) }}" class="px-4 py-2 bg-{{ $themeColor }}-700 text-white text-sm font-medium hover:bg-{{ $themeColor }}-800 rounded-md">
-                {{ $isSrgbv ? 'Report SRGBV Case' : 'Report Incident' }}
+            {{-- Export Button --}}
+            <a href="{{ route($exportRoute, array_merge(request()->query(), ['format' => 'pdf'])) }}" target="_blank" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50 rounded-md inline-flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                Export PDF
             </a>
+            <a href="{{ route($dashboardRoute) }}" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50 rounded-md">Dashboard</a>
+            @if($canManage)
+            <a href="{{ route($createRoute) }}" class="px-4 py-2 bg-{{ $themeColor }}-700 text-white text-sm font-medium hover:bg-{{ $themeColor }}-800 rounded-md">
+                {{ $isSrgbv ? 'Report Case' : 'Report Incident' }}
+            </a>
+            @endif
         </div>
     </div>
 
@@ -119,70 +130,158 @@
         </div>
     </form>
 
-    {{-- Incident Cards --}}
-    <div class="space-y-3">
-        @forelse($incidents as $incident)
-        <a href="{{ route($showRoute, $incident) }}" class="block bg-white border border-gray-200 rounded-md p-4 hover:border-gray-300 hover:shadow-sm transition">
-            <div class="flex items-start justify-between gap-4">
-                <div class="flex-1 min-w-0">
-                    {{-- Badges --}}
-                    <div class="flex flex-wrap items-center gap-1.5 mb-2">
-                        <span class="text-[10px] px-1.5 py-0.5 font-medium bg-gray-100 text-gray-600 rounded">{{ $incident->incident_number }}</span>
+    {{-- Cases Table --}}
+    <div class="bg-white border border-gray-200 rounded-md overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th scope="col" class="px-4 py-3 text-left text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Case #</th>
+                        <th scope="col" class="px-4 py-3 text-left text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Title / Category</th>
                         @if(!$isSrgbv)
-                        <span class="text-[10px] px-1.5 py-0.5 font-medium bg-{{ $incident->type_color }}-100 text-{{ $incident->type_color }}-700 rounded">{{ $incident->type_label }}</span>
+                        <th scope="col" class="px-4 py-3 text-left text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Type</th>
                         @endif
-                        <span class="text-[10px] px-1.5 py-0.5 font-medium bg-{{ $incident->priority_color }}-100 text-{{ $incident->priority_color }}-700 rounded">{{ $incident->priority_label }}</span>
-                        <span class="text-[10px] px-1.5 py-0.5 font-medium bg-{{ $incident->source_color }}-100 text-{{ $incident->source_color }}-700 rounded">{{ $incident->source_label }}</span>
-                        @if($incident->is_confidential)
-                        <span class="text-[10px] px-1.5 py-0.5 font-medium bg-purple-100 text-purple-700 rounded">Confidential</span>
+                        <th scope="col" class="px-4 py-3 text-left text-[10px] font-semibold text-gray-500 uppercase tracking-wider">School / Location</th>
+                        <th scope="col" class="px-4 py-3 text-left text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Date</th>
+                        <th scope="col" class="px-4 py-3 text-left text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Priority</th>
+                        <th scope="col" class="px-4 py-3 text-left text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Source</th>
+                        <th scope="col" class="px-4 py-3 text-left text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                        <th scope="col" class="px-4 py-3 text-left text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Reporter</th>
+                        <th scope="col" class="px-4 py-3 text-right text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-100">
+                    @forelse($incidents as $incident)
+                    <tr class="hover:bg-gray-50 transition">
+                        <td class="px-4 py-3 whitespace-nowrap">
+                            <div class="flex flex-col">
+                                <span class="text-xs font-mono font-semibold text-gray-900">{{ $incident->incident_number }}</span>
+                                @if($incident->immediate_action_required)
+                                <span class="text-[9px] px-1.5 py-0.5 mt-1 font-semibold bg-red-500 text-white rounded w-fit">URGENT</span>
+                                @endif
+                                @if($incident->is_confidential)
+                                <span class="text-[9px] text-purple-600 font-medium mt-0.5">Confidential</span>
+                                @endif
+                            </div>
+                        </td>
+                        <td class="px-4 py-3">
+                            <a href="{{ route($showRoute, $incident) }}" class="text-sm font-medium text-gray-900 hover:text-{{ $themeColor }}-700 line-clamp-1">{{ $incident->title }}</a>
+                            <p class="text-xs text-gray-500 mt-0.5">{{ $incident->category_label }}</p>
+                        </td>
+                        @if(!$isSrgbv)
+                        <td class="px-4 py-3 whitespace-nowrap">
+                            <span class="text-[10px] px-2 py-1 font-medium bg-{{ $incident->type_color }}-100 text-{{ $incident->type_color }}-700 rounded">{{ $incident->type_label }}</span>
+                        </td>
                         @endif
-                        @if($incident->immediate_action_required)
-                        <span class="text-[10px] px-1.5 py-0.5 font-medium bg-red-500 text-white rounded">URGENT</span>
-                        @endif
-                    </div>
-
-                    {{-- Title & meta --}}
-                    <h3 class="text-sm font-semibold text-gray-800">{{ $incident->title }}</h3>
-                    <p class="text-xs text-gray-500 mt-1">
-                        {{ $incident->category_label }}
-                        · {{ $incident->incident_date?->format('M d, Y') ?? 'Date unknown' }}
-                        @if($incident->school_name) · {{ $incident->school_name }} @endif
-                        @if($incident->school_county) ({{ $incident->school_county }}) @endif
-                    </p>
-
-                    {{-- Reporter & Assignee --}}
-                    <div class="flex items-center gap-4 mt-2 text-xs text-gray-400">
-                        @if($incident->reporter)
-                        <span>Reported by: {{ $incident->reporter->name }}</span>
-                        @elseif($incident->public_reporter_name)
-                        <span>Public: {{ $incident->public_reporter_name }}</span>
-                        @else
-                        <span>Anonymous Report</span>
-                        @endif
-
-                        @if($incident->assignee)
-                        <span>· Assigned: {{ $incident->assignee->name }}</span>
-                        @endif
-
-                        <span>· {{ $incident->created_at->diffForHumans() }}</span>
-                    </div>
-                </div>
-
-                {{-- Status badge --}}
-                <span class="text-[10px] px-2 py-1 font-medium bg-{{ $incident->status_color }}-100 text-{{ $incident->status_color }}-700 rounded whitespace-nowrap">{{ $incident->status_label }}</span>
-            </div>
-        </a>
-        @empty
-        <div class="bg-white border border-gray-200 rounded-md p-8 text-center">
-            <p class="text-gray-400 text-sm">No {{ $isSrgbv ? 'SRGBV cases' : 'incidents' }} found.</p>
-            <a href="{{ route($createRoute) }}" class="mt-2 inline-block text-sm text-{{ $themeColor }}-700 hover:underline">Report the first {{ $isSrgbv ? 'case' : 'incident' }} →</a>
+                        <td class="px-4 py-3">
+                            <div class="text-xs text-gray-900">{{ $incident->school_name ?? '—' }}</div>
+                            @if($incident->school_county)
+                            <div class="text-[10px] text-gray-500">{{ $incident->school_county }}</div>
+                            @endif
+                        </td>
+                        <td class="px-4 py-3 whitespace-nowrap">
+                            <div class="text-xs text-gray-900">{{ $incident->incident_date?->format('M d, Y') ?? '—' }}</div>
+                            <div class="text-[10px] text-gray-400">{{ $incident->created_at->diffForHumans() }}</div>
+                        </td>
+                        <td class="px-4 py-3 whitespace-nowrap">
+                            @php
+                                $priorityColors = [
+                                    'low' => 'bg-green-100 text-green-700',
+                                    'medium' => 'bg-blue-100 text-blue-700',
+                                    'high' => 'bg-orange-100 text-orange-700',
+                                    'critical' => 'bg-red-100 text-red-700',
+                                ];
+                            @endphp
+                            <span class="text-[10px] px-2 py-1 font-medium {{ $priorityColors[$incident->priority] ?? 'bg-gray-100 text-gray-700' }} rounded">{{ $incident->priority_label }}</span>
+                        </td>
+                        <td class="px-4 py-3 whitespace-nowrap">
+                            @php
+                                $sourceColors = [
+                                    'internal' => 'bg-sky-100 text-sky-700',
+                                    'public' => 'bg-amber-100 text-amber-700',
+                                    'hotline' => 'bg-indigo-100 text-indigo-700',
+                                    'referral' => 'bg-teal-100 text-teal-700',
+                                ];
+                            @endphp
+                            <span class="text-[10px] px-2 py-1 font-medium {{ $sourceColors[$incident->source] ?? 'bg-gray-100 text-gray-700' }} rounded">{{ $incident->source_label }}</span>
+                        </td>
+                        <td class="px-4 py-3 whitespace-nowrap">
+                            @php
+                                $statusColors = [
+                                    'reported' => 'bg-blue-100 text-blue-700',
+                                    'under_review' => 'bg-amber-100 text-amber-700',
+                                    'under_investigation' => 'bg-orange-100 text-orange-700',
+                                    'action_taken' => 'bg-purple-100 text-purple-700',
+                                    'referred' => 'bg-indigo-100 text-indigo-700',
+                                    'resolved' => 'bg-green-100 text-green-700',
+                                    'closed' => 'bg-gray-100 text-gray-600',
+                                ];
+                            @endphp
+                            <span class="text-[10px] px-2 py-1 font-medium {{ $statusColors[$incident->status] ?? 'bg-gray-100 text-gray-700' }} rounded">{{ $incident->status_label }}</span>
+                        </td>
+                        <td class="px-4 py-3 whitespace-nowrap">
+                            <div class="text-xs text-gray-700">
+                                @if($incident->reporter)
+                                    {{ Str::limit($incident->reporter->name, 15) }}
+                                @elseif($incident->public_reporter_name)
+                                    {{ Str::limit($incident->public_reporter_name, 15) }}
+                                @else
+                                    <span class="text-gray-400 italic">Anonymous</span>
+                                @endif
+                            </div>
+                        </td>
+                        <td class="px-4 py-3 whitespace-nowrap text-right">
+                            <div class="flex items-center justify-end gap-1">
+                                <a href="{{ route($showRoute, $incident) }}" class="p-1.5 text-gray-400 hover:text-{{ $themeColor }}-600 hover:bg-gray-100 rounded transition" title="View">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                </a>
+                                <a href="{{ route($exportSingleRoute, $incident) }}" target="_blank" class="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-gray-100 rounded transition" title="Export PDF">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                </a>
+                                @if($canManage)
+                                <a href="{{ route($editRoute, $incident) }}" class="p-1.5 text-gray-400 hover:text-amber-600 hover:bg-gray-100 rounded transition" title="Edit">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                </a>
+                                <form method="POST" action="{{ route($destroyRoute, $incident) }}" class="inline" onsubmit="return confirm('Are you sure you want to delete this case? This action cannot be undone.')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-gray-100 rounded transition" title="Delete">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                    </button>
+                                </form>
+                                @endif
+                            </div>
+                        </td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="{{ $isSrgbv ? '9' : '10' }}" class="px-4 py-12 text-center">
+                            <div class="flex flex-col items-center">
+                                <div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-3">
+                                    <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                </div>
+                                <p class="text-gray-400 text-sm">No {{ $isSrgbv ? 'SRGBV cases' : 'incidents' }} found.</p>
+                                @if($canManage)
+                                <a href="{{ route($createRoute) }}" class="mt-2 text-sm text-{{ $themeColor }}-700 hover:underline">Report the first {{ $isSrgbv ? 'case' : 'incident' }} →</a>
+                                @endif
+                            </div>
+                        </td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
-        @endforelse
-    </div>
 
-    {{-- Pagination --}}
-    <div class="mt-4">
-        {{ $incidents->links() }}
+        {{-- Pagination --}}
+        @if($incidents->hasPages())
+        <div class="px-4 py-3 border-t border-gray-200 bg-gray-50">
+            {{ $incidents->links() }}
+        </div>
+        @else
+        <div class="px-4 py-3 border-t border-gray-100 text-center">
+            <p class="text-xs text-gray-500">Showing {{ $incidents->count() }} of {{ $incidents->total() }} {{ $isSrgbv ? 'cases' : 'incidents' }}</p>
+        </div>
+        @endif
     </div>
 </div>
 @endsection

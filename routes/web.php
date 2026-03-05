@@ -156,9 +156,11 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::prefix('srgbv')->name('srgbv.')->group(function () {
             Route::get('/dashboard', [SirDashboardController::class, 'srgbvDashboard'])->name('dashboard');
             Route::get('/cases', [IncidentController::class, 'index'])->name('cases.index')->defaults('module', 'srgbv');
+            Route::get('/cases/export', [IncidentController::class, 'exportList'])->name('cases.export')->defaults('module', 'srgbv');
             Route::get('/cases/create', [IncidentController::class, 'create'])->name('cases.create')->defaults('module', 'srgbv');
             Route::post('/cases', [IncidentController::class, 'store'])->name('cases.store')->defaults('module', 'srgbv');
             Route::get('/cases/{incident}', [IncidentController::class, 'show'])->name('cases.show')->defaults('module', 'srgbv');
+            Route::get('/cases/{incident}/export', [IncidentController::class, 'exportCase'])->name('cases.export-single')->defaults('module', 'srgbv');
             Route::get('/cases/{incident}/edit', [IncidentController::class, 'edit'])->name('cases.edit')->defaults('module', 'srgbv');
             Route::put('/cases/{incident}', [IncidentController::class, 'update'])->name('cases.update')->defaults('module', 'srgbv');
             Route::post('/cases/{incident}/notes', [IncidentController::class, 'addNote'])->name('cases.notes')->defaults('module', 'srgbv');
@@ -172,9 +174,11 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::prefix('other')->name('other.')->group(function () {
             Route::get('/dashboard', [SirDashboardController::class, 'otherDashboard'])->name('dashboard');
             Route::get('/incidents', [IncidentController::class, 'index'])->name('incidents.index')->defaults('module', 'other');
+            Route::get('/incidents/export', [IncidentController::class, 'exportList'])->name('incidents.export')->defaults('module', 'other');
             Route::get('/incidents/create', [IncidentController::class, 'create'])->name('incidents.create')->defaults('module', 'other');
             Route::post('/incidents', [IncidentController::class, 'store'])->name('incidents.store')->defaults('module', 'other');
             Route::get('/incidents/{incident}', [IncidentController::class, 'show'])->name('incidents.show')->defaults('module', 'other');
+            Route::get('/incidents/{incident}/export', [IncidentController::class, 'exportCase'])->name('incidents.export-single')->defaults('module', 'other');
             Route::get('/incidents/{incident}/edit', [IncidentController::class, 'edit'])->name('incidents.edit')->defaults('module', 'other');
             Route::put('/incidents/{incident}', [IncidentController::class, 'update'])->name('incidents.update')->defaults('module', 'other');
             Route::post('/incidents/{incident}/notes', [IncidentController::class, 'addNote'])->name('incidents.notes')->defaults('module', 'other');

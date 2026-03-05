@@ -13,6 +13,7 @@
     $notesRoute = $isSrgbv ? 'sir.srgbv.cases.notes' : 'sir.other.incidents.notes';
     $filesRoute = $isSrgbv ? 'sir.srgbv.cases.files' : 'sir.other.incidents.files';
     $filesDeleteRoute = $isSrgbv ? 'sir.srgbv.cases.files.delete' : 'sir.other.incidents.files.delete';
+    $exportRoute = $isSrgbv ? 'sir.srgbv.cases.export-single' : 'sir.other.incidents.export-single';
     $dashboardRoute = $isSrgbv ? 'sir.srgbv.dashboard' : 'sir.other.dashboard';
     $themeColor = $isSrgbv ? 'red' : 'blue';
 @endphp
@@ -31,6 +32,10 @@
             <p class="text-sm text-gray-500">{{ $incident->category_label }} • {{ $incident->incident_date?->format('M d, Y') ?? 'Date unknown' }} • Reported {{ $incident->created_at?->diffForHumans() ?? 'recently' }}</p>
         </div>
         <div class="flex items-center gap-3">
+            <a href="{{ route($exportRoute, $incident) }}" target="_blank" class="inline-flex items-center gap-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium px-4 py-2 rounded-lg text-sm transition" title="Export as PDF">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                Export PDF
+            </a>
             <a href="{{ route($dashboardRoute) }}" class="inline-flex items-center gap-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium px-4 py-2 rounded-lg text-sm transition">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
                 Back
