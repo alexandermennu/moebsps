@@ -53,7 +53,7 @@
 
         {{-- Validation Errors --}}
         @if($errors->any())
-        <div class="mx-4 mt-4 bg-red-50 border border-red-200 rounded-xl p-4">
+        <div id="validationErrors" class="mx-4 mt-4 bg-red-50 border border-red-200 rounded-xl p-4">
             <p class="text-sm font-medium text-red-800 mb-1">Please fix these issues:</p>
             <ul class="text-sm text-red-600 space-y-0.5">
                 @foreach($errors->all() as $error)<li>• {{ $error }}</li>@endforeach
@@ -261,7 +261,8 @@
 
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">When did it happen? *</label>
-                        <input type="date" name="incident_date" value="{{ old('incident_date') }}" required class="w-full px-4 py-3.5 bg-white border border-gray-200 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent">
+                        <input type="date" name="incident_date" value="{{ old('incident_date') }}" max="{{ date('Y-m-d') }}" required class="w-full px-4 py-3.5 bg-white border border-gray-200 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent">
+                        <p class="text-xs text-gray-400 mt-1">Date cannot be in the future</p>
                     </div>
                 </div>
             </div>
@@ -827,6 +828,40 @@
 
     // Initialize
     updateUI();
+
+    // Handle validation errors - navigate to correct step
+    @if($errors->any())
+    (function() {
+        const errorFields = @json($errors->keys());
+        const fieldToStep = {
+            'type': 2, 'category': 2, 'incident_date': 2, 'title': 2,
+            'school_name': 3, 'school_county': 3, 'school_district': 3, 'school_level': 3, 'incident_location': 3,
+            'victim_name': 4, 'victim_age': 4, 'victim_gender': 4, 'victim_grade': 4,
+            'perpetrator_name': 4, 'perpetrator_type': 4, 'perpetrator_description': 4,
+            'description': 5,
+            'public_reporter_name': 6, 'public_reporter_phone': 6, 'public_reporter_email': 6, 
+            'public_reporter_relationship': 6, 'is_confidential': 6, 'immediate_action_required': 6
+        };
+        
+        let targetStep = 2;
+        for (const field of errorFields) {
+            if (fieldToStep[field]) {
+                targetStep = fieldToStep[field];
+                break;
+            }
+        }
+        
+        currentStep = targetStep;
+        updateUI();
+        
+        setTimeout(() => {
+            const errorBox = document.getElementById('validationErrors');
+            if (errorBox) {
+                errorBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }, 150);
+    })();
+    @endif
     </script>
 </body>
 </html>
