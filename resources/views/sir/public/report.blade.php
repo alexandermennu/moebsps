@@ -246,10 +246,10 @@
                         <label class="block text-sm font-medium text-gray-700 mb-2">Type of Incident *</label>
                         <select name="type" id="incident_type" required class="w-full px-4 py-3.5 bg-white border border-gray-200 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent">
                             <option value="">Select incident type...</option>
-                            @foreach(\App\Models\Incident::TYPES as $key => $label)
-                            <option value="{{ $key }}" {{ old('type') === $key ? 'selected' : '' }}>{{ $label }}</option>
-                            @endforeach
+                            <option value="srgbv" {{ old('type') === 'srgbv' ? 'selected' : '' }}>SRGBV (School-Related Gender-Based Violence)</option>
+                            <option value="other_incident" {{ old('type') === 'other_incident' ? 'selected' : '' }}>Other Incidents</option>
                         </select>
+                        <p class="text-xs text-gray-400 mt-1.5">SRGBV cases are handled by the Counseling Division</p>
                     </div>
                     
                     <div>

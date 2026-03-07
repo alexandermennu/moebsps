@@ -202,7 +202,7 @@ class IncidentController extends Controller
         if (!$user->canAccessSir()) abort(403);
 
         $validated = $request->validate([
-            'type' => ['required', Rule::in(array_keys(Incident::TYPES))],
+            'type' => ['required', Rule::in(array_keys(Incident::ALL_TYPES))],
             'category' => 'required|string',
             'title' => 'required|string|max:255',
             'description' => 'required|string',
@@ -425,7 +425,7 @@ class IncidentController extends Controller
         if (!$this->canManageIncidents($user)) abort(403);
 
         $validated = $request->validate([
-            'type' => ['required', Rule::in(array_keys(Incident::TYPES))],
+            'type' => ['required', Rule::in(array_keys(Incident::ALL_TYPES))],
             'category' => 'required|string',
             'title' => 'required|string|max:255',
             'description' => 'required|string',

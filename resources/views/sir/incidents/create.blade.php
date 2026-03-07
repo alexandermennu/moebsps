@@ -122,13 +122,13 @@
             <div class="p-6 space-y-4">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1.5">Incident Type <span class="text-red-500">*</span></label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1.5">Type of Incident <span class="text-red-500">*</span></label>
                         <select name="type" id="incident-type" required class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 bg-white transition">
                             <option value="">Select Type</option>
-                            @foreach(\App\Models\Incident::TYPES as $key => $label)
-                            <option value="{{ $key }}" {{ old('type', $selectedType) === $key ? 'selected' : '' }}>{{ $label }}</option>
-                            @endforeach
+                            <option value="srgbv" {{ old('type', $selectedType) === 'srgbv' ? 'selected' : '' }}>SRGBV (School-Related Gender-Based Violence)</option>
+                            <option value="other_incident" {{ old('type', $selectedType) === 'other_incident' ? 'selected' : '' }}>Other Incidents</option>
                         </select>
+                        <p class="text-xs text-gray-400 mt-1">SRGBV → Counseling Division | Other → CEDP Division</p>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1.5">Category <span class="text-red-500">*</span></label>

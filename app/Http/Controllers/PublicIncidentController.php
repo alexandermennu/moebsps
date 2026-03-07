@@ -29,7 +29,7 @@ class PublicIncidentController extends Controller
         }
 
         $validated = $request->validate([
-            'type' => ['required', Rule::in(array_keys(Incident::TYPES))],
+            'type' => ['required', Rule::in(array_keys(Incident::ALL_TYPES))],
             'category' => 'required|string',
             'title' => 'required|string|max:255',
             'description' => 'required|string|max:5000',

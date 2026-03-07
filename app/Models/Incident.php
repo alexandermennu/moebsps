@@ -34,6 +34,9 @@ class Incident extends Model
 
     // ── Incident Types ──────────────────────────────────────
     const TYPE_SRGBV = 'srgbv';
+    const TYPE_OTHER_INCIDENT = 'other_incident';
+
+    // Legacy types (kept for backward compatibility)
     const TYPE_DISCIPLINARY = 'disciplinary';
     const TYPE_SAFETY = 'safety';
     const TYPE_INFRASTRUCTURE = 'infrastructure';
@@ -41,8 +44,16 @@ class Incident extends Model
     const TYPE_HEALTH = 'health';
     const TYPE_OTHER = 'other';
 
+    // Main types shown on forms
     const TYPES = [
-        self::TYPE_SRGBV => 'SRGBV (Gender-Based Violence)',
+        self::TYPE_SRGBV => 'SRGBV (School-Related Gender-Based Violence)',
+        self::TYPE_OTHER_INCIDENT => 'Other Incidents',
+    ];
+
+    // All types including legacy (for validation)
+    const ALL_TYPES = [
+        self::TYPE_SRGBV => 'SRGBV (School-Related Gender-Based Violence)',
+        self::TYPE_OTHER_INCIDENT => 'Other Incidents',
         self::TYPE_DISCIPLINARY => 'Disciplinary',
         self::TYPE_SAFETY => 'Safety & Security',
         self::TYPE_INFRASTRUCTURE => 'Infrastructure',
@@ -64,6 +75,22 @@ class Incident extends Model
             'verbal_abuse' => 'Verbal abuse',
             'threats_intimidation' => 'Threats or intimidation',
         ],
+        self::TYPE_OTHER_INCIDENT => [
+            'student_misconduct' => 'Student Misconduct',
+            'teacher_misconduct' => 'Teacher/Staff Misconduct',
+            'substance_abuse' => 'Substance Abuse',
+            'fighting' => 'Fighting / Violence',
+            'vandalism' => 'Vandalism / Property Damage',
+            'theft' => 'Theft',
+            'fire' => 'Fire Incident',
+            'structural_hazard' => 'Structural Hazard',
+            'sanitation' => 'Sanitation / Health Issue',
+            'accident_injury' => 'Accident / Injury',
+            'bullying' => 'Bullying / Harassment (Non-Sexual)',
+            'truancy' => 'Truancy / Attendance Issues',
+            'other' => 'Other',
+        ],
+        // Legacy categories kept for backward compatibility
         self::TYPE_DISCIPLINARY => [
             'student_misconduct' => 'Student Misconduct',
             'teacher_misconduct' => 'Teacher Misconduct',
@@ -390,7 +417,7 @@ class Incident extends Model
 
     public function getTypeLabelAttribute(): string
     {
-        return self::TYPES[$this->type] ?? ucfirst($this->type);
+        return self::ALL_TYPES[$this->type] ?? self::TYPES[$this->type] ?? ucfirst($this->type);
     }
 
     public function getStatusLabelAttribute(): string
