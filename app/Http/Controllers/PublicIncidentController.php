@@ -40,7 +40,7 @@ class PublicIncidentController extends Controller
             'school_district' => 'nullable|string|max:255',
             'school_level' => ['nullable', Rule::in(array_keys(Incident::SCHOOL_LEVELS))],
             'victim_name' => 'nullable|string|max:255',
-            'victim_age' => 'nullable|integer|min:1|max:100',
+            'victim_age' => ['nullable', Rule::in(array_keys(Incident::VICTIM_AGE_RANGES))],
             'victim_gender' => 'nullable|string|max:50',
             'victim_grade' => 'nullable|string|max:50',
             'perpetrator_name' => 'nullable|string|max:255',
@@ -144,7 +144,9 @@ class PublicIncidentController extends Controller
     public function track(Request $request)
     {
         $request->validate([
-            'tracking_code' => 'required|string|max:20',
+            'tracking_code' => ['required', 'string', 'min:15', 'max:20', 'regex:/^SIR-(SRGBV|OI)-[A-Z]{3}-\d{4}$/i'],
+        ], [
+            'tracking_code.regex' => 'Invalid tracking code format. Expected format: SIR-SRGBV-ABC-1234 or SIR-OI-ABC-1234',
         ]);
 
         $incident = Incident::where('tracking_code', strtoupper($request->tracking_code))->first();

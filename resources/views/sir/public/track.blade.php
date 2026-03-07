@@ -30,10 +30,19 @@
                 <p class="text-sm text-gray-500 mt-1">The tracking code was provided when you submitted your report.</p>
             </div>
 
-            <form method="POST" action="{{ route('sir.public.track') }}" class="flex items-end gap-3 max-w-md mx-auto">
+            <form method="POST" action="{{ route('sir.public.track') }}" class="flex items-end gap-3 max-w-lg mx-auto">
                 @csrf
                 <div class="flex-1">
-                    <input type="text" name="tracking_code" value="{{ old('tracking_code', $trackingCode ?? '') }}" required placeholder="e.g., ABC-1234" class="w-full px-4 py-3 border border-gray-300 rounded-md text-center text-lg font-mono tracking-wider focus:outline-none focus:ring-2 focus:ring-red-500 uppercase" maxlength="8">
+                    <input type="text" 
+                           name="tracking_code" 
+                           value="{{ old('tracking_code', $trackingCode ?? '') }}" 
+                           required 
+                           placeholder="e.g., SIR-SRGBV-ABC-1234" 
+                           class="w-full px-4 py-3 border border-gray-300 rounded-md text-center text-lg font-mono tracking-wider focus:outline-none focus:ring-2 focus:ring-red-500 uppercase" 
+                           minlength="15"
+                           maxlength="20"
+                           pattern="SIR-(SRGBV|OI)-[A-Z]{3}-\d{4}"
+                           title="Format: SIR-SRGBV-ABC-1234 or SIR-OI-ABC-1234">
                 </div>
                 <button type="submit" class="px-6 py-3 bg-red-700 text-white text-sm font-semibold hover:bg-red-800 rounded-md">Track</button>
             </form>

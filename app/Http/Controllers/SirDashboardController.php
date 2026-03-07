@@ -173,6 +173,14 @@ class SirDashboardController extends Controller
             ->pluck('total', 'victim_gender')
             ->toArray();
 
+        // Victim age range distribution
+        $byAgeRange = Incident::srgbv()
+            ->select('victim_age', DB::raw('count(*) as total'))
+            ->whereNotNull('victim_age')
+            ->groupBy('victim_age')
+            ->pluck('total', 'victim_age')
+            ->toArray();
+
         // Get only top 3 recent cases for dashboard preview
         $recentIncidents = Incident::srgbv()
             ->with(['reporter', 'assignee'])
@@ -204,6 +212,7 @@ class SirDashboardController extends Controller
             'resolutionRate' => $resolutionRate,
             'avgResolutionDays' => $avgResolutionDays ? round($avgResolutionDays) : null,
             'byGender' => $byGender,
+            'byAgeRange' => $byAgeRange,
         ]);
     }
 

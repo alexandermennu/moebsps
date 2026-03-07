@@ -328,39 +328,101 @@
                 </div>
             </div>
 
-            {{-- Step 5: People Involved --}}
+            {{-- Step 5: People Involved (shown conditionally based on incident type) --}}
             <div class="step" data-step="5">
-                <div class="text-center mb-6">
-                    <div class="w-16 h-16 bg-amber-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
-                        <svg class="w-8 h-8 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                {{-- SRGBV or person-related incidents --}}
+                <div id="peopleInvolvedSection">
+                    <div class="text-center mb-6">
+                        <div class="w-16 h-16 bg-amber-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                            <svg class="w-8 h-8 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                        </div>
+                        <h2 class="text-xl font-bold text-gray-900" id="step5Title">Who was affected?</h2>
+                        <p class="text-sm text-gray-500 mt-1" id="step5Subtitle">Optional — helps us respond better</p>
                     </div>
-                    <h2 class="text-xl font-bold text-gray-900">Who was affected?</h2>
-                    <p class="text-sm text-gray-500 mt-1">Optional — helps us respond better</p>
+
+                    <div class="space-y-4" id="victimFields">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Affected Person's Name</label>
+                            <input type="text" name="victim_name" value="{{ old('victim_name') }}" placeholder="Leave blank if unknown" class="w-full px-4 py-3.5 bg-white border border-gray-200 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent">
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Age Range</label>
+                                <select name="victim_age" class="w-full px-4 py-3.5 bg-white border border-gray-200 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent">
+                                    <option value="">Select...</option>
+                                    @foreach(\App\Models\Incident::VICTIM_AGE_RANGES as $key => $label)
+                                    <option value="{{ $key }}" {{ old('victim_age') === $key ? 'selected' : '' }}>{{ $label }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Gender</label>
+                                <select name="victim_gender" class="w-full px-4 py-3.5 bg-white border border-gray-200 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent">
+                                    <option value="">Select...</option>
+                                    <option value="male" {{ old('victim_gender') === 'male' ? 'selected' : '' }}>Male</option>
+                                    <option value="female" {{ old('victim_gender') === 'female' ? 'selected' : '' }}>Female</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="pt-4 border-t border-gray-100">
+                            <p class="text-xs text-gray-500 text-center">You can skip this step if you don't have this information</p>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Affected Person's Name</label>
-                        <input type="text" name="victim_name" value="{{ old('victim_name') }}" placeholder="Leave blank if unknown" class="w-full px-4 py-3.5 bg-white border border-gray-200 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent">
+                {{-- Property/Non-person incidents (theft, fire, vandalism, etc.) --}}
+                <div id="propertyIncidentSection" class="hidden">
+                    <div class="text-center mb-6">
+                        <div class="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                            <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+                        </div>
+                        <h2 class="text-xl font-bold text-gray-900">Additional Details</h2>
+                        <p class="text-sm text-gray-500 mt-1">Help us understand the impact</p>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-3">
+                    <div class="space-y-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Age</label>
-                            <input type="number" name="victim_age" value="{{ old('victim_age') }}" min="1" max="100" placeholder="Age" class="w-full px-4 py-3.5 bg-white border border-gray-200 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Gender</label>
-                            <select name="victim_gender" class="w-full px-4 py-3.5 bg-white border border-gray-200 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent">
-                                <option value="">Select...</option>
-                                <option value="male" {{ old('victim_gender') === 'male' ? 'selected' : '' }}>Male</option>
-                                <option value="female" {{ old('victim_gender') === 'female' ? 'selected' : '' }}>Female</option>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Estimated Damage/Loss</label>
+                            <select name="damage_estimate" class="w-full px-4 py-3.5 bg-white border border-gray-200 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent">
+                                <option value="">Select if applicable...</option>
+                                <option value="minor">Minor (less than $100)</option>
+                                <option value="moderate">Moderate ($100 - $500)</option>
+                                <option value="significant">Significant ($500 - $2,000)</option>
+                                <option value="major">Major (over $2,000)</option>
+                                <option value="unknown">Unknown</option>
                             </select>
                         </div>
-                    </div>
 
-                    <div class="pt-4 border-t border-gray-100">
-                        <p class="text-xs text-gray-500 text-center">You can skip this step if you don't have this information</p>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Was anyone injured?</label>
+                            <select name="any_injuries" id="anyInjuries" class="w-full px-4 py-3.5 bg-white border border-gray-200 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent">
+                                <option value="no">No injuries</option>
+                                <option value="yes">Yes, there were injuries</option>
+                                <option value="unknown">Unknown</option>
+                            </select>
+                        </div>
+
+                        <div id="injuryDetails" class="hidden">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Describe the injuries</label>
+                            <textarea name="injury_description" rows="2" placeholder="Brief description of injuries..." class="w-full px-4 py-3.5 bg-white border border-gray-200 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none"></textarea>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Has this been reported elsewhere?</label>
+                            <select name="reported_elsewhere" class="w-full px-4 py-3.5 bg-white border border-gray-200 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent">
+                                <option value="">Select...</option>
+                                <option value="no">No, this is the first report</option>
+                                <option value="school">Yes, to school administration</option>
+                                <option value="police">Yes, to police</option>
+                                <option value="both">Yes, to both school and police</option>
+                            </select>
+                        </div>
+
+                        <div class="pt-4 border-t border-gray-100">
+                            <p class="text-xs text-gray-500 text-center">All fields are optional</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -407,12 +469,14 @@
 
                     <div class="pt-2">
                         <label class="block text-sm font-medium text-gray-700 mb-2">Attach Evidence <span class="text-gray-400 font-normal">(optional)</span></label>
-                        <div class="border-2 border-dashed border-gray-200 rounded-xl p-6 text-center bg-white relative">
+                        <div id="fileUploadArea" class="border-2 border-dashed border-gray-200 rounded-xl p-6 text-center bg-white relative">
                             <svg class="w-10 h-10 text-gray-300 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                            <p class="text-sm text-gray-500 mb-2">Tap to upload photos or files</p>
-                            <input type="file" name="files[]" multiple accept="image/*,.pdf,.doc,.docx" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                            <p class="text-sm text-gray-500 mb-1">Tap to upload photos or files</p>
+                            <p class="text-xs text-gray-400">You can select multiple files</p>
+                            <input type="file" name="files[]" id="fileInput" multiple accept="image/*,.pdf,.doc,.docx" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
                         </div>
-                        <p class="text-xs text-gray-400 mt-2 text-center">Max 3 files, 5MB each</p>
+                        <div id="filePreview" class="mt-3 space-y-2 hidden"></div>
+                        <p class="text-xs text-gray-400 mt-2 text-center">Max 3 files, 5MB each • Images, PDFs, or documents</p>
                     </div>
                 </div>
             </div>
@@ -469,9 +533,114 @@
             if (key === savedCategory) opt.selected = true;
             categorySelect.appendChild(opt);
         });
+        
+        // Update step 5 based on incident type
+        updateStep5ForType();
     }
     typeSelect.addEventListener('change', updateCategories);
     if (typeSelect.value) updateCategories();
+
+    // Categories that are about property/non-person incidents
+    const propertyCategories = ['theft', 'vandalism', 'fire', 'structural_hazard', 'sanitation', 'accident_injury'];
+    
+    function updateStep5ForType() {
+        const type = typeSelect.value;
+        const category = categorySelect.value;
+        const peopleSection = document.getElementById('peopleInvolvedSection');
+        const propertySection = document.getElementById('propertyIncidentSection');
+        
+        // SRGBV always shows people section
+        if (type === 'srgbv') {
+            peopleSection.classList.remove('hidden');
+            propertySection.classList.add('hidden');
+        } else if (type === 'other_incident') {
+            // For other incidents, show property section by default
+            // (can still ask about injuries)
+            peopleSection.classList.add('hidden');
+            propertySection.classList.remove('hidden');
+        } else {
+            // Default to people section
+            peopleSection.classList.remove('hidden');
+            propertySection.classList.add('hidden');
+        }
+    }
+    
+    // Also update when category changes
+    categorySelect.addEventListener('change', updateStep5ForType);
+
+    // File upload preview
+    const fileInput = document.getElementById('fileInput');
+    const filePreview = document.getElementById('filePreview');
+    const fileUploadArea = document.getElementById('fileUploadArea');
+    let selectedFiles = [];
+
+    fileInput.addEventListener('change', function(e) {
+        const files = Array.from(e.target.files).slice(0, 3); // Max 3 files
+        selectedFiles = files;
+        
+        if (files.length > 0) {
+            filePreview.classList.remove('hidden');
+            filePreview.innerHTML = '';
+            
+            files.forEach((file, index) => {
+                const isImage = file.type.startsWith('image/');
+                const fileSize = (file.size / 1024 / 1024).toFixed(2);
+                
+                const fileItem = document.createElement('div');
+                fileItem.className = 'flex items-center gap-3 bg-gray-50 rounded-lg p-3';
+                fileItem.innerHTML = `
+                    <div class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${isImage ? 'bg-blue-100' : 'bg-gray-200'}">
+                        ${isImage 
+                            ? '<svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>'
+                            : '<svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>'
+                        }
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium text-gray-800 truncate">${file.name}</p>
+                        <p class="text-xs text-gray-400">${fileSize} MB</p>
+                    </div>
+                    <button type="button" class="remove-file p-1 text-gray-400 hover:text-red-500" data-index="${index}">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                `;
+                filePreview.appendChild(fileItem);
+            });
+            
+            // Add remove file handlers
+            document.querySelectorAll('.remove-file').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const index = parseInt(this.dataset.index);
+                    selectedFiles.splice(index, 1);
+                    updateFileInput();
+                });
+            });
+            
+            // Update upload area text
+            fileUploadArea.querySelector('p').textContent = `${files.length} file${files.length > 1 ? 's' : ''} selected`;
+        } else {
+            filePreview.classList.add('hidden');
+            fileUploadArea.querySelector('p').textContent = 'Tap to upload photos or files';
+        }
+    });
+    
+    function updateFileInput() {
+        // Create a new DataTransfer to update the file input
+        const dt = new DataTransfer();
+        selectedFiles.forEach(file => dt.items.add(file));
+        fileInput.files = dt.files;
+        
+        // Trigger change event to refresh preview
+        fileInput.dispatchEvent(new Event('change'));
+    }
+
+    // Injury details toggle
+    const anyInjuries = document.getElementById('anyInjuries');
+    const injuryDetails = document.getElementById('injuryDetails');
+    if (anyInjuries) {
+        anyInjuries.addEventListener('change', function() {
+            injuryDetails.classList.toggle('hidden', this.value !== 'yes');
+        });
+    }
 
     // Step Navigation
     let currentStep = 0;

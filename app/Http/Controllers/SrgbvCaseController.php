@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\BureauNotification;
 use App\Models\Division;
+use App\Models\Incident;
 use App\Models\SrgbvCase;
 use App\Models\SrgbvCaseFile;
 use App\Models\SrgbvCaseNote;
@@ -132,7 +133,7 @@ class SrgbvCaseController extends Controller
             'category' => ['required', Rule::in(array_keys(SrgbvCase::CATEGORIES))],
             'priority' => ['required', Rule::in(array_keys(SrgbvCase::PRIORITIES))],
             'victim_name' => 'required|string|max:255',
-            'victim_age' => 'nullable|integer|min:1|max:100',
+            'victim_age' => ['nullable', Rule::in(array_keys(Incident::VICTIM_AGE_RANGES))],
             'victim_gender' => 'nullable|string|max:50',
             'victim_grade' => 'nullable|string|max:50',
             'victim_school' => 'nullable|string|max:255',
@@ -321,7 +322,7 @@ class SrgbvCaseController extends Controller
             'priority' => ['required', Rule::in(array_keys(SrgbvCase::PRIORITIES))],
             'status' => ['required', Rule::in(array_keys(SrgbvCase::STATUSES))],
             'victim_name' => 'required|string|max:255',
-            'victim_age' => 'nullable|integer|min:1|max:100',
+            'victim_age' => ['nullable', Rule::in(array_keys(Incident::VICTIM_AGE_RANGES))],
             'victim_gender' => 'nullable|string|max:50',
             'victim_grade' => 'nullable|string|max:50',
             'victim_school' => 'nullable|string|max:255',

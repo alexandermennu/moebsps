@@ -277,7 +277,12 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1.5">Age</label>
-                        <input type="number" name="victim_age" value="{{ old('victim_age', $incident->victim_age) }}" min="1" max="100" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition">
+                        <select name="victim_age" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-white transition">
+                            <option value="">Select Age Range</option>
+                            @foreach(\App\Models\Incident::VICTIM_AGE_RANGES as $key => $label)
+                            <option value="{{ $key }}" {{ old('victim_age', $incident->victim_age) === $key ? 'selected' : '' }}>{{ $label }}</option>
+                            @endforeach
+                        </select>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1.5">Gender</label>

@@ -211,8 +211,8 @@
                         </div>
                         @if($incident->victim_age)
                         <div class="bg-gray-50 rounded-lg p-3">
-                            <span class="text-[11px] text-gray-500 font-medium uppercase tracking-wide block mb-1">Age</span>
-                            <span class="text-sm font-semibold text-gray-900">{{ $incident->victim_age }}</span>
+                            <span class="text-[11px] text-gray-500 font-medium uppercase tracking-wide block mb-1">Age Range</span>
+                            <span class="text-sm font-semibold text-gray-900">{{ $incident->victim_age_label }}</span>
                         </div>
                         @endif
                         @if($incident->victim_gender)

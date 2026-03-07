@@ -269,11 +269,11 @@
         </div>
     </div>
 
-    {{-- Second Row: Victim Gender + Liberia Map --}}
+    {{-- Second Row: Victim Gender + Age Range --}}
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {{-- Victim Category Donut --}}
+        {{-- Victim Gender Donut --}}
         <div class="bg-white border border-gray-200 rounded-lg p-5">
-            <h3 class="text-sm font-semibold text-gray-900 mb-4">Victim Category</h3>
+            <h3 class="text-sm font-semibold text-gray-900 mb-4">Victims by Gender</h3>
             <div class="flex items-center gap-6">
                 <div class="relative w-36 h-36 shrink-0">
                     <canvas id="genderChart"></canvas>
@@ -311,6 +311,49 @@
             </div>
         </div>
 
+        {{-- Victim Age Range --}}
+        <div class="bg-white border border-gray-200 rounded-lg p-5">
+            <h3 class="text-sm font-semibold text-gray-900 mb-4">Victims by Age Range</h3>
+            <div class="space-y-3">
+                @php
+                    $ageRanges = \App\Models\Incident::VICTIM_AGE_RANGES;
+                    $totalAge = array_sum($byAgeRange) ?: 1;
+                    $ageColors = [
+                        'under_6' => 'bg-purple-500',
+                        '6_10' => 'bg-blue-500',
+                        '11_14' => 'bg-green-500',
+                        '15_17' => 'bg-amber-500',
+                        '18_plus' => 'bg-red-500',
+                        'unknown' => 'bg-gray-400',
+                    ];
+                @endphp
+                @foreach($ageRanges as $key => $label)
+                    @php
+                        $count = $byAgeRange[$key] ?? 0;
+                        $percent = round(($count / $totalAge) * 100);
+                    @endphp
+                    <div>
+                        <div class="flex items-center justify-between text-sm mb-1">
+                            <span class="text-gray-700">{{ $label }}</span>
+                            <span class="font-semibold text-gray-900">{{ $count }} ({{ $percent }}%)</span>
+                        </div>
+                        <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
+                            <div class="{{ $ageColors[$key] ?? 'bg-gray-400' }} h-full rounded-full transition-all duration-500" style="width: {{ $percent }}%"></div>
+                        </div>
+                    </div>
+                @endforeach
+                <div class="pt-2 border-t border-gray-100 mt-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-gray-500">Total with Age Data</span>
+                        <span class="text-sm font-semibold text-gray-900">{{ array_sum($byAgeRange) }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Third Row: Liberia Map + Top Counties --}}
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {{-- Liberia County Map (Leaflet + GeoJSON) --}}
         <div class="bg-white border border-gray-200 rounded-lg p-5">
             <div class="flex items-center justify-between mb-4">

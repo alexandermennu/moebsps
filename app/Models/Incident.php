@@ -151,6 +151,16 @@ class Incident extends Model
         return array_unique($all);
     }
 
+    // ── Victim Age Ranges ───────────────────────────────────
+    const VICTIM_AGE_RANGES = [
+        'under_6' => 'Under 6 years',
+        '6_10' => '6 - 10 years',
+        '11_14' => '11 - 14 years',
+        '15_17' => '15 - 17 years',
+        '18_plus' => '18 years and above',
+        'unknown' => 'Unknown',
+    ];
+
     // ── Source Constants ─────────────────────────────────────
     const SOURCE_INTERNAL = 'internal';
     const SOURCE_PUBLIC = 'public';
@@ -434,6 +444,11 @@ class Incident extends Model
     {
         $categories = self::CATEGORIES_BY_TYPE[$this->type] ?? [];
         return $categories[$this->category] ?? ucfirst(str_replace('_', ' ', $this->category));
+    }
+
+    public function getVictimAgeLabelAttribute(): string
+    {
+        return self::VICTIM_AGE_RANGES[$this->victim_age] ?? $this->victim_age ?? 'Not provided';
     }
 
     public function getSourceLabelAttribute(): string
