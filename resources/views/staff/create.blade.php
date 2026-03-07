@@ -32,35 +32,36 @@
 
             <div class="mb-4">
                 <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
-                <input type="text" name="name" id="name" value="{{ old('name') }}" required
+                <input type="text" name="name" id="name" value="{{ old('name') }}" required autocomplete="off"
                        class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-slate-500">
             </div>
 
             <div class="mb-4">
                 <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email *</label>
-                <input type="email" name="email" id="email" value="{{ old('email') }}" required
+                <input type="email" name="email" id="email" value="{{ old('email') }}" required autocomplete="new-email"
                        class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-slate-500">
             </div>
 
             <div class="grid grid-cols-2 gap-4 mb-4">
                 <div>
                     <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Password *</label>
-                    <input type="password" name="password" id="password" required
+                    <input type="password" name="password" id="password" required autocomplete="new-password"
                            class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-slate-500">
                 </div>
                 <div>
                     <label for="password_confirmation" class="block text-sm font-medium text-gray-700 mb-1">Confirm Password *</label>
-                    <input type="password" name="password_confirmation" id="password_confirmation" required
+                    <input type="password" name="password_confirmation" id="password_confirmation" required autocomplete="new-password"
                            class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-slate-500">
                 </div>
             </div>
 
+            @php $prefillRole = request('prefill_role'); @endphp
             <div class="mb-4">
                 <label for="role" class="block text-sm font-medium text-gray-700 mb-1">Access Level / Role *</label>
                 <select name="role" id="role" required
                         class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-slate-500">
                     @foreach($roles as $key => $label)
-                        <option value="{{ $key }}" {{ old('role') === $key ? 'selected' : '' }}>{{ $label }}</option>
+                        <option value="{{ $key }}" {{ old('role', $prefillRole) === $key ? 'selected' : '' }}>{{ $label }}</option>
                     @endforeach
                 </select>
                 <p class="mt-1 text-xs text-gray-400">

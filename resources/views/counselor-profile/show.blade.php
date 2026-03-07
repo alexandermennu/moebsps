@@ -10,6 +10,12 @@
         @if(auth()->user()->hasFullAccess())
             <a href="{{ route('admin.users.counselors') }}" class="text-blue-700 hover:underline">Counselors</a>
             <span class="text-gray-400">/</span>
+        @elseif(auth()->user()->canCreateStaff() && auth()->user()->division && auth()->user()->division->code === 'CGPC')
+            <a href="{{ route('staff.counselors') }}" class="text-blue-700 hover:underline">My Counselors</a>
+            <span class="text-gray-400">/</span>
+        @elseif(auth()->user()->role === 'counselor' && auth()->user()->id === $counselor->id)
+            <a href="{{ route('counselor-profile.edit') }}" class="text-blue-700 hover:underline">My Profile</a>
+            <span class="text-gray-400">/</span>
         @endif
         <span class="text-gray-500">{{ $counselor->name }}</span>
     </div>
