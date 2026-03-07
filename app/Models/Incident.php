@@ -54,14 +54,15 @@ class Incident extends Model
     // ── Type-Specific Categories ────────────────────────────
     const CATEGORIES_BY_TYPE = [
         self::TYPE_SRGBV => [
-            'physical_violence' => 'Physical Violence',
-            'sexual_violence' => 'Sexual Violence',
-            'psychological_violence' => 'Psychological Violence',
-            'bullying' => 'Bullying',
-            'harassment' => 'Harassment',
-            'exploitation' => 'Exploitation',
-            'neglect' => 'Neglect',
-            'other' => 'Other',
+            'sexual_harassment' => 'Sexual harassment',
+            'sexual_assault' => 'Sexual assault or rape',
+            'sexual_exploitation' => 'Sexual exploitation (sex for grades or favor)',
+            'physical_violence' => 'Physical violence (Beating or corporal punishment causing harm)',
+            'unwanted_touching' => 'Unwanted sexual touching',
+            'sexual_intimidation' => 'Sexual intimidation or coercion',
+            'exposure_sexual_content' => 'Exposure to sexual content or pornography',
+            'verbal_abuse' => 'Verbal abuse',
+            'threats_intimidation' => 'Threats or intimidation',
         ],
         self::TYPE_DISCIPLINARY => [
             'student_misconduct' => 'Student Misconduct',
@@ -258,10 +259,17 @@ class Incident extends Model
 
     // ── Number Generators ───────────────────────────────────
 
-    public static function generateIncidentNumber(string $source = 'internal'): string
+    public static function generateIncidentNumber(string $type, string $source = 'internal'): string
     {
         $year = now()->format('Y');
-        $prefix = $source === 'public' ? "SIR-{$year}-PUB" : "SIR-{$year}";
+        
+        // Type prefix: SIR-SRGBV or SIR-OI (Other Incidents)
+        $typePrefix = $type === self::TYPE_SRGBV ? 'SIR-SRGBV' : 'SIR-OI';
+        
+        // Source suffix for public reports
+        $sourceSuffix = $source === 'public' ? '-PUB' : '';
+        
+        $prefix = "{$typePrefix}-{$year}{$sourceSuffix}";
 
         $lastIncident = static::where('incident_number', 'like', "{$prefix}-%")
             ->orderByDesc('id')
@@ -276,10 +284,13 @@ class Incident extends Model
         return $prefix . '-' . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
     }
 
-    public static function generateTrackingCode(): string
+    public static function generateTrackingCode(string $type): string
     {
+        // Type prefix: SIR-SRGBV or SIR-OI
+        $typePrefix = $type === self::TYPE_SRGBV ? 'SIR-SRGBV' : 'SIR-OI';
+        
         do {
-            $code = strtoupper(Str::random(3) . '-' . rand(1000, 9999));
+            $code = $typePrefix . '-' . strtoupper(Str::random(3)) . '-' . rand(1000, 9999);
         } while (static::where('tracking_code', $code)->exists());
 
         return $code;

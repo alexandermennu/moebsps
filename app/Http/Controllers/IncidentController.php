@@ -244,7 +244,7 @@ class IncidentController extends Controller
         $cgpcDivision = Division::where('code', 'CGPC')->first();
 
         $incident = Incident::create([
-            'incident_number' => Incident::generateIncidentNumber('internal'),
+            'incident_number' => Incident::generateIncidentNumber($validated['type'], 'internal'),
             'type' => $validated['type'],
             'category' => $validated['category'],
             'source' => Incident::SOURCE_INTERNAL,

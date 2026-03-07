@@ -58,7 +58,7 @@ class PublicIncidentController extends Controller
             'verified_phone' => 'nullable|string|max:50',
         ]);
 
-        $trackingCode = Incident::generateTrackingCode();
+        $trackingCode = Incident::generateTrackingCode($validated['type']);
 
         // Determine priority: verified reporters may get slightly higher default
         $priority = 'medium';
@@ -69,7 +69,7 @@ class PublicIncidentController extends Controller
         $reporterPhone = $verifiedPhone ?: ($validated['public_reporter_phone'] ?? null);
 
         $incident = Incident::create([
-            'incident_number' => Incident::generateIncidentNumber('public'),
+            'incident_number' => Incident::generateIncidentNumber($validated['type'], 'public'),
             'type' => $validated['type'],
             'category' => $validated['category'],
             'source' => $reporterType === 'verified' ? Incident::SOURCE_PUBLIC : Incident::SOURCE_PUBLIC,

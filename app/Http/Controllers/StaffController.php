@@ -23,9 +23,17 @@ class StaffController extends Controller
             abort(403);
         }
 
+        // Check if CGPC division (can have counselors)
+        $isCGPC = $user->division && $user->division->code === 'CGPC';
+
         $query = User::where('division_id', $user->division_id)
             ->where('id', '!=', $user->id)
             ->whereIn('role', array_keys(User::directorAssignableRoles($user->division_id)));
+
+        // For CGPC division, exclude counselors from main list (they have their own page)
+        if ($isCGPC) {
+            $query->where('role', '!=', User::ROLE_COUNSELOR);
+        }
 
         if ($request->filled('search')) {
             $search = $request->search;
@@ -44,9 +52,61 @@ class StaffController extends Controller
         }
 
         $staff = $query->latest()->paginate(15);
+        
+        // Get roles for filter dropdown (exclude counselor for CGPC since they have separate page)
         $roles = User::directorAssignableRoles($user->division_id);
+        if ($isCGPC) {
+            unset($roles[User::ROLE_COUNSELOR]);
+        }
+        $counselorCount = $isCGPC ? User::where('division_id', $user->division_id)
+            ->where('role', User::ROLE_COUNSELOR)
+            ->count() : 0;
 
-        return view('staff.index', compact('staff', 'roles', 'user'));
+        return view('staff.index', compact('staff', 'roles', 'user', 'isCGPC', 'counselorCount'));
+    }
+
+    /**
+     * List counselors in the CGPC director's division.
+     */
+    public function counselors(Request $request)
+    {
+        $user = $request->user();
+
+        if (!$user->canCreateStaff()) {
+            abort(403);
+        }
+
+        // Only CGPC division has counselors
+        if (!$user->division || $user->division->code !== 'CGPC') {
+            return redirect()->route('staff.index')->with('error', 'Counselors are only available for the Counseling division.');
+        }
+
+        $query = User::where('division_id', $user->division_id)
+            ->where('role', User::ROLE_COUNSELOR);
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('status')) {
+            $query->where('approval_status', $request->status);
+        }
+
+        if ($request->filled('counselor_status')) {
+            $query->where('counselor_status', $request->counselor_status);
+        }
+
+        if ($request->filled('profile_status')) {
+            $query->where('counselor_profile_status', $request->profile_status);
+        }
+
+        $counselors = $query->latest()->paginate(15);
+
+        return view('staff.counselors', compact('counselors', 'user'));
     }
 
     /**
