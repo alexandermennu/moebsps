@@ -1094,6 +1094,7 @@
             const data = await response.json();
 
             if (data.success) {
+                console.log('OTP verification successful!');
                 // Success! Store verified phone and proceed to personal details
                 document.getElementById('verifiedPhone').value = verifiedPhone;
                 document.getElementById('verifiedPhoneDisplay').textContent = verifiedPhone;
@@ -1113,8 +1114,15 @@
                 }
                 
                 // Go to personal details step (1.7) for verified users
+                console.log('Setting currentStep to 1.7');
                 currentStep = 1.7;
+                console.log('currentStep is now:', currentStep);
                 updateUI();
+                console.log('updateUI called, checking step 1.7 visibility...');
+                const step17El = document.querySelector('.step[data-step="1.7"]');
+                console.log('Step 1.7 element:', step17El);
+                console.log('Step 1.7 has active class:', step17El?.classList.contains('active'));
+                
                 clearInterval(resendInterval);
                 
                 // Focus on name field
