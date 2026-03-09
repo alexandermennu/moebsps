@@ -46,10 +46,16 @@ class PublicIncidentController extends Controller
             'perpetrator_name' => 'nullable|string|max:255',
             'perpetrator_type' => ['nullable', Rule::in(array_keys(Incident::PERPETRATOR_TYPES))],
             'perpetrator_description' => 'nullable|string|max:2000',
+            // Verified reporter fields (from step 1.7)
             'public_reporter_name' => 'nullable|string|max:255',
             'public_reporter_phone' => 'nullable|string|max:50',
             'public_reporter_email' => 'nullable|email|max:255',
             'public_reporter_relationship' => ['nullable', Rule::in(array_keys(Incident::REPORTER_RELATIONSHIPS))],
+            // Anonymous reporter fields (from step 6)
+            'anon_reporter_name' => 'nullable|string|max:255',
+            'anon_reporter_phone' => 'nullable|string|max:50',
+            'anon_reporter_email' => 'nullable|email|max:255',
+            'anon_reporter_relationship' => ['nullable', Rule::in(array_keys(Incident::REPORTER_RELATIONSHIPS))],
             'is_confidential' => 'boolean',
             'risk_level' => ['nullable', Rule::in(array_keys(Incident::RISK_LEVELS))],
             'immediate_action_required' => 'boolean',
@@ -65,14 +71,28 @@ class PublicIncidentController extends Controller
         $reporterType = $request->input('reporter_type', 'anonymous');
         $verifiedPhone = $request->input('verified_phone');
         
-        // If phone was verified through OTP, use that phone
-        $reporterPhone = $verifiedPhone ?: ($validated['public_reporter_phone'] ?? null);
+        // Determine reporter details based on reporter type
+        if ($reporterType === 'verified' && !empty($verifiedPhone)) {
+            // Verified reporter - use data from step 1.7
+            $reporterName = $validated['public_reporter_name'] ?? null;
+            $reporterPhone = $verifiedPhone;
+            $reporterEmail = $validated['public_reporter_email'] ?? null;
+            $reporterRelationship = $validated['public_reporter_relationship'] ?? null;
+            $phoneVerified = true;
+        } else {
+            // Anonymous reporter - use data from step 6
+            $reporterName = $validated['anon_reporter_name'] ?? null;
+            $reporterPhone = $validated['anon_reporter_phone'] ?? null;
+            $reporterEmail = $validated['anon_reporter_email'] ?? null;
+            $reporterRelationship = $validated['anon_reporter_relationship'] ?? null;
+            $phoneVerified = false;
+        }
 
         $incident = Incident::create([
             'incident_number' => Incident::generateIncidentNumber($validated['type'], 'public'),
             'type' => $validated['type'],
             'category' => $validated['category'],
-            'source' => $reporterType === 'verified' ? Incident::SOURCE_PUBLIC : Incident::SOURCE_PUBLIC,
+            'source' => Incident::SOURCE_PUBLIC,
             'status' => Incident::STATUS_REPORTED,
             'priority' => $priority,
             'title' => $validated['title'],
@@ -90,11 +110,11 @@ class PublicIncidentController extends Controller
             'perpetrator_name' => $validated['perpetrator_name'] ?? null,
             'perpetrator_type' => $validated['perpetrator_type'] ?? null,
             'perpetrator_description' => $validated['perpetrator_description'] ?? null,
-            'public_reporter_name' => $validated['public_reporter_name'] ?? null,
+            'public_reporter_name' => $reporterName,
             'public_reporter_phone' => $reporterPhone,
-            'public_reporter_email' => $validated['public_reporter_email'] ?? null,
-            'public_reporter_relationship' => $validated['public_reporter_relationship'] ?? null,
-            'phone_verified' => $reporterType === 'verified' && !empty($verifiedPhone),
+            'public_reporter_email' => $reporterEmail,
+            'public_reporter_relationship' => $reporterRelationship,
+            'phone_verified' => $phoneVerified,
             'tracking_code' => $trackingCode,
             'is_confidential' => $request->boolean('is_confidential', true),
             'risk_level' => $validated['risk_level'] ?? null,

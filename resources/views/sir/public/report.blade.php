@@ -494,22 +494,22 @@
                         <div class="space-y-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Your Name</label>
-                                <input type="text" id="anonReporterName" placeholder="Optional" class="w-full px-4 py-3.5 bg-white border border-gray-200 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent">
+                                <input type="text" id="anonReporterName" name="anon_reporter_name" placeholder="Optional" class="w-full px-4 py-3.5 bg-white border border-gray-200 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent">
                             </div>
 
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
-                                <input type="tel" id="anonReporterPhone" name="public_reporter_phone" value="{{ old('public_reporter_phone') }}" placeholder="e.g., 0770-000-000" class="w-full px-4 py-3.5 bg-white border border-gray-200 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent">
+                                <input type="tel" id="anonReporterPhone" name="anon_reporter_phone" value="{{ old('public_reporter_phone') }}" placeholder="e.g., 0770-000-000" class="w-full px-4 py-3.5 bg-white border border-gray-200 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent">
                             </div>
 
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
-                                <input type="email" id="anonReporterEmail" placeholder="Optional" class="w-full px-4 py-3.5 bg-white border border-gray-200 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent">
+                                <input type="email" id="anonReporterEmail" name="anon_reporter_email" placeholder="Optional" class="w-full px-4 py-3.5 bg-white border border-gray-200 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent">
                             </div>
 
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Your Relationship to Incident</label>
-                                <select id="anonReporterRelationship" class="w-full px-4 py-3.5 bg-white border border-gray-200 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent">
+                                <select id="anonReporterRelationship" name="anon_reporter_relationship" class="w-full px-4 py-3.5 bg-white border border-gray-200 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent">
                                     <option value="">Select...</option>
                                     @foreach(\App\Models\Incident::REPORTER_RELATIONSHIPS as $key => $label)
                                     <option value="{{ $key }}" {{ old('public_reporter_relationship') === $key ? 'selected' : '' }}>{{ $label }}</option>
@@ -853,24 +853,29 @@
     }
 
     function validateStep(step) {
+        console.log('validateStep called with step:', step);
         if (step === 0 || step === 1) return true;
         
         // Validate step 1.7 (personal details for verified users)
         if (step === 1.7) {
             const name = document.getElementById('verifiedReporterName');
             const relationship = document.getElementById('verifiedReporterRelationship');
+            console.log('Step 1.7 validation - name element:', name, 'relationship element:', relationship);
             let valid = true;
             
             if (!name.value.trim()) {
+                console.log('Name validation failed');
                 valid = false;
                 name.classList.add('border-red-500', 'ring-2', 'ring-red-200');
                 setTimeout(() => name.classList.remove('border-red-500', 'ring-2', 'ring-red-200'), 2000);
             }
             if (!relationship.value) {
+                console.log('Relationship validation failed');
                 valid = false;
                 relationship.classList.add('border-red-500', 'ring-2', 'ring-red-200');
                 setTimeout(() => relationship.classList.remove('border-red-500', 'ring-2', 'ring-red-200'), 2000);
             }
+            console.log('Step 1.7 validation result:', valid);
             return valid;
         }
         
@@ -957,7 +962,16 @@
 
     // Continue after verification (personal details) button
     continueAfterVerifyBtn.addEventListener('click', () => {
-        if (!validateStep(1.7)) return;
+        console.log('Continue button clicked, currentStep:', currentStep);
+        const name = document.getElementById('verifiedReporterName');
+        const relationship = document.getElementById('verifiedReporterRelationship');
+        console.log('Name value:', name?.value, 'Relationship value:', relationship?.value);
+        
+        if (!validateStep(1.7)) {
+            console.log('Validation failed for step 1.7');
+            return;
+        }
+        console.log('Validation passed, moving to step 2');
         currentStep = 2;
         updateUI();
         window.scrollTo({ top: 0, behavior: 'smooth' });
