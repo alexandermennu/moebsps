@@ -170,7 +170,8 @@ class PublicIncidentController extends Controller
             'phone' => 'required|string|max:20',
         ]);
 
-        $phone = preg_replace('/\D/', '', $request->phone);
+        $phone = $request->phone;
+        $phoneDigits = preg_replace('/\D/', '', $phone);
         
         // Generate 6-digit OTP
         $otp = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
@@ -178,21 +179,39 @@ class PublicIncidentController extends Controller
         // Store OTP in session (expires in 10 minutes)
         session([
             'otp_code' => $otp,
-            'otp_phone' => $phone,
+            'otp_phone' => $phoneDigits,
             'otp_expires' => now()->addMinutes(10),
         ]);
 
-        // In production, integrate with SMS gateway (e.g., Twilio, Africa's Talking)
-        // For now, we'll simulate success. In dev, you can check logs.
+        // Log OTP for debugging
         \Log::info("OTP for {$phone}: {$otp}");
 
-        // TODO: Send actual SMS
-        // Example with Twilio:
-        // $twilio = new \Twilio\Rest\Client(config('services.twilio.sid'), config('services.twilio.token'));
-        // $twilio->messages->create($request->phone, [
-        //     'from' => config('services.twilio.from'),
-        //     'body' => "Your MOE incident report verification code is: {$otp}"
-        // ]);
+        // Send SMS via Twilio if configured
+        if (config('services.twilio.sid') && config('services.twilio.token')) {
+            try {
+                $twilio = new \Twilio\Rest\Client(
+                    config('services.twilio.sid'),
+                    config('services.twilio.token')
+                );
+                
+                $twilio->messages->create($phone, [
+                    'from' => config('services.twilio.from'),
+                    'body' => "Your MOE incident report verification code is: {$otp}. Valid for 10 minutes."
+                ]);
+                
+                \Log::info("SMS sent successfully to {$phone}");
+            } catch (\Exception $e) {
+                \Log::error("Failed to send SMS: " . $e->getMessage());
+                
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to send verification code. Please try again.',
+                ], 500);
+            }
+        } else {
+            // Twilio not configured - log warning
+            \Log::warning("Twilio not configured. OTP not sent via SMS.");
+        }
 
         return response()->json([
             'success' => true,
