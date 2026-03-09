@@ -94,7 +94,7 @@ class PublicIncidentController extends Controller
             'public_reporter_phone' => $reporterPhone,
             'public_reporter_email' => $validated['public_reporter_email'] ?? null,
             'public_reporter_relationship' => $validated['public_reporter_relationship'] ?? null,
-            'public_reporter_verified' => $reporterType === 'verified',
+            'phone_verified' => $reporterType === 'verified' && !empty($verifiedPhone),
             'tracking_code' => $trackingCode,
             'is_confidential' => $request->boolean('is_confidential', true),
             'risk_level' => $validated['risk_level'] ?? null,

@@ -156,6 +156,7 @@ Route::middleware(['auth', 'active'])->group(function () {
         // ── SRGBV Module ────────────────────────────────────────────────────
         Route::prefix('srgbv')->name('srgbv.')->group(function () {
             Route::get('/dashboard', [SirDashboardController::class, 'srgbvDashboard'])->name('dashboard');
+            Route::get('/public-reporters', [\App\Http\Controllers\PublicReporterController::class, 'srgbvIndex'])->name('public-reporters');
             Route::get('/cases', [IncidentController::class, 'index'])->name('cases.index')->defaults('module', 'srgbv');
             Route::get('/cases/export', [IncidentController::class, 'exportList'])->name('cases.export')->defaults('module', 'srgbv');
             Route::get('/cases/create', [IncidentController::class, 'create'])->name('cases.create')->defaults('module', 'srgbv');
@@ -174,6 +175,7 @@ Route::middleware(['auth', 'active'])->group(function () {
         // ── Other Incidents Module ─────────────────────────────────────────
         Route::prefix('other')->name('other.')->group(function () {
             Route::get('/dashboard', [SirDashboardController::class, 'otherDashboard'])->name('dashboard');
+            Route::get('/public-reporters', [\App\Http\Controllers\PublicReporterController::class, 'otherIndex'])->name('public-reporters');
             Route::get('/incidents', [IncidentController::class, 'index'])->name('incidents.index')->defaults('module', 'other');
             Route::get('/incidents/export', [IncidentController::class, 'exportList'])->name('incidents.export')->defaults('module', 'other');
             Route::get('/incidents/create', [IncidentController::class, 'create'])->name('incidents.create')->defaults('module', 'other');

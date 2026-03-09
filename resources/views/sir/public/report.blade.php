@@ -220,6 +220,53 @@
                 </div>
             </div>
 
+            {{-- Step 1.7: Personal Details (only for verified reporters) --}}
+            <div class="step" data-step="1.7">
+                <div class="text-center mb-6">
+                    <div class="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                        <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    </div>
+                    <h2 class="text-xl font-bold text-gray-900">Phone Verified!</h2>
+                    <p class="text-sm text-gray-500 mt-1">Now tell us a bit about yourself</p>
+                </div>
+
+                <div class="space-y-4">
+                    <div class="bg-green-50 border border-green-200 rounded-xl p-4 mb-2">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-green-800">Phone number verified</p>
+                                <p class="text-xs text-green-600" id="verifiedPhoneStep17">+231 770 000 000</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Your Full Name *</label>
+                        <input type="text" id="verifiedReporterName" name="public_reporter_name" value="{{ old('public_reporter_name') }}" required placeholder="Enter your full name" class="w-full px-4 py-3.5 bg-white border border-gray-200 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+                        <input type="email" id="verifiedReporterEmail" name="public_reporter_email" value="{{ old('public_reporter_email') }}" placeholder="Optional - for updates on your report" class="w-full px-4 py-3.5 bg-white border border-gray-200 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Your Relationship to Incident *</label>
+                        <select id="verifiedReporterRelationship" name="public_reporter_relationship" required class="w-full px-4 py-3.5 bg-white border border-gray-200 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                            <option value="">Select your relationship...</option>
+                            @foreach(\App\Models\Incident::REPORTER_RELATIONSHIPS as $key => $label)
+                            <option value="{{ $key }}" {{ old('public_reporter_relationship') === $key ? 'selected' : '' }}>{{ $label }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <p class="text-xs text-gray-400 text-center mt-4">Your information helps us prioritize and follow up on reports effectively.</p>
+                </div>
+            </div>
+
             {{-- Step 2: What Happened (was step 1) --}}
             <div class="step" data-step="2">
                 {{-- Verified badge (shown if phone verified) --}}
@@ -427,44 +474,77 @@
                 </div>
             </div>
 
-            {{-- Step 6: Your Info & Submit --}}
+            {{-- Step 6: Your Info & Submit (only for anonymous reporters) --}}
             <div class="step" data-step="6">
                 <div class="text-center mb-6">
                     <div class="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
                         <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                     </div>
-                    <h2 class="text-xl font-bold text-gray-900">Your Information</h2>
-                    <p class="text-sm text-gray-500 mt-1">Optional — you may remain anonymous</p>
+                    <h2 class="text-xl font-bold text-gray-900" id="step6Title">Your Information</h2>
+                    <p class="text-sm text-gray-500 mt-1" id="step6Subtitle">Optional — you may remain anonymous</p>
                 </div>
 
                 <div class="space-y-4">
-                    <div class="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-2">
-                        <p class="text-sm text-blue-800">💡 Providing contact info lets us update you and gives you a tracking code to check your report's status.</p>
+                    {{-- Anonymous user info section --}}
+                    <div id="anonymousInfoSection">
+                        <div class="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-4">
+                            <p class="text-sm text-blue-800">💡 Providing contact info lets us update you and gives you a tracking code to check your report's status.</p>
+                        </div>
+
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Your Name</label>
+                                <input type="text" id="anonReporterName" placeholder="Optional" class="w-full px-4 py-3.5 bg-white border border-gray-200 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+                                <input type="tel" id="anonReporterPhone" name="public_reporter_phone" value="{{ old('public_reporter_phone') }}" placeholder="e.g., 0770-000-000" class="w-full px-4 py-3.5 bg-white border border-gray-200 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                                <input type="email" id="anonReporterEmail" placeholder="Optional" class="w-full px-4 py-3.5 bg-white border border-gray-200 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Your Relationship to Incident</label>
+                                <select id="anonReporterRelationship" class="w-full px-4 py-3.5 bg-white border border-gray-200 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent">
+                                    <option value="">Select...</option>
+                                    @foreach(\App\Models\Incident::REPORTER_RELATIONSHIPS as $key => $label)
+                                    <option value="{{ $key }}" {{ old('public_reporter_relationship') === $key ? 'selected' : '' }}>{{ $label }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
                     </div>
 
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Your Name</label>
-                        <input type="text" name="public_reporter_name" value="{{ old('public_reporter_name') }}" placeholder="Optional" class="w-full px-4 py-3.5 bg-white border border-gray-200 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent">
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
-                        <input type="tel" name="public_reporter_phone" value="{{ old('public_reporter_phone') }}" placeholder="e.g., 0770-000-000" class="w-full px-4 py-3.5 bg-white border border-gray-200 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent">
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
-                        <input type="email" name="public_reporter_email" value="{{ old('public_reporter_email') }}" placeholder="Optional" class="w-full px-4 py-3.5 bg-white border border-gray-200 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent">
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Your Relationship to Incident</label>
-                        <select name="public_reporter_relationship" class="w-full px-4 py-3.5 bg-white border border-gray-200 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent">
-                            <option value="">Select...</option>
-                            @foreach(\App\Models\Incident::REPORTER_RELATIONSHIPS as $key => $label)
-                            <option value="{{ $key }}" {{ old('public_reporter_relationship') === $key ? 'selected' : '' }}>{{ $label }}</option>
-                            @endforeach
-                        </select>
+                    {{-- Verified user summary (shown instead of form) --}}
+                    <div id="verifiedInfoSummary" class="hidden">
+                        <div class="bg-green-50 border border-green-200 rounded-xl p-4 mb-4">
+                            <div class="flex items-center gap-3 mb-3">
+                                <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                    <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-semibold text-green-800">Verified Reporter</p>
+                                </div>
+                            </div>
+                            <div class="space-y-2 text-sm">
+                                <div class="flex justify-between">
+                                    <span class="text-green-700">Name:</span>
+                                    <span class="font-medium text-green-900" id="summaryName">—</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-green-700">Phone:</span>
+                                    <span class="font-medium text-green-900" id="summaryPhone">—</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-green-700">Email:</span>
+                                    <span class="font-medium text-green-900" id="summaryEmail">—</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="pt-2">
@@ -499,6 +579,9 @@
                 <button type="button" id="verifyOtpBtn" class="flex-1 py-3.5 bg-green-600 text-white font-semibold rounded-xl transition hover:bg-green-700 hidden">
                     <span id="verifyOtpText">Verify</span>
                     <span id="verifyOtpLoading" class="hidden">Verifying...</span>
+                </button>
+                <button type="button" id="continueAfterVerifyBtn" class="flex-1 py-3.5 bg-green-600 text-white font-semibold rounded-xl transition hover:bg-green-700 hidden">
+                    Continue
                 </button>
                 <button type="button" id="nextBtn" class="flex-1 py-3.5 bg-red-700 text-white font-semibold rounded-xl transition hover:bg-red-800 hidden">
                     Next
@@ -660,17 +743,19 @@
     const stepTitle = document.getElementById('stepTitle');
     const trackLink = document.getElementById('trackLink');
     const footerText = document.getElementById('footerText');
+    const continueAfterVerifyBtn = document.getElementById('continueAfterVerifyBtn');
 
     const stepTitles = {
         0: 'Report Incident',
         1: 'Identify Yourself',
         1.5: 'Phone Number',
         1.6: 'Verification',
+        1.7: 'Your Details',
         2: 'What Happened?',
         3: 'Location',
         4: 'Details',
         5: 'People Involved',
-        6: 'Your Info'
+        6: 'Review & Submit'
     };
 
     function updateUI() {
@@ -683,7 +768,7 @@
             }
         });
 
-        // Show/hide progress dots (hidden on landing, choice, phone, otp)
+        // Show/hide progress dots (hidden on landing, choice, phone, otp, personal details)
         const isFormStep = currentStep >= 2;
         progressDots.classList.toggle('hidden', !isFormStep);
 
@@ -707,14 +792,16 @@
         const isChoice = currentStep === 1;
         const isPhoneInput = currentStep === 1.5;
         const isOtpVerify = currentStep === 1.6;
+        const isPersonalDetails = currentStep === 1.7;
         const isLast = currentStep === totalSteps;
         
         startBtn.classList.toggle('hidden', !isLanding);
         sendOtpBtn.classList.toggle('hidden', !isPhoneInput);
         verifyOtpBtn.classList.toggle('hidden', !isOtpVerify);
+        continueAfterVerifyBtn.classList.toggle('hidden', !isPersonalDetails);
         prevBtn.classList.toggle('hidden', currentStep < 2 || currentStep === 2);
         backBtn.classList.toggle('hidden', currentStep <= 0);
-        nextBtn.classList.toggle('hidden', isLanding || isChoice || isPhoneInput || isOtpVerify || isLast);
+        nextBtn.classList.toggle('hidden', isLanding || isChoice || isPhoneInput || isOtpVerify || isPersonalDetails || isLast);
         submitBtn.classList.toggle('hidden', !isLast);
         
         // Track link only on landing
@@ -729,10 +816,64 @@
         if (verifiedBadge) {
             verifiedBadge.classList.toggle('hidden', reporterType !== 'verified' || currentStep !== 2);
         }
+
+        // Update step 6 based on reporter type
+        if (currentStep === 6) {
+            updateStep6ForReporterType();
+        }
+    }
+
+    // Update step 6 UI based on reporter type
+    function updateStep6ForReporterType() {
+        const anonymousSection = document.getElementById('anonymousInfoSection');
+        const verifiedSummary = document.getElementById('verifiedInfoSummary');
+        const step6Title = document.getElementById('step6Title');
+        const step6Subtitle = document.getElementById('step6Subtitle');
+        
+        if (reporterType === 'verified') {
+            // Show summary, hide form
+            anonymousSection.classList.add('hidden');
+            verifiedSummary.classList.remove('hidden');
+            step6Title.textContent = 'Review & Submit';
+            step6Subtitle.textContent = 'Verify your details and submit';
+            
+            // Populate summary
+            const name = document.getElementById('verifiedReporterName')?.value || '—';
+            const email = document.getElementById('verifiedReporterEmail')?.value || 'Not provided';
+            document.getElementById('summaryName').textContent = name;
+            document.getElementById('summaryPhone').textContent = verifiedPhone;
+            document.getElementById('summaryEmail').textContent = email || 'Not provided';
+        } else {
+            // Show form for anonymous
+            anonymousSection.classList.remove('hidden');
+            verifiedSummary.classList.add('hidden');
+            step6Title.textContent = 'Your Information';
+            step6Subtitle.textContent = 'Optional — you may remain anonymous';
+        }
     }
 
     function validateStep(step) {
         if (step === 0 || step === 1) return true;
+        
+        // Validate step 1.7 (personal details for verified users)
+        if (step === 1.7) {
+            const name = document.getElementById('verifiedReporterName');
+            const relationship = document.getElementById('verifiedReporterRelationship');
+            let valid = true;
+            
+            if (!name.value.trim()) {
+                valid = false;
+                name.classList.add('border-red-500', 'ring-2', 'ring-red-200');
+                setTimeout(() => name.classList.remove('border-red-500', 'ring-2', 'ring-red-200'), 2000);
+            }
+            if (!relationship.value) {
+                valid = false;
+                relationship.classList.add('border-red-500', 'ring-2', 'ring-red-200');
+                setTimeout(() => relationship.classList.remove('border-red-500', 'ring-2', 'ring-red-200'), 2000);
+            }
+            return valid;
+        }
+        
         const currentStepEl = document.querySelector(`.step[data-step="${step}"]`);
         if (!currentStepEl) return true;
         const requiredFields = currentStepEl.querySelectorAll('[required]');
@@ -801,11 +942,23 @@
             currentStep = 1;
         } else if (currentStep === 1.6) {
             currentStep = 1.5;
+        } else if (currentStep === 1.7) {
+            currentStep = 1.6;
+        } else if (currentStep === 2 && reporterType === 'verified') {
+            currentStep = 1.7;
         } else if (currentStep === 2) {
             currentStep = 1;
         } else if (currentStep > 0) {
             currentStep--;
         }
+        updateUI();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    // Continue after verification (personal details) button
+    continueAfterVerifyBtn.addEventListener('click', () => {
+        if (!validateStep(1.7)) return;
+        currentStep = 2;
         updateUI();
         window.scrollTo({ top: 0, behavior: 'smooth' });
     });
@@ -927,11 +1080,17 @@
             const data = await response.json();
 
             if (data.success) {
-                // Success! Store verified phone and proceed
+                // Success! Store verified phone and proceed to personal details
                 document.getElementById('verifiedPhone').value = verifiedPhone;
                 document.getElementById('verifiedPhoneDisplay').textContent = verifiedPhone;
                 
-                // Pre-fill phone in step 6
+                // Update phone display in step 1.7
+                const phoneStep17 = document.getElementById('verifiedPhoneStep17');
+                if (phoneStep17) {
+                    phoneStep17.textContent = verifiedPhone;
+                }
+                
+                // Pre-fill phone in step 6 (for form submission)
                 const phoneField = document.querySelector('input[name="public_reporter_phone"]');
                 if (phoneField) {
                     phoneField.value = verifiedPhone;
@@ -939,9 +1098,15 @@
                     phoneField.classList.add('bg-gray-100');
                 }
                 
-                currentStep = 2;
+                // Go to personal details step (1.7) for verified users
+                currentStep = 1.7;
                 updateUI();
                 clearInterval(resendInterval);
+                
+                // Focus on name field
+                setTimeout(() => {
+                    document.getElementById('verifiedReporterName')?.focus();
+                }, 100);
             } else {
                 otpError.classList.remove('hidden');
                 otpErrorText.textContent = data.message || 'Invalid code. Please try again.';
