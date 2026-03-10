@@ -280,11 +280,13 @@ class SirDashboardController extends Controller
             ->whereYear('updated_at', now()->year)
             ->count();
 
-        // By type (excluding SRGBV)
-        $byType = Incident::where('type', '!=', Incident::TYPE_SRGBV)
-            ->select('type', DB::raw('count(*) as total'))
-            ->groupBy('type')
-            ->pluck('total', 'type')
+        // By category (excluding SRGBV) - shows breakdown of other incident types
+        $byCategory = Incident::where('type', '!=', Incident::TYPE_SRGBV)
+            ->select('category', DB::raw('count(*) as total'))
+            ->whereNotNull('category')
+            ->groupBy('category')
+            ->orderByDesc('total')
+            ->pluck('total', 'category')
             ->toArray();
 
         // By status
@@ -385,7 +387,7 @@ class SirDashboardController extends Controller
             'resolvedThisMonth' => $resolvedThisMonth,
             'internalCount' => $internalCount,
             'publicCount' => $publicCount,
-            'byType' => $byType,
+            'byCategory' => $byCategory,
             'byStatus' => $byStatus,
             'byPriority' => $byPriority,
             'monthlyTrend' => $monthlyTrend,

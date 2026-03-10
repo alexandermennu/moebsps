@@ -265,19 +265,14 @@
             </div>
         </div>
 
-        {{-- Incidents by Type (Bar Chart) --}}
+        {{-- Incidents by Category (Bar Chart) --}}
         <div class="bg-white border border-gray-200 rounded-lg p-5">
             <div class="flex items-center justify-between mb-4">
-                <h3 class="text-sm font-semibold text-gray-900">Incidents by Type</h3>
-                <div class="flex items-center gap-2 text-xs flex-wrap">
-                    <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-sm bg-amber-500"></span> Disciplinary</span>
-                    <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-sm bg-orange-500"></span> Safety</span>
-                    <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-sm bg-blue-500"></span> Infrastructure</span>
-                    <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-sm bg-purple-500"></span> Academic</span>
-                </div>
+                <h3 class="text-sm font-semibold text-gray-900">Incidents by Category</h3>
+                <span class="text-xs text-gray-500">Top categories</span>
             </div>
             <div class="h-52">
-                <canvas id="typeChart"></canvas>
+                <canvas id="categoryChart"></canvas>
             </div>
         </div>
     </div>
@@ -512,32 +507,58 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Incidents by Type Bar Chart
-    const typeCtx = document.getElementById('typeChart');
-    if (typeCtx) {
-        const typeData = @json($byType ?? []);
-        const types = ['disciplinary', 'safety', 'infrastructure', 'academic', 'health', 'other'];
-        const colors = ['#F59E0B', '#F97316', '#3B82F6', '#8B5CF6', '#14B8A6', '#6B7280'];
-        const typeLabels = ['Disciplinary', 'Safety', 'Infrastructure', 'Academic', 'Health', 'Other'];
+    // Incidents by Category Bar Chart
+    const categoryCtx = document.getElementById('categoryChart');
+    if (categoryCtx) {
+        const categoryData = @json($byCategory ?? []);
+        
+        // Category labels mapping
+        const categoryLabels = {
+            'student_misconduct': 'Student Misconduct',
+            'teacher_misconduct': 'Teacher/Staff Misconduct',
+            'substance_abuse': 'Substance Abuse',
+            'fighting': 'Fighting / Violence',
+            'vandalism': 'Vandalism',
+            'theft': 'Theft',
+            'fire': 'Fire Incident',
+            'structural_hazard': 'Structural Hazard',
+            'sanitation': 'Sanitation / Health',
+            'accident_injury': 'Accident / Injury',
+            'bullying': 'Bullying',
+            'truancy': 'Truancy',
+            'other': 'Other'
+        };
+        
+        // Get top 8 categories by count
+        const sortedCategories = Object.entries(categoryData)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 8);
+        
+        const labels = sortedCategories.map(([key]) => categoryLabels[key] || key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()));
+        const values = sortedCategories.map(([, val]) => val);
+        
+        // Generate colors for each category
+        const colors = ['#F59E0B', '#F97316', '#3B82F6', '#8B5CF6', '#14B8A6', '#EF4444', '#10B981', '#6B7280'];
 
-        new Chart(typeCtx, {
+        new Chart(categoryCtx, {
             type: 'bar',
             data: {
-                labels: typeLabels,
+                labels: labels,
                 datasets: [{
-                    data: types.map(t => typeData[t] || 0),
-                    backgroundColor: colors,
+                    data: values,
+                    backgroundColor: colors.slice(0, values.length),
                     borderRadius: 4,
-                    barThickness: 30,
+                    barThickness: 24,
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                indexAxis: 'y',
                 plugins: { legend: { display: false } },
                 scales: {
-                    y: { beginAtZero: true, grid: { color: '#f3f4f6' }, ticks: { font: { size: 10 } } },
-                    x: { grid: { display: false }, ticks: { font: { size: 9 } } }
+                    x: { beginAtZero: true, grid: { color: '#f3f4f6' }, ticks: { font: { size: 10 } } },
+                    y: { grid: { display: false }, ticks: { font: { size: 9 } } }
                 }
             }
         });
