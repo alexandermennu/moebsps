@@ -126,11 +126,6 @@ class ActivityController extends Controller
             'remarks' => 'nullable|string',
         ]);
 
-        // Validate division_id exists if provided
-        if (!empty($validated['division_id']) && !\App\Models\Division::find($validated['division_id'])) {
-            return back()->withErrors(['division_id' => 'Invalid division selected.'])->withInput();
-        }
-
         if (!$user->canManageDivision()) {
             abort(403);
         }
@@ -145,12 +140,23 @@ class ActivityController extends Controller
             }
         }
 
+        // Handle division_id - use user's division if director, or null if empty
+        $divisionId = null;
         if ($user->isDirector()) {
-            $validated['division_id'] = $user->division_id;
+            $divisionId = $user->division_id;
+        } elseif (!empty($validated['division_id'])) {
+            $divisionId = $validated['division_id'];
         }
 
         $activity = Activity::create([
-            ...$validated,
+            'title' => $validated['title'],
+            'description' => $validated['description'] ?? null,
+            'division_id' => $divisionId,
+            'assigned_to' => $validated['assigned_to'] ?? null,
+            'priority' => $validated['priority'],
+            'start_date' => $validated['start_date'] ?? null,
+            'due_date' => $validated['due_date'],
+            'remarks' => $validated['remarks'] ?? null,
             'created_by' => $user->id,
             'status' => 'not_started',
         ]);
