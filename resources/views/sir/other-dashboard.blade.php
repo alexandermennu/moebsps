@@ -369,7 +369,14 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const countyData = @json($countyData ?? []);
+    const rawCountyData = @json($countyData ?? []);
+    
+    // Normalize county names (remove " County" suffix for matching with GeoJSON)
+    const countyData = {};
+    for (const [key, value] of Object.entries(rawCountyData)) {
+        const normalizedKey = key.replace(' County', '');
+        countyData[normalizedKey] = value;
+    }
     
     // Initialize Leaflet map centered on Liberia
     const map = L.map('liberiaMap', {
