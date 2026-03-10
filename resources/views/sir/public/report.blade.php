@@ -549,14 +549,20 @@
 
                     <div class="pt-2">
                         <label class="block text-sm font-medium text-gray-700 mb-2">Attach Evidence <span class="text-gray-400 font-normal">(optional)</span></label>
-                        <div id="fileUploadArea" class="border-2 border-dashed border-gray-200 rounded-xl p-6 text-center bg-white relative">
+                        <div id="fileUploadArea" class="border-2 border-dashed border-gray-200 rounded-xl p-6 text-center bg-white relative hover:border-red-300 hover:bg-red-50 transition-colors">
                             <svg class="w-10 h-10 text-gray-300 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                            <p class="text-sm text-gray-500 mb-1">Tap to upload photos or files</p>
-                            <p class="text-xs text-gray-400">You can select multiple files</p>
+                            <p class="text-sm text-gray-500 mb-1" id="uploadText">Tap to upload photos or files</p>
+                            <p class="text-xs text-gray-400" id="uploadSubtext">You can select multiple files</p>
                             <input type="file" name="files[]" id="fileInput" multiple accept="image/*,.pdf,.doc,.docx" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
                         </div>
-                        <div id="filePreview" class="mt-3 space-y-2 hidden"></div>
-                        <p class="text-xs text-gray-400 mt-2 text-center">Max 3 files, 5MB each • Images, PDFs, or documents</p>
+                        <div id="filePreview" class="mt-3 hidden">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-sm font-medium text-gray-700" id="fileCount">0 files selected</span>
+                                <button type="button" id="clearAllFiles" class="text-xs text-red-600 hover:text-red-700 font-medium">Clear all</button>
+                            </div>
+                            <div id="fileGrid" class="grid grid-cols-3 gap-2"></div>
+                        </div>
+                        <p class="text-xs text-gray-400 mt-2 text-center">Max 6 files, 5MB each • Images, PDFs, or documents</p>
                     </div>
                 </div>
             </div>
@@ -655,66 +661,143 @@
     const fileInput = document.getElementById('fileInput');
     const filePreview = document.getElementById('filePreview');
     const fileUploadArea = document.getElementById('fileUploadArea');
+    const fileGrid = document.getElementById('fileGrid');
+    const fileCount = document.getElementById('fileCount');
+    const uploadText = document.getElementById('uploadText');
+    const uploadSubtext = document.getElementById('uploadSubtext');
+    const clearAllFiles = document.getElementById('clearAllFiles');
     let selectedFiles = [];
+    const MAX_FILES = 6;
+    const MAX_SIZE_MB = 5;
 
     fileInput.addEventListener('change', function(e) {
-        const files = Array.from(e.target.files).slice(0, 3); // Max 3 files
-        selectedFiles = files;
+        const newFiles = Array.from(e.target.files);
         
-        if (files.length > 0) {
+        // Add new files to existing selection (up to max)
+        newFiles.forEach(file => {
+            if (selectedFiles.length < MAX_FILES) {
+                // Check for duplicates
+                const exists = selectedFiles.some(f => f.name === file.name && f.size === file.size);
+                if (!exists) {
+                    // Check file size
+                    if (file.size > MAX_SIZE_MB * 1024 * 1024) {
+                        alert(`File "${file.name}" is too large. Maximum size is ${MAX_SIZE_MB}MB.`);
+                    } else {
+                        selectedFiles.push(file);
+                    }
+                }
+            }
+        });
+        
+        // Limit to max files
+        if (selectedFiles.length > MAX_FILES) {
+            selectedFiles = selectedFiles.slice(0, MAX_FILES);
+            alert(`Maximum ${MAX_FILES} files allowed.`);
+        }
+        
+        renderFilePreview();
+    });
+
+    function renderFilePreview() {
+        if (selectedFiles.length > 0) {
             filePreview.classList.remove('hidden');
-            filePreview.innerHTML = '';
+            fileGrid.innerHTML = '';
+            fileCount.textContent = `${selectedFiles.length} file${selectedFiles.length > 1 ? 's' : ''} selected`;
             
-            files.forEach((file, index) => {
+            // Update upload area
+            uploadText.textContent = `${selectedFiles.length}/${MAX_FILES} files`;
+            uploadSubtext.textContent = 'Tap to add more';
+            fileUploadArea.classList.add('border-green-300', 'bg-green-50');
+            fileUploadArea.classList.remove('border-gray-200');
+            
+            selectedFiles.forEach((file, index) => {
                 const isImage = file.type.startsWith('image/');
-                const fileSize = (file.size / 1024 / 1024).toFixed(2);
+                const fileSize = (file.size / 1024 / 1024).toFixed(1);
                 
                 const fileItem = document.createElement('div');
-                fileItem.className = 'flex items-center gap-3 bg-gray-50 rounded-lg p-3';
-                fileItem.innerHTML = `
-                    <div class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${isImage ? 'bg-blue-100' : 'bg-gray-200'}">
-                        ${isImage 
-                            ? '<svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>'
-                            : '<svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>'
-                        }
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <p class="text-sm font-medium text-gray-800 truncate">${file.name}</p>
-                        <p class="text-xs text-gray-400">${fileSize} MB</p>
-                    </div>
-                    <button type="button" class="remove-file p-1 text-gray-400 hover:text-red-500" data-index="${index}">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                    </button>
+                fileItem.className = 'relative aspect-square rounded-xl overflow-hidden bg-gray-100 group';
+                
+                if (isImage) {
+                    // Create image thumbnail
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        fileItem.innerHTML = `
+                            <img src="${e.target.result}" class="w-full h-full object-cover" alt="${file.name}">
+                            <div class="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors"></div>
+                            <button type="button" class="remove-file absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg" data-index="${index}">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                            </button>
+                            <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-2">
+                                <p class="text-xs text-white truncate">${file.name}</p>
+                                <p class="text-xs text-white/70">${fileSize} MB</p>
+                            </div>
+                        `;
+                        attachRemoveHandler(fileItem, index);
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    // Non-image file
+                    fileItem.innerHTML = `
+                        <div class="w-full h-full flex flex-col items-center justify-center p-2 bg-gray-100">
+                            <svg class="w-8 h-8 text-gray-400 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                            <p class="text-xs text-gray-600 truncate w-full text-center">${file.name.split('.').pop().toUpperCase()}</p>
+                            <p class="text-xs text-gray-400">${fileSize} MB</p>
+                        </div>
+                        <button type="button" class="remove-file absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg" data-index="${index}">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                        </button>
+                    `;
+                    attachRemoveHandler(fileItem, index);
+                }
+                
+                fileGrid.appendChild(fileItem);
+            });
+            
+            // Add "add more" tile if under max
+            if (selectedFiles.length < MAX_FILES) {
+                const addMore = document.createElement('div');
+                addMore.className = 'aspect-square rounded-xl border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-pointer hover:border-red-400 hover:bg-red-50 transition-colors';
+                addMore.innerHTML = `
+                    <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+                    <span class="text-xs text-gray-500 mt-1">Add more</span>
                 `;
-                filePreview.appendChild(fileItem);
-            });
-            
-            // Add remove file handlers
-            document.querySelectorAll('.remove-file').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const index = parseInt(this.dataset.index);
-                    selectedFiles.splice(index, 1);
-                    updateFileInput();
-                });
-            });
-            
-            // Update upload area text
-            fileUploadArea.querySelector('p').textContent = `${files.length} file${files.length > 1 ? 's' : ''} selected`;
+                addMore.addEventListener('click', () => fileInput.click());
+                fileGrid.appendChild(addMore);
+            }
         } else {
             filePreview.classList.add('hidden');
-            fileUploadArea.querySelector('p').textContent = 'Tap to upload photos or files';
+            uploadText.textContent = 'Tap to upload photos or files';
+            uploadSubtext.textContent = 'You can select multiple files';
+            fileUploadArea.classList.remove('border-green-300', 'bg-green-50');
+            fileUploadArea.classList.add('border-gray-200');
         }
-    });
+        
+        // Update file input with selected files
+        updateFileInputFromSelection();
+    }
+
+    function attachRemoveHandler(element, index) {
+        const removeBtn = element.querySelector('.remove-file');
+        if (removeBtn) {
+            removeBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                selectedFiles.splice(index, 1);
+                renderFilePreview();
+            });
+        }
+    }
     
-    function updateFileInput() {
-        // Create a new DataTransfer to update the file input
+    function updateFileInputFromSelection() {
         const dt = new DataTransfer();
         selectedFiles.forEach(file => dt.items.add(file));
         fileInput.files = dt.files;
-        
-        // Trigger change event to refresh preview
-        fileInput.dispatchEvent(new Event('change'));
     }
+
+    // Clear all files
+    clearAllFiles.addEventListener('click', function() {
+        selectedFiles = [];
+        renderFilePreview();
+    });
 
     // Injury details toggle
     const anyInjuries = document.getElementById('anyInjuries');
