@@ -278,15 +278,29 @@ class WeeklyUpdateController extends Controller
             abort(403);
         }
 
-        // Week filter: default to current week
-        $weekStart = $request->filled('week_start') ? $request->week_start : now()->startOfWeek()->format('Y-m-d');
-        $weekEnd = $request->filled('week_end') ? $request->week_end : now()->endOfWeek()->format('Y-m-d');
-        $statusFilter = $request->input('status', '');
         $divisionId = $request->input('division_id');
+        $statusFilter = $request->input('status', '');
+        
+        // Check if explicit date filters were provided
+        $hasDateFilter = $request->filled('week_start') || $request->filled('week_end');
+        
+        // If no explicit date filter is provided, show all updates (no date restriction)
+        // This applies both when viewing a specific division and viewing all consolidated
+        if (!$hasDateFilter) {
+            $weekStart = null;
+            $weekEnd = null;
+        } else {
+            $weekStart = $request->input('week_start');
+            $weekEnd = $request->input('week_end');
+        }
 
-        $query = WeeklyUpdate::with(['division', 'submitter', 'reviewer', 'activities'])
-            ->where('week_start', '>=', $weekStart)
-            ->where('week_end', '<=', $weekEnd);
+        $query = WeeklyUpdate::with(['division', 'submitter', 'reviewer', 'activities']);
+        
+        // Apply date filters only if they are set
+        if ($weekStart && $weekEnd) {
+            $query->where('week_start', '>=', $weekStart)
+                  ->where('week_end', '<=', $weekEnd);
+        }
 
         // Filter by specific division if provided
         if ($divisionId) {
@@ -367,33 +381,58 @@ class WeeklyUpdateController extends Controller
             abort(403);
         }
 
-        $weekStart = $request->input('week_start', now()->startOfWeek()->format('Y-m-d'));
-        $weekEnd = $request->input('week_end', now()->endOfWeek()->format('Y-m-d'));
+        $weekStart = $request->input('week_start');
+        $weekEnd = $request->input('week_end');
+        $divisionId = $request->input('division_id');
         $format = $request->input('format', 'pdf');
 
         $query = WeeklyUpdate::with(['division', 'submitter', 'reviewer', 'activities'])
-            ->where('week_start', '>=', $weekStart)
-            ->where('week_end', '<=', $weekEnd)
             ->whereIn('status', ['submitted', 'approved']);
 
-        if ($user->isDirector() && !$user->hasFullAccess()) {
+        // Apply date filters only if provided
+        if ($weekStart && $weekEnd) {
+            $query->where('week_start', '>=', $weekStart)
+                  ->where('week_end', '<=', $weekEnd);
+        }
+
+        // Filter by specific division if provided
+        if ($divisionId) {
+            $query->where('division_id', $divisionId);
+        } elseif ($user->isDirector() && !$user->hasFullAccess()) {
             $query->where('division_id', $user->division_id);
         }
 
         $updates = $query->orderBy('division_id')->latest()->get();
         $grouped = $updates->groupBy(fn($u) => $u->division->name ?? 'Unknown');
 
+        // Build subtitle based on filters
+        $subtitle = '';
+        if ($weekStart && $weekEnd) {
+            $subtitle = "Period: " . \Carbon\Carbon::parse($weekStart)->format('M d') . " – " . \Carbon\Carbon::parse($weekEnd)->format('M d, Y');
+        } else {
+            $subtitle = "All Submitted & Approved Reports";
+        }
+
+        // Get division name if filtering by division
+        $divisionName = null;
+        if ($divisionId) {
+            $division = Division::find($divisionId);
+            $divisionName = $division ? $division->name : null;
+        }
+
         $html = view('weekly-updates.download', [
             'updates' => $updates,
             'grouped' => $grouped,
-            'title' => 'Consolidated Weekly Updates Report',
-            'subtitle' => "Period: " . \Carbon\Carbon::parse($weekStart)->format('M d') . " – " . \Carbon\Carbon::parse($weekEnd)->format('M d, Y'),
+            'title' => $divisionName ? "{$divisionName} - Weekly Updates" : 'Consolidated Weekly Updates Report',
+            'subtitle' => $subtitle,
             'isConsolidated' => true,
             'format' => $format,
         ])->render();
 
         if ($format === 'word') {
-            $filename = "consolidated-updates-{$weekStart}-to-{$weekEnd}.doc";
+            $filename = $divisionId 
+                ? "division-updates-{$divisionId}.doc" 
+                : ($weekStart ? "consolidated-updates-{$weekStart}-to-{$weekEnd}.doc" : "consolidated-updates-all.doc");
             return response($html)
                 ->header('Content-Type', 'application/vnd.ms-word')
                 ->header('Content-Disposition', "attachment; filename=\"{$filename}\"");

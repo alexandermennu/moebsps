@@ -6,7 +6,7 @@
 @section('content')
 <div class="max-w-7xl">
     <div class="mb-6">
-        <a href="{{ route('dashboard') }}" class="text-xs text-blue-700 hover:underline">Back to Dashboard</a>
+        <a href="{{ route('weekly-updates.index') }}" class="text-xs text-blue-700 hover:underline">← Back to Weekly Updates</a>
     </div>
 
     {{-- Header --}}
@@ -23,33 +23,35 @@
                 @endif
             </div>
 
-            {{-- Download Buttons --}}
+            {{-- Download Buttons - only show if we have date range --}}
+            @if($weekStart && $weekEnd)
             <div class="flex items-center gap-2">
-                <a href="{{ route('weekly-updates.download-consolidated', ['week_start' => $weekStart, 'week_end' => $weekEnd, 'format' => 'pdf']) }}"
+                <a href="{{ route('weekly-updates.download-consolidated', ['week_start' => $weekStart, 'week_end' => $weekEnd, 'format' => 'pdf', 'division_id' => $divisionId ?? '']) }}"
                    target="_blank"
                    class="inline-flex items-center gap-1.5 px-3 py-2 bg-red-600 text-white text-xs font-medium hover:bg-red-700">
                     Download PDF
                 </a>
-                <a href="{{ route('weekly-updates.download-consolidated', ['week_start' => $weekStart, 'week_end' => $weekEnd, 'format' => 'word']) }}"
+                <a href="{{ route('weekly-updates.download-consolidated', ['week_start' => $weekStart, 'week_end' => $weekEnd, 'format' => 'word', 'division_id' => $divisionId ?? '']) }}"
                    class="inline-flex items-center gap-1.5 px-3 py-2 bg-blue-600 text-white text-xs font-medium hover:bg-blue-700">
                     Download Word
                 </a>
             </div>
+            @endif
         </div>
 
         {{-- Week Filter --}}
-        <form method="GET" action="{{ route('weekly-updates.consolidated') }}" class="flex items-end gap-4">
+        <form method="GET" action="{{ route('weekly-updates.consolidated') }}" class="flex flex-wrap items-end gap-4">
             @if(isset($divisionId) && $divisionId)
                 <input type="hidden" name="division_id" value="{{ $divisionId }}">
             @endif
             <div>
                 <label class="block text-xs font-medium text-gray-600 mb-1">Week Start</label>
-                <input type="date" name="week_start" value="{{ $weekStart }}"
+                <input type="date" name="week_start" value="{{ $weekStart ?? '' }}"
                        class="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-slate-500">
             </div>
             <div>
                 <label class="block text-xs font-medium text-gray-600 mb-1">Week End</label>
-                <input type="date" name="week_end" value="{{ $weekEnd }}"
+                <input type="date" name="week_end" value="{{ $weekEnd ?? '' }}"
                        class="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-slate-500">
             </div>
             <div>
@@ -65,15 +67,27 @@
             <button type="submit" class="px-4 py-2 bg-gray-800 text-white text-sm font-medium hover:bg-gray-700">
                 Filter
             </button>
+            @if($weekStart || $weekEnd || $statusFilter)
+                <a href="{{ route('weekly-updates.consolidated', isset($divisionId) ? ['division_id' => $divisionId] : []) }}" 
+                   class="px-4 py-2 text-gray-600 text-sm font-medium hover:text-gray-800">
+                    Clear Filters
+                </a>
+            @endif
         </form>
     </div>
 
     {{-- Division Analytics Overview --}}
-    @if(count($divisionAnalytics) > 0)
+    @if(count($divisionAnalytics) > 0 && collect($divisionAnalytics)->sum('total_updates') > 0)
     <div class="bg-white border border-gray-200 mb-6">
         <div class="px-6 py-4 border-b border-gray-200">
             <h3 class="text-sm font-semibold text-gray-800">Division Summary</h3>
-            <p class="text-xs text-gray-500 mt-0.5">Quick analytics across all divisions for the selected period</p>
+            <p class="text-xs text-gray-500 mt-0.5">
+                @if($weekStart && $weekEnd)
+                    Analytics for {{ \Carbon\Carbon::parse($weekStart)->format('M d') }} – {{ \Carbon\Carbon::parse($weekEnd)->format('M d, Y') }}
+                @else
+                    All submitted & approved reports
+                @endif
+            </p>
         </div>
         <div class="overflow-x-auto">
             <table class="w-full text-sm">
@@ -245,8 +259,16 @@
         </div>
     @empty
         <div class="bg-white border border-gray-200 p-12 text-center">
-            <p class="text-sm text-gray-500">No weekly updates found for the selected period.</p>
-            <p class="text-xs text-gray-400 mt-1">Try adjusting the date range or status filter.</p>
+            @if(isset($selectedDivision) && $selectedDivision)
+                <p class="text-sm text-gray-500">No weekly updates found for {{ $selectedDivision->name }}.</p>
+                <p class="text-xs text-gray-400 mt-1">This division has no submitted or approved reports yet.</p>
+            @elseif($weekStart && $weekEnd)
+                <p class="text-sm text-gray-500">No weekly updates found for the selected period.</p>
+                <p class="text-xs text-gray-400 mt-1">Try adjusting the date range or status filter.</p>
+            @else
+                <p class="text-sm text-gray-500">No weekly updates found.</p>
+                <p class="text-xs text-gray-400 mt-1">Use the filters above to search for specific reports.</p>
+            @endif
         </div>
     @endforelse
 </div>
