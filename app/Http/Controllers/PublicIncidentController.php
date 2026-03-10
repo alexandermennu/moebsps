@@ -164,9 +164,9 @@ class PublicIncidentController extends Controller
     public function track(Request $request)
     {
         $request->validate([
-            'tracking_code' => ['required', 'string', 'min:15', 'max:20', 'regex:/^SIR-(SRGBV|OI)-[A-Z]{3}-\d{4}$/i'],
+            'tracking_code' => ['required', 'string', 'min:15', 'max:20', 'regex:/^SIR-(SRGBV|OI)-[A-Z0-9]{3}-\d{4}$/i'],
         ], [
-            'tracking_code.regex' => 'Invalid tracking code format. Expected format: SIR-SRGBV-ABC-1234 or SIR-OI-ABC-1234',
+            'tracking_code.regex' => 'Invalid tracking code format. Expected format: SIR-SRGBV-XXX-1234 or SIR-OI-XXX-1234',
         ]);
 
         $incident = Incident::where('tracking_code', strtoupper($request->tracking_code))->first();

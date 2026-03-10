@@ -38,20 +38,16 @@
                            value="{{ old('tracking_code', $trackingCode ?? '') }}" 
                            required 
                            placeholder="e.g., SIR-SRGBV-ABC-1234" 
-                           class="w-full px-4 py-3 border border-gray-300 rounded-md text-center text-lg font-mono tracking-wider focus:outline-none focus:ring-2 focus:ring-red-500 uppercase" 
-                           minlength="15"
-                           maxlength="20"
-                           pattern="SIR-(SRGBV|OI)-[A-Z0-9]{3}-\d{4}"
-                           title="Format: SIR-SRGBV-XXX-1234 or SIR-OI-XXX-1234">
+                           class="w-full px-4 py-3 border border-gray-300 rounded-md text-center text-lg font-mono tracking-wider focus:outline-none focus:ring-2 focus:ring-red-500 uppercase @error('tracking_code') border-red-500 @enderror">
                 </div>
                 <button type="submit" class="px-6 py-3 bg-red-700 text-white text-sm font-semibold hover:bg-red-800 rounded-md">Track</button>
             </form>
 
-            @if(session('error'))
+            @error('tracking_code')
             <div class="mt-4 bg-red-50 border border-red-200 p-3 rounded-md text-center">
-                <p class="text-sm text-red-700">{{ session('error') }}</p>
+                <p class="text-sm text-red-700">{{ $message }}</p>
             </div>
-            @endif
+            @enderror
         </div>
 
         {{-- Result --}}
