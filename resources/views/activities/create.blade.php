@@ -285,3 +285,7 @@ document.addEventListener('DOMContentLoaded', function() {
         hiddenInput.value = assigneeSelect.value;
         // Check initial state for Minister's Office
         handleAssigneeChange(assigneeSelect);
+    }
+});
+</script>
+@endsection
