@@ -245,7 +245,7 @@
 
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Your Full Name *</label>
-                        <input type="text" id="verifiedReporterName" name="public_reporter_name" value="{{ old('public_reporter_name') }}" required placeholder="Enter your full name" class="w-full px-4 py-3.5 bg-white border border-gray-200 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                        <input type="text" id="verifiedReporterName" name="public_reporter_name" value="{{ old('public_reporter_name') }}" placeholder="Enter your full name" class="w-full px-4 py-3.5 bg-white border border-gray-200 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent">
                     </div>
 
                     <div>
@@ -255,7 +255,7 @@
 
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Your Relationship to Incident *</label>
-                        <select id="verifiedReporterRelationship" name="public_reporter_relationship" required class="w-full px-4 py-3.5 bg-white border border-gray-200 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                        <select id="verifiedReporterRelationship" name="public_reporter_relationship" class="w-full px-4 py-3.5 bg-white border border-gray-200 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent">
                             <option value="">Select your relationship...</option>
                             @foreach(\App\Models\Incident::REPORTER_RELATIONSHIPS as $key => $label)
                             <option value="{{ $key }}" {{ old('public_reporter_relationship') === $key ? 'selected' : '' }}>{{ $label }}</option>
