@@ -133,29 +133,29 @@
     {{-- Cases Table --}}
     <div class="bg-white border border-gray-200 rounded-md overflow-hidden">
         <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
+            <table class="min-w-full divide-y divide-gray-200 table-fixed">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th scope="col" class="px-4 py-3 text-left text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Case #</th>
-                        <th scope="col" class="px-4 py-3 text-left text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Title / Category</th>
+                        <th scope="col" class="px-2 py-3 text-left text-[10px] font-semibold text-gray-500 uppercase tracking-wider w-28">Case #</th>
+                        <th scope="col" class="px-3 py-3 text-left text-[10px] font-semibold text-gray-500 uppercase tracking-wider w-44">Title / Category</th>
                         @if(!$isSrgbv)
-                        <th scope="col" class="px-4 py-3 text-left text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Type</th>
+                        <th scope="col" class="px-2 py-3 text-left text-[10px] font-semibold text-gray-500 uppercase tracking-wider w-24">Type</th>
                         @endif
-                        <th scope="col" class="px-4 py-3 text-left text-[10px] font-semibold text-gray-500 uppercase tracking-wider">School / Location</th>
-                        <th scope="col" class="px-4 py-3 text-left text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Date</th>
-                        <th scope="col" class="px-4 py-3 text-left text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Priority</th>
-                        <th scope="col" class="px-4 py-3 text-left text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Source</th>
-                        <th scope="col" class="px-4 py-3 text-left text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Status</th>
-                        <th scope="col" class="px-4 py-3 text-left text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Reporter</th>
-                        <th scope="col" class="px-4 py-3 text-right text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
+                        <th scope="col" class="px-3 py-3 text-left text-[10px] font-semibold text-gray-500 uppercase tracking-wider w-32">School / Location</th>
+                        <th scope="col" class="px-2 py-3 text-left text-[10px] font-semibold text-gray-500 uppercase tracking-wider w-24">Date</th>
+                        <th scope="col" class="px-2 py-3 text-left text-[10px] font-semibold text-gray-500 uppercase tracking-wider w-20">Priority</th>
+                        <th scope="col" class="px-2 py-3 text-left text-[10px] font-semibold text-gray-500 uppercase tracking-wider w-20">Source</th>
+                        <th scope="col" class="px-2 py-3 text-left text-[10px] font-semibold text-gray-500 uppercase tracking-wider w-20">Status</th>
+                        <th scope="col" class="px-2 py-3 text-left text-[10px] font-semibold text-gray-500 uppercase tracking-wider w-24">Reporter</th>
+                        <th scope="col" class="px-2 py-3 text-right text-[10px] font-semibold text-gray-500 uppercase tracking-wider w-16">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-100">
                     @forelse($incidents as $incident)
                     <tr class="hover:bg-gray-50 transition">
-                        <td class="px-4 py-3 whitespace-nowrap">
+                        <td class="px-2 py-3">
                             <div class="flex flex-col">
-                                <span class="text-xs font-mono font-semibold text-gray-900">{{ $incident->incident_number }}</span>
+                                <span class="text-[10px] font-mono font-semibold text-gray-900">{{ $incident->incident_number }}</span>
                                 @if($incident->immediate_action_required)
                                 <span class="text-[9px] px-1.5 py-0.5 mt-1 font-semibold bg-red-500 text-white rounded w-fit">URGENT</span>
                                 @endif
@@ -164,26 +164,26 @@
                                 @endif
                             </div>
                         </td>
-                        <td class="px-4 py-3">
+                        <td class="px-3 py-3">
                             <a href="{{ route($showRoute, $incident) }}" class="text-sm font-medium text-gray-900 hover:text-{{ $themeColor }}-700">{{ $incident->title }}</a>
                             <p class="text-xs text-gray-500 mt-0.5">{{ $incident->category_label }}</p>
                         </td>
                         @if(!$isSrgbv)
-                        <td class="px-4 py-3 whitespace-nowrap">
+                        <td class="px-2 py-3">
                             <span class="text-[10px] px-2 py-1 font-medium bg-{{ $incident->type_color }}-100 text-{{ $incident->type_color }}-700 rounded">{{ $incident->type_label }}</span>
                         </td>
                         @endif
-                        <td class="px-4 py-3">
+                        <td class="px-3 py-3">
                             <div class="text-xs text-gray-900">{{ $incident->school_name ?? '—' }}</div>
                             @if($incident->school_county)
                             <div class="text-[10px] text-gray-500">{{ $incident->school_county }}</div>
                             @endif
                         </td>
-                        <td class="px-4 py-3 whitespace-nowrap">
+                        <td class="px-2 py-3">
                             <div class="text-xs text-gray-900">{{ $incident->incident_date?->format('M d, Y') ?? '—' }}</div>
                             <div class="text-[10px] text-gray-400">{{ $incident->created_at->diffForHumans() }}</div>
                         </td>
-                        <td class="px-4 py-3 whitespace-nowrap">
+                        <td class="px-2 py-3">
                             @php
                                 $priorityColors = [
                                     'low' => 'bg-green-100 text-green-700',
@@ -194,7 +194,7 @@
                             @endphp
                             <span class="text-[10px] px-2 py-1 font-medium {{ $priorityColors[$incident->priority] ?? 'bg-gray-100 text-gray-700' }} rounded">{{ $incident->priority_label }}</span>
                         </td>
-                        <td class="px-4 py-3 whitespace-nowrap">
+                        <td class="px-2 py-3">
                             @php
                                 $sourceColors = [
                                     'internal' => 'bg-sky-100 text-sky-700',
@@ -205,7 +205,7 @@
                             @endphp
                             <span class="text-[10px] px-2 py-1 font-medium {{ $sourceColors[$incident->source] ?? 'bg-gray-100 text-gray-700' }} rounded">{{ $incident->source_label }}</span>
                         </td>
-                        <td class="px-4 py-3 whitespace-nowrap">
+                        <td class="px-2 py-3">
                             @php
                                 $statusColors = [
                                     'reported' => 'bg-blue-100 text-blue-700',
@@ -219,19 +219,19 @@
                             @endphp
                             <span class="text-[10px] px-2 py-1 font-medium {{ $statusColors[$incident->status] ?? 'bg-gray-100 text-gray-700' }} rounded">{{ $incident->status_label }}</span>
                         </td>
-                        <td class="px-4 py-3 whitespace-nowrap">
+                        <td class="px-2 py-3">
                             <div class="text-xs text-gray-700">
                                 @if($incident->reporter)
-                                    {{ Str::limit($incident->reporter->name, 15) }}
+                                    {{ Str::limit($incident->reporter->name, 12) }}
                                 @elseif($incident->public_reporter_name)
-                                    {{ Str::limit($incident->public_reporter_name, 15) }}
+                                    {{ Str::limit($incident->public_reporter_name, 12) }}
                                 @else
                                     <span class="text-gray-400 italic">Anonymous</span>
                                 @endif
                             </div>
                         </td>
-                        <td class="px-4 py-3 whitespace-nowrap text-right">
-                            <div class="flex items-center justify-end gap-1">
+                        <td class="px-2 py-3 text-right">
+                            <div class="flex items-center justify-end gap-0.5">
                                 <a href="{{ route($showRoute, $incident) }}" class="p-1.5 text-gray-400 hover:text-{{ $themeColor }}-600 hover:bg-gray-100 rounded transition" title="View">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                                 </a>
