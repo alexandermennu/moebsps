@@ -139,9 +139,15 @@ function handleAssigneeChange(select) {
     const isMinisterOffice = selectedOption && selectedOption.getAttribute('data-minister-office') === 'true';
     const staffDivisionId = selectedOption ? selectedOption.getAttribute('data-division') : null;
     
-    // Auto-select division based on selected staff
-    if (divisionSelect && staffDivisionId && staffDivisionId !== '' && staffDivisionId !== '__counselor__') {
-        divisionSelect.value = staffDivisionId;
+    // Auto-select division based on selected staff, or clear if Minister's Office
+    if (divisionSelect) {
+        if (isMinisterOffice) {
+            // Clear division for Minister's Office staff
+            divisionSelect.value = '';
+        } else if (staffDivisionId && staffDivisionId !== '' && staffDivisionId !== '__counselor__') {
+            // Auto-select division for regular staff
+            divisionSelect.value = staffDivisionId;
+        }
     }
     
     // Make division optional for Minister's office staff
