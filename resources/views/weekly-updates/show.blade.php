@@ -6,7 +6,11 @@
 @section('content')
 <div class="max-w-6xl">
     <div class="mb-6">
-        <a href="{{ route('weekly-updates.index') }}" class="text-xs text-blue-700 hover:underline">Back to Weekly Updates</a>
+        @if(request('from') === 'tracker')
+            <a href="{{ route('tracked-activities.index') }}" class="text-xs text-blue-700 hover:underline">Back to Activity Tracker</a>
+        @else
+            <a href="{{ route('weekly-updates.index') }}" class="text-xs text-blue-700 hover:underline">Back to Weekly Updates</a>
+        @endif
     </div>
 
     {{-- Header --}}
