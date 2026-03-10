@@ -122,7 +122,7 @@
 // Store all users data for filtering
 const allUsers = [
     @foreach($users as $u)
-    { id: {{ $u->id }}, name: "{{ addslashes($u->name) }}", role: "{{ $u->role_label }}", division_id: {{ $u->division_id ?? 'null' }} },
+    { id: {{ $u->id }}, name: "{{ addslashes($u->name) }}", role: "{{ $u->role_label }}", division_id: {{ $u->division_id ?? 'null' }}, isMinisterOffice: {{ ($u->division_id === null) ? 'true' : 'false' }} },
     @endforeach
 ];
 const canAssignCounselor = {{ $canAssignCounselor ? 'true' : 'false' }};
@@ -132,6 +132,22 @@ function handleAssigneeChange(select) {
     const wrapper = document.getElementById('counselor_dropdown_wrapper');
     const hiddenInput = document.getElementById('assigned_to_hidden');
     const counselorSelect = document.getElementById('counselor_select');
+    const divisionSelect = document.getElementById('division_id');
+    
+    // Check if selected user is from Minister's Office (no division)
+    const selectedOption = select.options[select.selectedIndex];
+    const isMinisterOffice = selectedOption && selectedOption.getAttribute('data-minister-office') === 'true';
+    
+    // Make division optional for Minister's office staff
+    if (divisionSelect) {
+        if (isMinisterOffice && select.value) {
+            divisionSelect.removeAttribute('required');
+            divisionSelect.closest('.mb-4').querySelector('label').innerHTML = 'Division <span class="text-gray-400 text-xs">(optional for Minister\'s Office staff)</span>';
+        } else {
+            divisionSelect.setAttribute('required', 'required');
+            divisionSelect.closest('.mb-4').querySelector('label').innerHTML = 'Division *';
+        }
+    }
 
     if (select.value === '__counselor__') {
         if (wrapper) wrapper.classList.remove('hidden');
@@ -158,16 +174,40 @@ function filterStaffByDivision(divisionId) {
     const currentValue = hiddenInput ? hiddenInput.value : '';
     assigneeSelect.innerHTML = '<option value="">Unassigned</option>';
     
-    // Filter and add users
+    // Filter users: show division staff + always show Minister's Office staff
     const filteredUsers = divisionId 
-        ? allUsers.filter(u => u.division_id == divisionId)
+        ? allUsers.filter(u => u.division_id == divisionId || u.isMinisterOffice)
         : allUsers;
     
-    filteredUsers.forEach(u => {
+    // Separate Minister's Office staff and division staff
+    const divisionStaff = filteredUsers.filter(u => !u.isMinisterOffice);
+    const ministerStaff = filteredUsers.filter(u => u.isMinisterOffice);
+    
+    // Add division staff first
+    divisionStaff.forEach(u => {
         const option = document.createElement('option');
         option.value = u.id;
         option.textContent = `${u.name} (${u.role})`;
         option.setAttribute('data-division', u.division_id || '');
+        option.setAttribute('data-minister-office', 'false');
+        if (u.id == currentValue) option.selected = true;
+        assigneeSelect.appendChild(option);
+    });
+    
+    // Add Minister's Office staff with separator
+    if (ministerStaff.length > 0 && divisionId) {
+        const separator = document.createElement('option');
+        separator.disabled = true;
+        separator.textContent = '── Office of the Minister ──';
+        assigneeSelect.appendChild(separator);
+    }
+    
+    ministerStaff.forEach(u => {
+        const option = document.createElement('option');
+        option.value = u.id;
+        option.textContent = `${u.name} (${u.role})`;
+        option.setAttribute('data-division', '');
+        option.setAttribute('data-minister-office', 'true');
         if (u.id == currentValue) option.selected = true;
         assigneeSelect.appendChild(option);
     });
@@ -177,6 +217,7 @@ function filterStaffByDivision(divisionId) {
         const counselorOption = document.createElement('option');
         counselorOption.value = '__counselor__';
         counselorOption.setAttribute('data-division', '__counselor__');
+        counselorOption.setAttribute('data-minister-office', 'false');
         counselorOption.textContent = `A Counselor (${counselorCount} available)`;
         assigneeSelect.appendChild(counselorOption);
     }

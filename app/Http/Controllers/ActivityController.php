@@ -102,10 +102,18 @@ class ActivityController extends Controller
     {
         $user = $request->user();
 
+        // Check if assigning to Minister's Office staff (no division)
+        $assigneeId = $request->input('assigned_to');
+        $isMinisterOfficeAssignee = false;
+        if ($assigneeId) {
+            $assignee = User::find($assigneeId);
+            $isMinisterOfficeAssignee = $assignee && $assignee->division_id === null;
+        }
+
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'division_id' => 'required|exists:divisions,id',
+            'division_id' => $isMinisterOfficeAssignee ? 'nullable|exists:divisions,id' : 'required|exists:divisions,id',
             'assigned_to' => 'nullable|exists:users,id',
             'priority' => 'required|in:low,medium,high,critical',
             'start_date' => 'nullable|date',
