@@ -13,8 +13,14 @@
     <div class="bg-white border border-gray-200 p-6 mb-6">
         <div class="flex items-center justify-between mb-4">
             <div>
-                <h2 class="text-lg font-semibold text-gray-800">Consolidated Weekly Updates</h2>
-                <p class="text-sm text-gray-500">All division reports in one view</p>
+                @if(isset($selectedDivision) && $selectedDivision)
+                    <h2 class="text-lg font-semibold text-gray-800">{{ $selectedDivision->name }}</h2>
+                    <p class="text-sm text-gray-500">Weekly update reports for this division</p>
+                    <a href="{{ route('weekly-updates.consolidated') }}" class="text-xs text-blue-600 hover:underline mt-1 inline-block">← View all divisions</a>
+                @else
+                    <h2 class="text-lg font-semibold text-gray-800">Consolidated Weekly Updates</h2>
+                    <p class="text-sm text-gray-500">All division reports in one view</p>
+                @endif
             </div>
 
             {{-- Download Buttons --}}
@@ -33,6 +39,9 @@
 
         {{-- Week Filter --}}
         <form method="GET" action="{{ route('weekly-updates.consolidated') }}" class="flex items-end gap-4">
+            @if(isset($divisionId) && $divisionId)
+                <input type="hidden" name="division_id" value="{{ $divisionId }}">
+            @endif
             <div>
                 <label class="block text-xs font-medium text-gray-600 mb-1">Week Start</label>
                 <input type="date" name="week_start" value="{{ $weekStart }}"

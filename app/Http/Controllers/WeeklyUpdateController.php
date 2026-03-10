@@ -282,12 +282,16 @@ class WeeklyUpdateController extends Controller
         $weekStart = $request->filled('week_start') ? $request->week_start : now()->startOfWeek()->format('Y-m-d');
         $weekEnd = $request->filled('week_end') ? $request->week_end : now()->endOfWeek()->format('Y-m-d');
         $statusFilter = $request->input('status', '');
+        $divisionId = $request->input('division_id');
 
         $query = WeeklyUpdate::with(['division', 'submitter', 'reviewer', 'activities'])
             ->where('week_start', '>=', $weekStart)
             ->where('week_end', '<=', $weekEnd);
 
-        if ($user->isDirector() && !$user->hasFullAccess()) {
+        // Filter by specific division if provided
+        if ($divisionId) {
+            $query->where('division_id', $divisionId);
+        } elseif ($user->isDirector() && !$user->hasFullAccess()) {
             $query->where('division_id', $user->division_id);
         }
 
@@ -317,8 +321,11 @@ class WeeklyUpdateController extends Controller
             ];
         }
 
+        // Get selected division name for display
+        $selectedDivision = $divisionId ? Division::find($divisionId) : null;
+
         return view('weekly-updates.consolidated', compact(
-            'groupedUpdates', 'divisionAnalytics', 'weekStart', 'weekEnd', 'statusFilter', 'user'
+            'groupedUpdates', 'divisionAnalytics', 'weekStart', 'weekEnd', 'statusFilter', 'user', 'divisionId', 'selectedDivision'
         ));
     }
 
