@@ -49,8 +49,9 @@
                 <tbody class="divide-y divide-gray-100">
                     @forelse($plans as $plan)
                         <tr class="hover:bg-gray-50">
-                            <td class="px-5 py-3 font-medium text-gray-800">
-                                {{ $plan->week_start->format('M d') }} - {{ $plan->week_end->format('M d, Y') }}
+                            <td class="px-5 py-3">
+                                <div class="font-medium text-gray-800">{{ $plan->week_label_short }}</div>
+                                <div class="text-xs text-gray-500">{{ $plan->week_start->format('M d') }} - {{ $plan->week_end->format('M d') }}</div>
                             </td>
                             <td class="px-5 py-3 text-gray-600">{{ $plan->division->name }}</td>
                             <td class="px-5 py-3 text-gray-600">{{ $plan->submitter->name }}</td>

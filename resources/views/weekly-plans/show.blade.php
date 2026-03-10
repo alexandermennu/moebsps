@@ -14,9 +14,12 @@
         <div class="flex items-center justify-between mb-2">
             <div>
                 <h2 class="text-lg font-semibold text-gray-800">
-                    Week of {{ $weeklyPlan->week_start->format('M d') }} - {{ $weeklyPlan->week_end->format('M d, Y') }}
+                    {{ $weeklyPlan->week_label }}
                 </h2>
-                <p class="text-sm text-gray-500">{{ $weeklyPlan->division->name }} · By {{ $weeklyPlan->submitter->name }}</p>
+                <p class="text-sm text-gray-500">
+                    {{ $weeklyPlan->week_start->format('M d') }} – {{ $weeklyPlan->week_end->format('M d, Y') }} · 
+                    {{ $weeklyPlan->division->name }} · By {{ $weeklyPlan->submitter->name }}
+                </p>
             </div>
             <div class="flex items-center gap-3">
                 <span class="text-[10px] px-1.5 py-0.5 font-medium
