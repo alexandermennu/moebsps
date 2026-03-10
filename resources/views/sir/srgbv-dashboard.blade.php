@@ -245,10 +245,10 @@
         <div class="bg-white border border-gray-200 rounded-lg p-5">
             <div class="flex items-center justify-between mb-4">
                 <h3 class="text-sm font-semibold text-gray-900">SRGBV Trends</h3>
-                <div class="flex items-center gap-1 text-xs">
-                    <button type="button" class="px-2.5 py-1 rounded bg-blue-100 text-blue-700 font-medium">12M</button>
-                    <button type="button" class="px-2.5 py-1 rounded text-gray-500 hover:bg-gray-100">6M</button>
-                    <button type="button" class="px-2.5 py-1 rounded text-gray-500 hover:bg-gray-100">3M</button>
+                <div class="flex items-center gap-1 text-xs" id="trendPeriodButtons">
+                    <button type="button" data-months="12" class="trend-period-btn px-2.5 py-1 rounded bg-blue-100 text-blue-700 font-medium">12M</button>
+                    <button type="button" data-months="6" class="trend-period-btn px-2.5 py-1 rounded text-gray-500 hover:bg-gray-100">6M</button>
+                    <button type="button" data-months="3" class="trend-period-btn px-2.5 py-1 rounded text-gray-500 hover:bg-gray-100">3M</button>
                 </div>
             </div>
             <div class="h-52">
@@ -500,39 +500,76 @@ document.addEventListener('DOMContentLoaded', function() {
     map.fitBounds(geojsonLayer.getBounds(), { padding: [10, 10] });
 
     const trendsCtx = document.getElementById('trendsChart');
+    let trendsChart = null;
+    
     if (trendsCtx) {
-        const trendsData = @json($monthlyTrend);
-        const labels = Object.keys(trendsData).map(m => {
-            const [year, month] = m.split('-');
-            return new Date(year, month - 1).toLocaleDateString('en-US', { month: 'short' });
-        });
-        const values = Object.values(trendsData);
-
-        new Chart(trendsCtx, {
-            type: 'line',
-            data: {
-                labels: labels.length ? labels : ['No data'],
-                datasets: [{
-                    data: values.length ? values : [0],
-                    borderColor: '#3B82F6',
-                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                    borderWidth: 2,
-                    fill: true,
-                    tension: 0.4,
-                    pointBackgroundColor: '#3B82F6',
-                    pointRadius: 3,
-                    pointHoverRadius: 5,
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: {
-                    y: { beginAtZero: true, grid: { color: '#f3f4f6' }, ticks: { font: { size: 10 } } },
-                    x: { grid: { display: false }, ticks: { font: { size: 10 } } }
-                }
+        const fullTrendsData = @json($monthlyTrend);
+        
+        function getFilteredData(months) {
+            const entries = Object.entries(fullTrendsData);
+            const filtered = entries.slice(-months); // Get last N months
+            return {
+                labels: filtered.map(([m]) => {
+                    const [year, month] = m.split('-');
+                    return new Date(year, month - 1).toLocaleDateString('en-US', { month: 'short' });
+                }),
+                values: filtered.map(([, v]) => v)
+            };
+        }
+        
+        function createTrendsChart(months) {
+            const { labels, values } = getFilteredData(months);
+            
+            if (trendsChart) {
+                trendsChart.destroy();
             }
+            
+            trendsChart = new Chart(trendsCtx, {
+                type: 'line',
+                data: {
+                    labels: labels.length ? labels : ['No data'],
+                    datasets: [{
+                        data: values.length ? values : [0],
+                        borderColor: '#3B82F6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#3B82F6',
+                        pointRadius: 3,
+                        pointHoverRadius: 5,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: '#f3f4f6' }, ticks: { font: { size: 10 }, stepSize: 1 } },
+                        x: { grid: { display: false }, ticks: { font: { size: 10 } } }
+                    }
+                }
+            });
+        }
+        
+        // Initialize with 12 months
+        createTrendsChart(12);
+        
+        // Handle period button clicks
+        document.querySelectorAll('.trend-period-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                // Update button styles
+                document.querySelectorAll('.trend-period-btn').forEach(b => {
+                    b.classList.remove('bg-blue-100', 'text-blue-700', 'font-medium');
+                    b.classList.add('text-gray-500');
+                });
+                this.classList.add('bg-blue-100', 'text-blue-700', 'font-medium');
+                this.classList.remove('text-gray-500');
+                
+                // Update chart
+                const months = parseInt(this.dataset.months);
+                createTrendsChart(months);
+            });
         });
     }
 
