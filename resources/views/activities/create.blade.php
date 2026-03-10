@@ -119,6 +119,11 @@
 </div>
 
 <script>
+// Store all users data for filtering
+const allUsers = @json($users->map(fn($u) => ['id' => $u->id, 'name' => $u->name, 'role' => $u->role_label, 'division_id' => $u->division_id]));
+const canAssignCounselor = {{ $canAssignCounselor ? 'true' : 'false' }};
+const counselorCount = {{ $counselors->count() }};
+
 function handleAssigneeChange(select) {
     const wrapper = document.getElementById('counselor_dropdown_wrapper');
     const hiddenInput = document.getElementById('assigned_to_hidden');
@@ -145,38 +150,42 @@ function filterStaffByDivision(divisionId) {
     
     if (!assigneeSelect) return;
     
-    const options = assigneeSelect.querySelectorAll('option');
-    let hasVisibleOptions = false;
-    let currentSelectionHidden = false;
-
-    options.forEach(option => {
-        // Always show empty and counselor options
-        if (option.value === '' || option.value === '__counselor__') {
-            option.hidden = false;
-            return;
-        }
-        
-        const optDivision = option.getAttribute('data-division');
-        
-        // If no division selected, show all
-        // If division selected, only show matching staff
-        if (!divisionId || optDivision == divisionId) {
-            option.hidden = false;
-            hasVisibleOptions = true;
-        } else {
-            option.hidden = true;
-            if (option.selected) {
-                currentSelectionHidden = true;
-            }
-        }
+    // Clear current options except the first (Unassigned)
+    const currentValue = hiddenInput ? hiddenInput.value : '';
+    assigneeSelect.innerHTML = '<option value="">Unassigned</option>';
+    
+    // Filter and add users
+    const filteredUsers = divisionId 
+        ? allUsers.filter(u => u.division_id == divisionId)
+        : allUsers;
+    
+    filteredUsers.forEach(u => {
+        const option = document.createElement('option');
+        option.value = u.id;
+        option.textContent = `${u.name} (${u.role})`;
+        option.setAttribute('data-division', u.division_id || '');
+        if (u.id == currentValue) option.selected = true;
+        assigneeSelect.appendChild(option);
     });
-
-    // Reset selection if current selection was hidden
-    if (currentSelectionHidden) {
-        assigneeSelect.value = '';
-        hiddenInput.value = '';
-        const wrapper = document.getElementById('counselor_dropdown_wrapper');
-        if (wrapper) wrapper.classList.add('hidden');
+    
+    // Add counselor option if available
+    if (canAssignCounselor && counselorCount > 0) {
+        const counselorOption = document.createElement('option');
+        counselorOption.value = '__counselor__';
+        counselorOption.setAttribute('data-division', '__counselor__');
+        counselorOption.textContent = `A Counselor (${counselorCount} available)`;
+        assigneeSelect.appendChild(counselorOption);
+    }
+    
+    // Reset selection if current value not in filtered list
+    if (currentValue && currentValue !== '__counselor__') {
+        const stillExists = filteredUsers.some(u => u.id == currentValue);
+        if (!stillExists) {
+            assigneeSelect.value = '';
+            hiddenInput.value = '';
+            const wrapper = document.getElementById('counselor_dropdown_wrapper');
+            if (wrapper) wrapper.classList.add('hidden');
+        }
     }
 
     // Show/hide hint
