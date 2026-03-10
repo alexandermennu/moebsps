@@ -86,7 +86,7 @@
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-sm font-medium text-gray-800">{{ $activity->title }}</p>
-                            <p class="text-xs text-gray-500 mt-1">{{ $activity->division->name }} · Escalated {{ $activity->escalated_at?->diffForHumans() }}</p>
+                            <p class="text-xs text-gray-500 mt-1">{{ $activity->division?->name ?? 'Office of the Minister' }} · Escalated {{ $activity->escalated_at?->diffForHumans() }}</p>
                         </div>
                         <span class="text-[10px] px-1.5 py-0.5 bg-red-100 text-red-700">
                             Due: {{ $activity->due_date->format('M d, Y') }}

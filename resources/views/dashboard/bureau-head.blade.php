@@ -93,7 +93,7 @@
                 @forelse($escalatedActivities as $activity)
                     <a href="{{ route('activities.show', $activity) }}" class="block px-5 py-3 hover:bg-gray-50">
                         <p class="text-sm font-medium text-gray-800">{{ $activity->title }}</p>
-                        <p class="text-xs text-gray-500 mt-1">{{ $activity->division->name }} · Due: {{ $activity->due_date->format('M d, Y') }}</p>
+                        <p class="text-xs text-gray-500 mt-1">{{ $activity->division?->name ?? 'Office of the Minister' }} · Due: {{ $activity->due_date->format('M d, Y') }}</p>
                     </a>
                 @empty
                     <div class="px-5 py-8 text-center text-sm text-gray-500">No escalated assignments.</div>

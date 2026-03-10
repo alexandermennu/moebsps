@@ -84,7 +84,7 @@
                                     <span class="text-[10px] text-orange-700 font-medium uppercase">Escalated</span>
                                 @endif
                             </td>
-                            <td class="px-5 py-3 text-gray-600">{{ $activity->division->name }}</td>
+                            <td class="px-5 py-3 text-gray-600">{{ $activity->division?->name ?? 'Office of the Minister' }}</td>
                             <td class="px-5 py-3 text-gray-600">{{ $activity->assignee?->name ?? '—' }}</td>
                             <td class="px-5 py-3 text-center">
                                 <span class="text-[10px] px-1.5 py-0.5 font-medium

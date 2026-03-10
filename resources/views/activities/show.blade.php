@@ -117,7 +117,7 @@
                 <dl class="space-y-3 text-sm">
                     <div>
                         <dt class="text-gray-500">Division</dt>
-                        <dd class="font-medium text-gray-800">{{ $activity->division->name }}</dd>
+                        <dd class="font-medium text-gray-800">{{ $activity->division?->name ?? 'Office of the Minister' }}</dd>
                     </div>
                     <div>
                         <dt class="text-gray-500">Assigned To</dt>
