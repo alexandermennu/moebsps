@@ -14,9 +14,12 @@
         <div class="flex items-center justify-between mb-2">
             <div>
                 <h2 class="text-lg font-semibold text-gray-800">
-                    Week of {{ $weeklyUpdate->week_start->format('M d') }} – {{ $weeklyUpdate->week_end->format('M d, Y') }}
+                    {{ $weeklyUpdate->week_label }}
                 </h2>
-                <p class="text-sm text-gray-500">{{ $weeklyUpdate->division->name }} · Submitted by {{ $weeklyUpdate->submitter->name }}</p>
+                <p class="text-sm text-gray-500">
+                    {{ $weeklyUpdate->week_start->format('M d') }} – {{ $weeklyUpdate->week_end->format('M d, Y') }} · 
+                    {{ $weeklyUpdate->division->name }} · Submitted by {{ $weeklyUpdate->submitter->name }}
+                </p>
             </div>
             <div class="flex items-center gap-3">
                 {{-- Download Buttons --}}

@@ -29,18 +29,71 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <label for="week_start" class="block text-sm font-medium text-gray-700 mb-1">Week Start</label>
-                    <input type="date" name="week_start" id="week_start" value="{{ old('week_start', $weeklyUpdate->week_start->format('Y-m-d')) }}" required
-                           class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-slate-500">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {{-- Week Selector --}}
+                <div class="md:col-span-2">
+                    <label for="week_select" class="block text-sm font-medium text-gray-700 mb-1">Select Week</label>
+                    <select id="week_select" onchange="updateWeekDates()" 
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-slate-500">
+                        @php
+                            $updateStart = $weeklyUpdate->week_start;
+                            $updateMonth = $updateStart->month;
+                            $updateYear = $updateStart->year;
+                            
+                            // Get weeks for 3 months: previous, current update's month, and next
+                            $prevMonth = $updateStart->copy()->subMonth();
+                            $nextMonth = $updateStart->copy()->addMonth();
+                            
+                            $prevMonthWeeks = \App\Models\WeeklyUpdate::getWeeksInMonth($prevMonth->year, $prevMonth->month);
+                            $currentMonthWeeks = \App\Models\WeeklyUpdate::getWeeksInMonth($updateYear, $updateMonth);
+                            $nextMonthWeeks = \App\Models\WeeklyUpdate::getWeeksInMonth($nextMonth->year, $nextMonth->month);
+                            
+                            // Current week from the update
+                            $selectedStart = old('week_start', $weeklyUpdate->week_start->format('Y-m-d'));
+                        @endphp
+                        <optgroup label="{{ $prevMonth->format('F Y') }}">
+                            @foreach($prevMonthWeeks as $week)
+                                <option value="{{ $week['start_formatted'] }}|{{ $week['end_formatted'] }}"
+                                    {{ $selectedStart == $week['start_formatted'] ? 'selected' : '' }}>
+                                    {{ $week['label'] }} ({{ $week['start']->format('M d') }} - {{ $week['end']->format('M d') }})
+                                </option>
+                            @endforeach
+                        </optgroup>
+                        <optgroup label="{{ $updateStart->format('F Y') }}">
+                            @foreach($currentMonthWeeks as $week)
+                                <option value="{{ $week['start_formatted'] }}|{{ $week['end_formatted'] }}"
+                                    {{ $selectedStart == $week['start_formatted'] ? 'selected' : '' }}>
+                                    {{ $week['label'] }} ({{ $week['start']->format('M d') }} - {{ $week['end']->format('M d') }})
+                                </option>
+                            @endforeach
+                        </optgroup>
+                        <optgroup label="{{ $nextMonth->format('F Y') }}">
+                            @foreach($nextMonthWeeks as $week)
+                                <option value="{{ $week['start_formatted'] }}|{{ $week['end_formatted'] }}"
+                                    {{ $selectedStart == $week['start_formatted'] ? 'selected' : '' }}>
+                                    {{ $week['label'] }} ({{ $week['start']->format('M d') }} - {{ $week['end']->format('M d') }})
+                                </option>
+                            @endforeach
+                        </optgroup>
+                    </select>
+                    <p class="text-xs text-gray-500 mt-1">Working days: Monday to Friday</p>
                 </div>
-                <div>
-                    <label for="week_end" class="block text-sm font-medium text-gray-700 mb-1">Week End</label>
-                    <input type="date" name="week_end" id="week_end" value="{{ old('week_end', $weeklyUpdate->week_end->format('Y-m-d')) }}" required
-                           class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-slate-500">
-                </div>
+
+                {{-- Hidden fields for actual dates --}}
+                <input type="hidden" name="week_start" id="week_start" value="{{ old('week_start', $weeklyUpdate->week_start->format('Y-m-d')) }}">
+                <input type="hidden" name="week_end" id="week_end" value="{{ old('week_end', $weeklyUpdate->week_end->format('Y-m-d')) }}">
             </div>
+
+            <script>
+                function updateWeekDates() {
+                    const select = document.getElementById('week_select');
+                    const [start, end] = select.value.split('|');
+                    document.getElementById('week_start').value = start;
+                    document.getElementById('week_end').value = end;
+                }
+                // Initialize on page load
+                document.addEventListener('DOMContentLoaded', updateWeekDates);
+            </script>
         </div>
 
         {{-- Activities Table --}}

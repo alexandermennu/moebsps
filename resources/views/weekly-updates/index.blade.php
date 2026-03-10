@@ -56,8 +56,9 @@
                 <tbody class="divide-y divide-gray-100">
                     @forelse($updates as $update)
                         <tr class="hover:bg-gray-50">
-                            <td class="px-5 py-3 font-medium text-gray-800">
-                                {{ $update->week_start->format('M d') }} - {{ $update->week_end->format('M d, Y') }}
+                            <td class="px-5 py-3">
+                                <div class="font-medium text-gray-800">{{ $update->week_label_short }}</div>
+                                <div class="text-xs text-gray-500">{{ $update->week_start->format('M d') }} - {{ $update->week_end->format('M d') }}</div>
                             </td>
                             <td class="px-5 py-3 text-gray-600">{{ $update->division->name }}</td>
                             <td class="px-5 py-3 text-gray-600">{{ $update->submitter->name }}</td>
@@ -140,7 +141,7 @@
 
                     {{-- Latest update info --}}
                     @if($divSummary->latest_update)
-                        <p class="text-xs text-gray-500 mb-1.5">Latest: {{ $divSummary->latest_update->week_start->format('M d') }} – {{ $divSummary->latest_update->week_end->format('M d') }}</p>
+                        <p class="text-xs text-gray-500 mb-1.5">Latest: {{ $divSummary->latest_update->week_label_short }}</p>
                         @if(array_sum($divSummary->activity_stats) > 0)
                             <div class="flex items-center gap-1.5 text-xs">
                                 @if($divSummary->activity_stats['completed'] > 0)

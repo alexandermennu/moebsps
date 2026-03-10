@@ -356,8 +356,8 @@ class WeeklyUpdateController extends Controller
 
         $html = view('weekly-updates.download', [
             'updates' => collect([$weeklyUpdate]),
-            'title' => "Weekly Update – {$weeklyUpdate->division->name}",
-            'subtitle' => "Week of {$weeklyUpdate->week_start->format('M d')} – {$weeklyUpdate->week_end->format('M d, Y')}",
+            'title' => "{$weeklyUpdate->division->name} – {$weeklyUpdate->week_label}",
+            'subtitle' => "{$weeklyUpdate->week_start->format('M d')} – {$weeklyUpdate->week_end->format('M d, Y')} (Working Days)",
             'isConsolidated' => false,
             'format' => $format,
         ])->render();

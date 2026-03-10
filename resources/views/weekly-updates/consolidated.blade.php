@@ -151,7 +151,7 @@
                         <div>
                             <div class="flex items-center gap-3">
                                 <h4 class="text-sm font-semibold text-gray-800">
-                                    Week of {{ $update->week_start->format('M d') }} – {{ $update->week_end->format('M d, Y') }}
+                                    {{ $update->week_label }}
                                 </h4>
                                 <span class="text-[10px] px-1.5 py-0.5 font-medium
                                     {{ $update->status === 'approved' ? 'bg-green-100 text-green-700' : '' }}
@@ -161,7 +161,9 @@
                                     {{ ucfirst($update->status) }}
                                 </span>
                             </div>
-                            <p class="text-xs text-gray-500 mt-0.5">Submitted by {{ $update->submitter->name }}
+                            <p class="text-xs text-gray-500 mt-0.5">
+                                {{ $update->week_start->format('M d') }} – {{ $update->week_end->format('M d, Y') }} · 
+                                Submitted by {{ $update->submitter->name }}
                                 @if($update->reviewer) · Reviewed by {{ $update->reviewer->name }}@endif
                             </p>
                         </div>

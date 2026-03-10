@@ -208,10 +208,11 @@
         @foreach($divUpdates as $update)
             <div class="update-header">
                 <div class="week">
-                    Week of {{ $update->week_start->format('M d') }} – {{ $update->week_end->format('M d, Y') }}
+                    {{ $update->week_label }}
                     <span class="status-badge status-{{ $update->status }}">{{ ucfirst($update->status) }}</span>
                 </div>
                 <div class="meta">
+                    {{ $update->week_start->format('M d') }} – {{ $update->week_end->format('M d, Y') }} · 
                     Submitted by {{ $update->submitter->name }}
                     @if($update->reviewer) · Reviewed by {{ $update->reviewer->name }} on {{ $update->reviewed_at->format('M d, Y') }}@endif
                 </div>
