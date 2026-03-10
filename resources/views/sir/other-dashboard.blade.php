@@ -371,12 +371,24 @@
 document.addEventListener('DOMContentLoaded', function() {
     const rawCountyData = @json($countyData ?? []);
     
-    // Normalize county names (remove " County" suffix for matching with GeoJSON)
-    const countyData = {};
-    for (const [key, value] of Object.entries(rawCountyData)) {
-        const normalizedKey = key.replace(' County', '');
-        countyData[normalizedKey] = value;
-    }
+    // Map to normalize GeoJSON county names to database county names
+    const countyNameMap = {
+        'Bomi': 'Bomi County',
+        'Bong': 'Bong County',
+        'Gbarpolu': 'Gbarpolu County',
+        'Grand Bassa': 'Grand Bassa County',
+        'Grand Cape Mount': 'Grand Cape Mount County',
+        'Grand Gedeh': 'Grand Gedeh County',
+        'Grand Kru': 'Grand Kru County',
+        'Lofa': 'Lofa County',
+        'Margibi': 'Margibi County',
+        'Maryland': 'Maryland County',
+        'Montserrado': 'Montserrado County',
+        'Nimba': 'Nimba County',
+        'River Cess': 'River Cess County',
+        'River Gee': 'River Gee County',
+        'Sinoe': 'Sinoe County'
+    };
     
     // Initialize Leaflet map centered on Liberia
     const map = L.map('liberiaMap', {
@@ -389,30 +401,14 @@ document.addEventListener('DOMContentLoaded', function() {
     // Add zoom control to top-right
     L.control.zoom({ position: 'topright' }).addTo(map);
 
-    // Liberia Counties GeoJSON (simplified official boundaries)
-    const liberiaGeoJSON = {
-        "type": "FeatureCollection",
-        "features": [
-            {"type":"Feature","properties":{"name":"Bomi"},"geometry":{"type":"Polygon","coordinates":[[[-11.0,6.9],[-10.8,6.9],[-10.7,6.75],[-10.8,6.55],[-10.95,6.5],[-11.1,6.6],[-11.0,6.9]]]}},
-            {"type":"Feature","properties":{"name":"Bong"},"geometry":{"type":"Polygon","coordinates":[[[-10.3,7.4],[-9.8,7.5],[-9.4,7.3],[-9.3,6.9],[-9.6,6.7],[-10.1,6.7],[-10.4,6.9],[-10.5,7.2],[-10.3,7.4]]]}},
-            {"type":"Feature","properties":{"name":"Gbarpolu"},"geometry":{"type":"Polygon","coordinates":[[[-10.8,7.5],[-10.3,7.4],[-10.5,7.2],[-10.4,6.9],[-10.7,6.75],[-10.8,6.9],[-11.0,6.9],[-11.2,7.2],[-10.8,7.5]]]}},
-            {"type":"Feature","properties":{"name":"Grand Bassa"},"geometry":{"type":"Polygon","coordinates":[[[-10.1,6.7],[-9.6,6.7],[-9.3,6.4],[-9.1,6.1],[-9.4,5.9],[-9.8,5.95],[-10.05,6.15],[-10.2,6.4],[-10.1,6.7]]]}},
-            {"type":"Feature","properties":{"name":"Grand Cape Mount"},"geometry":{"type":"Polygon","coordinates":[[[-11.5,7.4],[-11.2,7.2],[-11.0,6.9],[-11.1,6.6],[-11.4,6.9],[-11.5,7.1],[-11.5,7.4]]]}},
-            {"type":"Feature","properties":{"name":"Grand Gedeh"},"geometry":{"type":"Polygon","coordinates":[[[-8.5,7.0],[-8.0,6.9],[-7.8,6.5],[-8.0,6.0],[-8.3,5.7],[-8.7,5.9],[-9.0,6.3],[-9.3,6.4],[-9.3,6.9],[-8.9,7.1],[-8.5,7.0]]]}},
-            {"type":"Feature","properties":{"name":"Grand Kru"},"geometry":{"type":"Polygon","coordinates":[[[-8.3,5.1],[-8.0,5.0],[-7.7,4.9],[-7.5,4.55],[-7.8,4.4],[-8.2,4.5],[-8.5,4.8],[-8.3,5.1]]]}},
-            {"type":"Feature","properties":{"name":"Lofa"},"geometry":{"type":"Polygon","coordinates":[[[-10.8,8.5],[-10.2,8.6],[-9.5,8.4],[-9.3,8.0],[-9.4,7.6],[-9.8,7.5],[-10.3,7.4],[-10.8,7.5],[-11.2,7.8],[-11.0,8.2],[-10.8,8.5]]]}},
-            {"type":"Feature","properties":{"name":"Margibi"},"geometry":{"type":"Polygon","coordinates":[[[-10.5,6.55],[-10.2,6.4],[-10.05,6.15],[-10.3,6.05],[-10.6,6.2],[-10.6,6.4],[-10.5,6.55]]]}},
-            {"type":"Feature","properties":{"name":"Maryland"},"geometry":{"type":"Polygon","coordinates":[[[-7.7,4.9],[-7.4,4.7],[-7.35,4.35],[-7.7,4.3],[-7.8,4.4],[-7.5,4.55],[-7.7,4.9]]]}},
-            {"type":"Feature","properties":{"name":"Montserrado"},"geometry":{"type":"Polygon","coordinates":[[[-10.95,6.5],[-10.8,6.55],[-10.6,6.4],[-10.6,6.2],[-10.8,6.1],[-11.0,6.2],[-10.95,6.5]]]}},
-            {"type":"Feature","properties":{"name":"Nimba"},"geometry":{"type":"Polygon","coordinates":[[[-9.4,7.6],[-9.3,8.0],[-8.8,8.3],[-8.3,7.8],[-8.3,7.3],[-8.5,7.0],[-8.9,7.1],[-9.3,6.9],[-9.4,7.3],[-9.4,7.6]]]}},
-            {"type":"Feature","properties":{"name":"River Cess"},"geometry":{"type":"Polygon","coordinates":[[[-9.4,5.9],[-9.1,6.1],[-8.7,5.9],[-8.5,5.5],[-8.7,5.3],[-9.1,5.4],[-9.4,5.6],[-9.4,5.9]]]}},
-            {"type":"Feature","properties":{"name":"River Gee"},"geometry":{"type":"Polygon","coordinates":[[[-8.3,5.7],[-8.0,6.0],[-7.8,5.7],[-7.7,5.3],[-8.0,5.0],[-8.3,5.1],[-8.5,5.5],[-8.3,5.7]]]}},
-            {"type":"Feature","properties":{"name":"Sinoe"},"geometry":{"type":"Polygon","coordinates":[[[-8.7,5.3],[-8.5,5.5],[-8.3,5.1],[-8.5,4.8],[-9.0,4.9],[-9.2,5.2],[-8.7,5.3]]]}}
-        ]
-    };
+    // Helper to get county count from data
+    function getCountyCount(geoJsonName) {
+        const dbName = countyNameMap[geoJsonName];
+        return rawCountyData[dbName] || rawCountyData[geoJsonName] || rawCountyData[geoJsonName + ' County'] || 0;
+    }
 
     // Color scale function (blue theme for Other Incidents)
-    const maxCount = Math.max(...Object.values(countyData), 1);
+    const maxCount = Math.max(...Object.values(rawCountyData), 1);
     function getColor(count) {
         if (!count || count === 0) return '#eff6ff';
         const ratio = count / maxCount;
@@ -423,7 +419,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function style(feature) {
-        const count = countyData[feature.properties.name] || 0;
+        const count = getCountyCount(feature.properties.name);
         return {
             fillColor: getColor(count),
             weight: 1.5,
@@ -441,14 +437,17 @@ document.addEventListener('DOMContentLoaded', function() {
         return this._div;
     };
     info.update = function(props) {
-        const count = props ? (countyData[props.name] || 0) : null;
+        const count = props ? getCountyCount(props.name) : null;
+        const displayName = props ? (countyNameMap[props.name] || props.name) : null;
         this._div.innerHTML = props
-            ? `<h4>${props.name}</h4><p>${count} incident${count !== 1 ? 's' : ''} reported</p>`
+            ? `<h4>${displayName}</h4><p>${count} incident${count !== 1 ? 's' : ''} reported</p>`
             : '<p style="color:#9ca3af">Hover over a county</p>';
     };
     info.addTo(map);
 
     // Interaction handlers
+    let geojsonLayer = null;
+    
     function highlightFeature(e) {
         const layer = e.target;
         layer.setStyle({ weight: 3, color: '#1f2937', fillOpacity: 0.95 });
@@ -456,18 +455,24 @@ document.addEventListener('DOMContentLoaded', function() {
         info.update(layer.feature.properties);
     }
     function resetHighlight(e) {
-        geojsonLayer.resetStyle(e.target);
+        if (geojsonLayer) geojsonLayer.resetStyle(e.target);
         info.update();
     }
     function onEachFeature(feature, layer) {
         layer.on({ mouseover: highlightFeature, mouseout: resetHighlight });
     }
 
-    // Add GeoJSON layer
-    const geojsonLayer = L.geoJSON(liberiaGeoJSON, { style, onEachFeature }).addTo(map);
-    
-    // Fit bounds to Liberia
-    map.fitBounds(geojsonLayer.getBounds(), { padding: [10, 10] });
+    // Fetch and add GeoJSON layer from external file
+    fetch('/data/liberia-counties.json')
+        .then(response => response.json())
+        .then(liberiaGeoJSON => {
+            geojsonLayer = L.geoJSON(liberiaGeoJSON, { style, onEachFeature }).addTo(map);
+            map.fitBounds(geojsonLayer.getBounds(), { padding: [10, 10] });
+        })
+        .catch(error => {
+            console.error('Error loading Liberia GeoJSON:', error);
+            map.setView([6.5, -9.5], 7);
+        });
 
     // Trends Line Chart
     const trendsCtx = document.getElementById('trendsChart');
