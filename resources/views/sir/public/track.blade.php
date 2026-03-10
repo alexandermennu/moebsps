@@ -41,8 +41,8 @@
                            class="w-full px-4 py-3 border border-gray-300 rounded-md text-center text-lg font-mono tracking-wider focus:outline-none focus:ring-2 focus:ring-red-500 uppercase" 
                            minlength="15"
                            maxlength="20"
-                           pattern="SIR-(SRGBV|OI)-[A-Z]{3}-\d{4}"
-                           title="Format: SIR-SRGBV-ABC-1234 or SIR-OI-ABC-1234">
+                           pattern="SIR-(SRGBV|OI)-[A-Z0-9]{3}-\d{4}"
+                           title="Format: SIR-SRGBV-XXX-1234 or SIR-OI-XXX-1234">
                 </div>
                 <button type="submit" class="px-6 py-3 bg-red-700 text-white text-sm font-semibold hover:bg-red-800 rounded-md">Track</button>
             </form>
