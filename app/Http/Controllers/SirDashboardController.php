@@ -174,12 +174,41 @@ class SirDashboardController extends Controller
             ->toArray();
 
         // Victim age range distribution
-        $byAgeRange = Incident::srgbv()
+        // Get raw age data first (handles both numeric and string keys)
+        $rawAgeData = Incident::srgbv()
             ->select('victim_age', DB::raw('count(*) as total'))
             ->whereNotNull('victim_age')
+            ->where('victim_age', '!=', '')
             ->groupBy('victim_age')
             ->pluck('total', 'victim_age')
             ->toArray();
+
+        // Normalize to age range keys (convert numeric ages to range keys)
+        $byAgeRange = [];
+        $validKeys = array_keys(Incident::VICTIM_AGE_RANGES);
+        
+        foreach ($rawAgeData as $ageValue => $count) {
+            // If already a valid key
+            if (in_array($ageValue, $validKeys)) {
+                $byAgeRange[$ageValue] = ($byAgeRange[$ageValue] ?? 0) + $count;
+            } 
+            // If numeric, convert to range key
+            elseif (is_numeric($ageValue)) {
+                $age = (int) $ageValue;
+                $key = match(true) {
+                    $age < 6 => 'under_6',
+                    $age <= 10 => '6_10',
+                    $age <= 14 => '11_14',
+                    $age <= 17 => '15_17',
+                    default => '18_plus',
+                };
+                $byAgeRange[$key] = ($byAgeRange[$key] ?? 0) + $count;
+            }
+            // Otherwise treat as unknown
+            else {
+                $byAgeRange['unknown'] = ($byAgeRange['unknown'] ?? 0) + $count;
+            }
+        }
 
         // Get only top 3 recent cases for dashboard preview
         $recentIncidents = Incident::srgbv()
