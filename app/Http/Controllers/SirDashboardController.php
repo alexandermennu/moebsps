@@ -122,13 +122,20 @@ class SirDashboardController extends Controller
             default => "strftime('%Y-%m', created_at)",
         };
 
-        $monthlyTrend = Incident::srgbv()
+        $rawMonthlyTrend = Incident::srgbv()
             ->select(DB::raw("$monthExpr as month"), DB::raw('count(*) as total'))
             ->where('created_at', '>=', now()->subMonths(12))
             ->groupBy('month')
             ->orderBy('month')
             ->pluck('total', 'month')
             ->toArray();
+
+        // Fill in missing months with zeros for a complete 12-month chart
+        $monthlyTrend = [];
+        for ($i = 11; $i >= 0; $i--) {
+            $month = now()->subMonths($i)->format('Y-m');
+            $monthlyTrend[$month] = $rawMonthlyTrend[$month] ?? 0;
+        }
 
         // Follow-up due
         $followUpIncidents = Incident::srgbv()
@@ -302,13 +309,20 @@ class SirDashboardController extends Controller
             default => "strftime('%Y-%m', created_at)",
         };
 
-        $monthlyTrend = Incident::where('type', '!=', Incident::TYPE_SRGBV)
+        $rawMonthlyTrend = Incident::where('type', '!=', Incident::TYPE_SRGBV)
             ->select(DB::raw("$monthExpr as month"), DB::raw('count(*) as total'))
             ->where('created_at', '>=', now()->subMonths(12))
             ->groupBy('month')
             ->orderBy('month')
             ->pluck('total', 'month')
             ->toArray();
+
+        // Fill in missing months with zeros for a complete 12-month chart
+        $monthlyTrend = [];
+        for ($i = 11; $i >= 0; $i--) {
+            $month = now()->subMonths($i)->format('Y-m');
+            $monthlyTrend[$month] = $rawMonthlyTrend[$month] ?? 0;
+        }
 
         // Follow-up due
         $followUpIncidents = Incident::where('type', '!=', Incident::TYPE_SRGBV)
