@@ -120,7 +120,11 @@
 
 <script>
 // Store all users data for filtering
-const allUsers = @json($users->map(fn($u) => ['id' => $u->id, 'name' => $u->name, 'role' => $u->role_label, 'division_id' => $u->division_id]));
+const allUsers = [
+    @foreach($users as $u)
+    { id: {{ $u->id }}, name: "{{ addslashes($u->name) }}", role: "{{ $u->role_label }}", division_id: {{ $u->division_id ?? 'null' }} },
+    @endforeach
+];
 const canAssignCounselor = {{ $canAssignCounselor ? 'true' : 'false' }};
 const counselorCount = {{ $counselors->count() }};
 
