@@ -269,7 +269,9 @@
         <div class="bg-white border border-gray-200 rounded-lg p-5">
             <div class="flex items-center justify-between mb-4">
                 <h3 class="text-sm font-semibold text-gray-900">Incidents by Category</h3>
-                <span class="text-xs text-gray-500">Top categories</span>
+                <div class="flex items-center gap-3 text-xs flex-wrap" id="categoryLegend">
+                    {{-- Legend populated by JS --}}
+                </div>
             </div>
             <div class="h-52">
                 <canvas id="categoryChart"></canvas>
@@ -514,31 +516,39 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Category labels mapping
         const categoryLabels = {
-            'student_misconduct': 'Student Misconduct',
-            'teacher_misconduct': 'Teacher/Staff Misconduct',
+            'student_misconduct': 'Misconduct',
+            'teacher_misconduct': 'Staff Misconduct',
             'substance_abuse': 'Substance Abuse',
-            'fighting': 'Fighting / Violence',
+            'fighting': 'Fighting',
             'vandalism': 'Vandalism',
             'theft': 'Theft',
-            'fire': 'Fire Incident',
-            'structural_hazard': 'Structural Hazard',
-            'sanitation': 'Sanitation / Health',
-            'accident_injury': 'Accident / Injury',
+            'fire': 'Fire',
+            'structural_hazard': 'Structural',
+            'sanitation': 'Sanitation',
+            'accident_injury': 'Accident',
             'bullying': 'Bullying',
             'truancy': 'Truancy',
             'other': 'Other'
         };
         
-        // Get top 8 categories by count
+        // Get top 6 categories by count
         const sortedCategories = Object.entries(categoryData)
             .sort((a, b) => b[1] - a[1])
-            .slice(0, 8);
+            .slice(0, 6);
         
         const labels = sortedCategories.map(([key]) => categoryLabels[key] || key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()));
         const values = sortedCategories.map(([, val]) => val);
         
-        // Generate colors for each category
-        const colors = ['#F59E0B', '#F97316', '#3B82F6', '#8B5CF6', '#14B8A6', '#EF4444', '#10B981', '#6B7280'];
+        // Colors matching the screenshot style
+        const colors = ['#EF4444', '#8B5CF6', '#F59E0B', '#3B82F6', '#14B8A6', '#10B981'];
+        
+        // Build legend
+        const legendContainer = document.getElementById('categoryLegend');
+        if (legendContainer) {
+            legendContainer.innerHTML = labels.map((label, i) => 
+                `<span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full" style="background:${colors[i]}"></span> ${label}</span>`
+            ).join('');
+        }
 
         new Chart(categoryCtx, {
             type: 'bar',
@@ -548,17 +558,16 @@ document.addEventListener('DOMContentLoaded', function() {
                     data: values,
                     backgroundColor: colors.slice(0, values.length),
                     borderRadius: 4,
-                    barThickness: 24,
+                    barThickness: 40,
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                indexAxis: 'y',
                 plugins: { legend: { display: false } },
                 scales: {
-                    x: { beginAtZero: true, grid: { color: '#f3f4f6' }, ticks: { font: { size: 10 } } },
-                    y: { grid: { display: false }, ticks: { font: { size: 9 } } }
+                    y: { beginAtZero: true, grid: { color: '#f3f4f6' }, ticks: { font: { size: 10 } } },
+                    x: { grid: { display: false }, ticks: { font: { size: 10 } } }
                 }
             }
         });
