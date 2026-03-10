@@ -17,7 +17,7 @@ class TrackedActivityController extends Controller
             abort(403, 'You do not have access to tracked activities.');
         }
 
-        $query = TrackedActivity::with(['division', 'latestWeeklyUpdate.submitter']);
+        $query = TrackedActivity::with(['division', 'latestWeeklyUpdate.submitter', 'latestUpdateActivity']);
 
         // Scope by division for division-scoped users
         if ($user->isDivisionScoped()) {

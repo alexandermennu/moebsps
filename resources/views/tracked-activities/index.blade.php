@@ -107,8 +107,11 @@
                         @endphp
                         <tr class="{{ $rowBg }} hover:bg-gray-50">
                             <td class="px-4 py-3 align-top">
-                                @if($tracked->latest_weekly_update_id)
-                                    <a href="{{ route('weekly-updates.show', ['weekly_update' => $tracked->latest_weekly_update_id, 'from' => 'tracker']) }}" class="text-gray-800 font-medium hover:text-blue-700 hover:underline">{{ Str::limit($tracked->activity_text, 100) }}</a>
+                                @php
+                                    $weeklyUpdateId = $tracked->latest_weekly_update_id ?? $tracked->latestUpdateActivity?->weekly_update_id;
+                                @endphp
+                                @if($weeklyUpdateId)
+                                    <a href="{{ route('weekly-updates.show', ['weekly_update' => $weeklyUpdateId, 'from' => 'tracker']) }}" class="text-gray-800 font-medium hover:text-blue-700 hover:underline">{{ Str::limit($tracked->activity_text, 100) }}</a>
                                 @else
                                     <p class="text-gray-800 font-medium">{{ Str::limit($tracked->activity_text, 100) }}</p>
                                 @endif
