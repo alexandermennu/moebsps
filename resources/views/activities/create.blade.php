@@ -30,9 +30,9 @@
             </div>
 
             @if(!$user->isDirector())
-                <div class="mb-4">
-                    <label for="division_id" class="block text-sm font-medium text-gray-700 mb-1">Division *</label>
-                    <select name="division_id" id="division_id" required
+                <div class="mb-4" id="division_wrapper">
+                    <label for="division_id" id="division_label" class="block text-sm font-medium text-gray-700 mb-1">Division *</label>
+                    <select name="division_id" id="division_id"
                             class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-gray-500">
                         <option value="">Select Division</option>
                         @foreach($divisions as $division)
@@ -50,10 +50,10 @@
                         class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-gray-500">
                     <option value="">Unassigned</option>
                     @foreach($users as $u)
-                        <option value="{{ $u->id }}" data-division="{{ $u->division_id }}" {{ old('assigned_to') == $u->id ? 'selected' : '' }}>{{ $u->name }} ({{ $u->role_label }})</option>
+                        <option value="{{ $u->id }}" data-division="{{ $u->division_id }}" data-minister-office="{{ $u->division_id === null ? 'true' : 'false' }}" {{ old('assigned_to') == $u->id ? 'selected' : '' }}>{{ $u->name }} ({{ $u->role_label }})</option>
                     @endforeach
                     @if($canAssignCounselor && $counselors->count() > 0)
-                        <option value="__counselor__" data-division="__counselor__" {{ old('assigned_to') && $counselors->pluck('id')->contains(old('assigned_to')) ? 'selected' : '' }}>A Counselor ({{ $counselors->count() }} available)</option>
+                        <option value="__counselor__" data-division="__counselor__" data-minister-office="false" {{ old('assigned_to') && $counselors->pluck('id')->contains(old('assigned_to')) ? 'selected' : '' }}>A Counselor ({{ $counselors->count() }} available)</option>
                     @endif
                 </select>
                 <input type="hidden" name="assigned_to" id="assigned_to_hidden" value="{{ old('assigned_to') }}">
@@ -111,13 +111,12 @@
             </div>
 
             <div class="flex gap-3">
-                <button type="submit" class="px-4 py-2 bg-gray-800 text-white text-sm font-medium hover:bg-gray-700">Create Assignment</button>
+                <button type="submit" id="submit_btn" class="px-4 py-2 bg-gray-800 text-white text-sm font-medium hover:bg-gray-700">Create Assignment</button>
                 <a href="{{ route('activities.index') }}" class="px-4 py-2 border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50">Cancel</a>
             </div>
         </form>
     </div>
 </div>
-
 <script>
 // Store all users data for filtering
 const allUsers = [
@@ -133,19 +132,18 @@ function handleAssigneeChange(select) {
     const hiddenInput = document.getElementById('assigned_to_hidden');
     const counselorSelect = document.getElementById('counselor_select');
     const divisionSelect = document.getElementById('division_id');
+    const divisionLabel = document.getElementById('division_label');
     
     // Check if selected user is from Minister's Office (no division)
     const selectedOption = select.options[select.selectedIndex];
     const isMinisterOffice = selectedOption && selectedOption.getAttribute('data-minister-office') === 'true';
     
     // Make division optional for Minister's office staff
-    if (divisionSelect) {
+    if (divisionSelect && divisionLabel) {
         if (isMinisterOffice && select.value) {
-            divisionSelect.removeAttribute('required');
-            divisionSelect.closest('.mb-4').querySelector('label').innerHTML = 'Division <span class="text-gray-400 text-xs">(optional for Minister\'s Office staff)</span>';
+            divisionLabel.innerHTML = 'Division <span class="text-xs text-gray-400">(optional for Minister\'s Office staff)</span>';
         } else {
-            divisionSelect.setAttribute('required', 'required');
-            divisionSelect.closest('.mb-4').querySelector('label').innerHTML = 'Division *';
+            divisionLabel.innerHTML = 'Division *';
         }
     }
 
@@ -243,6 +241,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const assigneeSelect = document.getElementById('assignee_select');
     const hiddenInput = document.getElementById('assigned_to_hidden');
     const divisionSelect = document.getElementById('division_id');
+    const form = document.querySelector('form');
 
     // Set up division change listener
     if (divisionSelect) {
@@ -255,6 +254,27 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    // Handle form submission - skip division validation for Minister's Office staff
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            const selectedOption = assigneeSelect.options[assigneeSelect.selectedIndex];
+            const isMinisterOffice = selectedOption && selectedOption.getAttribute('data-minister-office') === 'true';
+            
+            if (isMinisterOffice && divisionSelect && !divisionSelect.value) {
+                // Allow submission without division for Minister's Office staff
+                return true;
+            }
+            
+            // Normal validation - check division if not Minister's Office
+            if (!isMinisterOffice && divisionSelect && !divisionSelect.value) {
+                e.preventDefault();
+                alert('Please select a division');
+                divisionSelect.focus();
+                return false;
+            }
+        });
+    }
+
     // Handle initial assignee selection state
     if (assigneeSelect && assigneeSelect.value === '__counselor__') {
         const wrapper = document.getElementById('counselor_dropdown_wrapper');
@@ -263,7 +283,5 @@ document.addEventListener('DOMContentLoaded', function() {
         if (counselorSelect) hiddenInput.value = counselorSelect.value;
     } else if (assigneeSelect) {
         hiddenInput.value = assigneeSelect.value;
-    }
-});
-</script>
-@endsection
+        // Check initial state for Minister's Office
+        handleAssigneeChange(assigneeSelect);

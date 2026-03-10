@@ -110,10 +110,15 @@ class ActivityController extends Controller
             $isMinisterOfficeAssignee = $assignee && $assignee->division_id === null;
         }
 
+        // Division is optional for Minister's Office staff
+        $divisionRule = $isMinisterOfficeAssignee 
+            ? 'nullable' 
+            : 'required|exists:divisions,id';
+
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'division_id' => $isMinisterOfficeAssignee ? 'nullable|exists:divisions,id' : 'required|exists:divisions,id',
+            'division_id' => $divisionRule,
             'assigned_to' => 'nullable|exists:users,id',
             'priority' => 'required|in:low,medium,high,critical',
             'start_date' => 'nullable|date',
@@ -121,12 +126,17 @@ class ActivityController extends Controller
             'remarks' => 'nullable|string',
         ]);
 
+        // Validate division_id exists if provided
+        if (!empty($validated['division_id']) && !\App\Models\Division::find($validated['division_id'])) {
+            return back()->withErrors(['division_id' => 'Invalid division selected.'])->withInput();
+        }
+
         if (!$user->canManageDivision()) {
             abort(403);
         }
 
         // Validate counselor assignment: only full-access or CGPC director
-        if ($validated['assigned_to']) {
+        if ($validated['assigned_to'] ?? null) {
             $assignee = User::find($validated['assigned_to']);
             if ($assignee && $assignee->isCounselor()) {
                 if (!$user->hasFullAccess() && !($user->isDirector() && $user->division?->code === 'CGPC')) {
