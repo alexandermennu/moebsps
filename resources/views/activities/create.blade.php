@@ -138,31 +138,48 @@ function handleCounselorChange(select) {
     document.getElementById('assigned_to_hidden').value = select.value;
 }
 
-function handleDivisionChange(divisionId) {
+function filterStaffByDivision(divisionId) {
     const assigneeSelect = document.getElementById('assignee_select');
     const hiddenInput = document.getElementById('assigned_to_hidden');
     const hint = document.getElementById('division_hint');
+    
+    if (!assigneeSelect) return;
+    
     const options = assigneeSelect.querySelectorAll('option');
+    let hasVisibleOptions = false;
+    let currentSelectionHidden = false;
 
     options.forEach(option => {
+        // Always show empty and counselor options
         if (option.value === '' || option.value === '__counselor__') {
-            option.style.display = '';
+            option.hidden = false;
             return;
         }
+        
         const optDivision = option.getAttribute('data-division');
+        
+        // If no division selected, show all
+        // If division selected, only show matching staff
         if (!divisionId || optDivision == divisionId) {
-            option.style.display = '';
+            option.hidden = false;
+            hasVisibleOptions = true;
         } else {
-            option.style.display = 'none';
+            option.hidden = true;
             if (option.selected) {
-                assigneeSelect.value = '';
-                hiddenInput.value = '';
-                const wrapper = document.getElementById('counselor_dropdown_wrapper');
-                if (wrapper) wrapper.classList.add('hidden');
+                currentSelectionHidden = true;
             }
         }
     });
 
+    // Reset selection if current selection was hidden
+    if (currentSelectionHidden) {
+        assigneeSelect.value = '';
+        hiddenInput.value = '';
+        const wrapper = document.getElementById('counselor_dropdown_wrapper');
+        if (wrapper) wrapper.classList.add('hidden');
+    }
+
+    // Show/hide hint
     if (hint) {
         hint.classList.toggle('hidden', !divisionId);
     }
@@ -173,21 +190,24 @@ document.addEventListener('DOMContentLoaded', function() {
     const hiddenInput = document.getElementById('assigned_to_hidden');
     const divisionSelect = document.getElementById('division_id');
 
+    // Set up division change listener
     if (divisionSelect) {
         divisionSelect.addEventListener('change', function() {
-            handleDivisionChange(this.value);
+            filterStaffByDivision(this.value);
         });
+        // Filter on page load if division is pre-selected
         if (divisionSelect.value) {
-            handleDivisionChange(divisionSelect.value);
+            filterStaffByDivision(divisionSelect.value);
         }
     }
 
-    if (assigneeSelect.value === '__counselor__') {
+    // Handle initial assignee selection state
+    if (assigneeSelect && assigneeSelect.value === '__counselor__') {
         const wrapper = document.getElementById('counselor_dropdown_wrapper');
         if (wrapper) wrapper.classList.remove('hidden');
         const counselorSelect = document.getElementById('counselor_select');
         if (counselorSelect) hiddenInput.value = counselorSelect.value;
-    } else {
+    } else if (assigneeSelect) {
         hiddenInput.value = assigneeSelect.value;
     }
 });
