@@ -515,37 +515,39 @@ document.addEventListener('DOMContentLoaded', function() {
         const categoryData = @json($byCategory ?? []);
         
         // All categories for Other Incidents
-        const allCategories = [
-            { key: 'student_misconduct', label: 'Misconduct' },
-            { key: 'teacher_misconduct', label: 'Staff Misconduct' },
-            { key: 'substance_abuse', label: 'Substance' },
-            { key: 'fighting', label: 'Fighting' },
-            { key: 'vandalism', label: 'Vandalism' },
-            { key: 'theft', label: 'Theft' },
-            { key: 'fire', label: 'Fire' },
-            { key: 'structural_hazard', label: 'Structural' },
-            { key: 'sanitation', label: 'Sanitation' },
-            { key: 'accident_injury', label: 'Accident' },
-            { key: 'bullying', label: 'Bullying' },
-            { key: 'truancy', label: 'Truancy' },
-            { key: 'other', label: 'Other' }
-        ];
+        const allCategories = {
+            'student_misconduct': 'Misconduct',
+            'teacher_misconduct': 'Staff Misconduct',
+            'substance_abuse': 'Substance',
+            'fighting': 'Fighting',
+            'vandalism': 'Vandalism',
+            'theft': 'Theft',
+            'fire': 'Fire',
+            'structural_hazard': 'Structural',
+            'sanitation': 'Sanitation',
+            'accident_injury': 'Accident',
+            'bullying': 'Bullying',
+            'truancy': 'Truancy',
+            'other': 'Other'
+        };
         
-        const labels = allCategories.map(c => c.label);
-        const values = allCategories.map(c => categoryData[c.key] || 0);
+        // Get top 6 categories by count
+        const sortedCategories = Object.entries(categoryData)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 6);
+        
+        const labels = sortedCategories.map(([key]) => allCategories[key] || key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()));
+        const values = sortedCategories.map(([, val]) => val);
         
         // Colors for each category
-        const colors = ['#EF4444', '#8B5CF6', '#F59E0B', '#3B82F6', '#14B8A6', '#10B981', '#F97316', '#EC4899', '#6366F1', '#84CC16', '#06B6D4', '#A855F7', '#6B7280'];
+        const colors = ['#EF4444', '#8B5CF6', '#F59E0B', '#3B82F6', '#14B8A6', '#10B981'];
         
-        // Build legend - only show categories that have data
+        // Build legend
         const legendContainer = document.getElementById('categoryLegend');
         if (legendContainer) {
-            legendContainer.innerHTML = allCategories
-                .filter((c, i) => values[i] > 0)
-                .map((c, i) => {
-                    const originalIndex = allCategories.findIndex(cat => cat.key === c.key);
-                    return `<span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full" style="background:${colors[originalIndex]}"></span> ${c.label}</span>`;
-                }).join('');
+            legendContainer.innerHTML = labels.map((label, i) => 
+                `<span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full" style="background:${colors[i]}"></span> ${label}</span>`
+            ).join('');
         }
 
         new Chart(categoryCtx, {
@@ -554,9 +556,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 labels: labels,
                 datasets: [{
                     data: values,
-                    backgroundColor: colors,
+                    backgroundColor: colors.slice(0, values.length),
                     borderRadius: 4,
-                    barThickness: 20,
+                    barThickness: 40,
                 }]
             },
             options: {
@@ -565,7 +567,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 plugins: { legend: { display: false } },
                 scales: {
                     y: { beginAtZero: true, grid: { color: '#f3f4f6' }, ticks: { font: { size: 10 } } },
-                    x: { grid: { display: false }, ticks: { font: { size: 8 }, maxRotation: 45, minRotation: 45 } }
+                    x: { grid: { display: false }, ticks: { font: { size: 10 } } }
                 }
             }
         });
