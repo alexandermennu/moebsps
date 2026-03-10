@@ -137,11 +137,11 @@
                 <thead class="bg-gray-50">
                     <tr>
                         <th scope="col" class="px-4 py-3 text-left text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Case #</th>
-                        <th scope="col" class="px-4 py-3 text-left text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Title / Category</th>
+                        <th scope="col" class="px-4 py-3 text-left text-[10px] font-semibold text-gray-500 uppercase tracking-wider min-w-[180px]">Title / Category</th>
                         @if(!$isSrgbv)
                         <th scope="col" class="px-4 py-3 text-left text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Type</th>
                         @endif
-                        <th scope="col" class="px-4 py-3 text-left text-[10px] font-semibold text-gray-500 uppercase tracking-wider">School / Location</th>
+                        <th scope="col" class="px-4 py-3 text-left text-[10px] font-semibold text-gray-500 uppercase tracking-wider min-w-[140px]">School / Location</th>
                         <th scope="col" class="px-4 py-3 text-left text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Date</th>
                         <th scope="col" class="px-4 py-3 text-left text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Priority</th>
                         <th scope="col" class="px-4 py-3 text-left text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Source</th>
@@ -165,7 +165,7 @@
                             </div>
                         </td>
                         <td class="px-4 py-3">
-                            <a href="{{ route($showRoute, $incident) }}" class="text-sm font-medium text-gray-900 hover:text-{{ $themeColor }}-700 line-clamp-1">{{ $incident->title }}</a>
+                            <a href="{{ route($showRoute, $incident) }}" class="text-sm font-medium text-gray-900 hover:text-{{ $themeColor }}-700">{{ $incident->title }}</a>
                             <p class="text-xs text-gray-500 mt-0.5">{{ $incident->category_label }}</p>
                         </td>
                         @if(!$isSrgbv)
