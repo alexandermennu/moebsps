@@ -14,28 +14,21 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // First, convert any existing numeric ages to age range keys
-        // Map existing numeric values to range keys
-        DB::table('incidents')
-            ->whereNotNull('victim_age')
-            ->orderBy('id')
-            ->chunk(100, function ($incidents) {
-                foreach ($incidents as $incident) {
-                    $age = $incident->victim_age;
-                    $rangeKey = $this->numericToRangeKey($age);
-                    
-                    if ($rangeKey !== $age) {
-                        DB::table('incidents')
-                            ->where('id', $incident->id)
-                            ->update(['victim_age' => $rangeKey]);
-                    }
-                }
-            });
-
-        // Now change the column type to string
+        // Step 1: First change the column type to string (to allow string values)
         Schema::table('incidents', function (Blueprint $table) {
             $table->string('victim_age', 20)->nullable()->change();
         });
+
+        // Step 2: Now convert any existing numeric ages to age range keys
+        // Map existing numeric values to range keys using raw SQL for efficiency
+        DB::statement("UPDATE incidents SET victim_age = 'under_6' WHERE victim_age REGEXP '^[0-5]$'");
+        DB::statement("UPDATE incidents SET victim_age = '6_10' WHERE victim_age REGEXP '^([6-9]|10)$'");
+        DB::statement("UPDATE incidents SET victim_age = '11_14' WHERE victim_age REGEXP '^(1[1-4])$'");
+        DB::statement("UPDATE incidents SET victim_age = '15_17' WHERE victim_age REGEXP '^(1[5-7])$'");
+        DB::statement("UPDATE incidents SET victim_age = '18_plus' WHERE victim_age REGEXP '^(1[8-9]|[2-9][0-9]|[0-9]{3,})$'");
+        
+        // Set any remaining numeric-only values to unknown
+        DB::statement("UPDATE incidents SET victim_age = 'unknown' WHERE victim_age REGEXP '^[0-9]+$' AND victim_age NOT IN ('under_6', '6_10', '11_14', '15_17', '18_plus', 'unknown')");
     }
 
     /**
@@ -43,33 +36,11 @@ return new class extends Migration
      */
     public function down(): void
     {
+        // Clear the string values first (can't convert back to int)
+        DB::statement("UPDATE incidents SET victim_age = NULL WHERE victim_age IN ('under_6', '6_10', '11_14', '15_17', '18_plus', 'unknown')");
+        
         Schema::table('incidents', function (Blueprint $table) {
             $table->integer('victim_age')->nullable()->change();
         });
-    }
-
-    /**
-     * Convert numeric age to range key.
-     */
-    private function numericToRangeKey($value): string
-    {
-        // If already a valid key, return as-is
-        $validKeys = ['under_6', '6_10', '11_14', '15_17', '18_plus', 'unknown'];
-        if (in_array($value, $validKeys)) {
-            return $value;
-        }
-
-        // If numeric, convert to range
-        if (is_numeric($value)) {
-            $age = (int) $value;
-            if ($age < 6) return 'under_6';
-            if ($age <= 10) return '6_10';
-            if ($age <= 14) return '11_14';
-            if ($age <= 17) return '15_17';
-            return '18_plus';
-        }
-
-        // Unknown or invalid
-        return 'unknown';
     }
 };
