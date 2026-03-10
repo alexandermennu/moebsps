@@ -107,16 +107,13 @@
                         @endphp
                         <tr class="{{ $rowBg }} hover:bg-gray-50">
                             <td class="px-4 py-3 align-top">
-                                @if($tracked->latestWeeklyUpdate)
+                                @if($tracked->latest_weekly_update_id)
                                     <a href="{{ route('weekly-updates.show', ['weeklyUpdate' => $tracked->latest_weekly_update_id, 'from' => 'tracker']) }}" class="text-gray-800 font-medium hover:text-blue-700 hover:underline">{{ Str::limit($tracked->activity_text, 100) }}</a>
                                 @else
                                     <p class="text-gray-800 font-medium">{{ Str::limit($tracked->activity_text, 100) }}</p>
                                 @endif
                                 @if($tracked->responsible_persons)
                                     <p class="text-xs text-gray-400 mt-0.5">{{ $tracked->responsible_persons }}</p>
-                                @endif
-                                @if($tracked->division)
-                                    <p class="text-[10px] text-gray-400 mt-0.5 uppercase">{{ $tracked->division->code ?? $tracked->division->name }}</p>
                                 @endif
                             </td>
                             @if(!$user->isDivisionScoped())
