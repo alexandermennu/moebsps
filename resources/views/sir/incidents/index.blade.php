@@ -137,11 +137,11 @@
                 <thead class="bg-gray-50">
                     <tr>
                         <th scope="col" class="px-4 py-3 text-left text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Case #</th>
-                        <th scope="col" class="px-4 py-3 text-left text-[10px] font-semibold text-gray-500 uppercase tracking-wider min-w-[180px]">Title / Category</th>
+                        <th scope="col" class="px-4 py-3 text-left text-[10px] font-semibold text-gray-500 uppercase tracking-wider" style="min-width: 160px;">Title / Category</th>
                         @if(!$isSrgbv)
                         <th scope="col" class="px-4 py-3 text-left text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Type</th>
                         @endif
-                        <th scope="col" class="px-4 py-3 text-left text-[10px] font-semibold text-gray-500 uppercase tracking-wider min-w-[140px]">School / Location</th>
+                        <th scope="col" class="px-4 py-3 text-left text-[10px] font-semibold text-gray-500 uppercase tracking-wider" style="min-width: 120px;">School / Location</th>
                         <th scope="col" class="px-4 py-3 text-left text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Date</th>
                         <th scope="col" class="px-4 py-3 text-left text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Priority</th>
                         <th scope="col" class="px-4 py-3 text-left text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Source</th>
