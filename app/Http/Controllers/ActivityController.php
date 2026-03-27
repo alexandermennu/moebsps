@@ -62,7 +62,70 @@ class ActivityController extends Controller
         $activities = $query->latest()->paginate(15);
         $divisions = Division::where('is_active', true)->get();
 
-        return view('activities.index', compact('activities', 'divisions', 'user'));
+        // Division summary stats
+        $divisionStats = [];
+        $statsQuery = Activity::query();
+        
+        // Apply same scope restrictions for stats
+        if ($user->hasPersonalAccessOnly()) {
+            $statsQuery->where('assigned_to', $user->id);
+        } elseif ($user->isDirector()) {
+            $statsQuery->where(function ($q) use ($user) {
+                $q->where(function ($inner) use ($user) {
+                    $inner->where('division_id', $user->division_id)
+                          ->whereHas('creator', function ($c) {
+                              $c->whereNotIn('role', [
+                                  User::ROLE_MINISTER,
+                                  User::ROLE_ADMIN_ASSISTANT,
+                                  User::ROLE_TECH_ASSISTANT,
+                              ]);
+                          });
+                })->orWhere('assigned_to', $user->id);
+            });
+        } elseif ($user->isDivisionScoped()) {
+            $statsQuery->where(function ($q) use ($user) {
+                $q->where('division_id', $user->division_id)
+                  ->orWhere('assigned_to', $user->id);
+            });
+        }
+
+        $allActivities = $statsQuery->get();
+        
+        foreach ($divisions as $division) {
+            $divisionActivities = $allActivities->where('division_id', $division->id);
+            $divisionStats[$division->id] = [
+                'name' => $division->name,
+                'code' => $division->code,
+                'total' => $divisionActivities->count(),
+                'completed' => $divisionActivities->where('status', 'completed')->count(),
+                'in_progress' => $divisionActivities->where('status', 'in_progress')->count(),
+                'overdue' => $divisionActivities->where('is_overdue', true)->count(),
+                'not_started' => $divisionActivities->where('status', 'not_started')->count(),
+            ];
+        }
+        
+        // Add Office of the Minister stats (null division)
+        $ministerActivities = $allActivities->whereNull('division_id');
+        $divisionStats['minister'] = [
+            'name' => 'Office of the Minister',
+            'code' => 'OOM',
+            'total' => $ministerActivities->count(),
+            'completed' => $ministerActivities->where('status', 'completed')->count(),
+            'in_progress' => $ministerActivities->where('status', 'in_progress')->count(),
+            'overdue' => $ministerActivities->where('is_overdue', true)->count(),
+            'not_started' => $ministerActivities->where('status', 'not_started')->count(),
+        ];
+        
+        // Overall stats
+        $overallStats = [
+            'total' => $allActivities->count(),
+            'completed' => $allActivities->where('status', 'completed')->count(),
+            'in_progress' => $allActivities->where('status', 'in_progress')->count(),
+            'overdue' => $allActivities->where('is_overdue', true)->count(),
+            'not_started' => $allActivities->where('status', 'not_started')->count(),
+        ];
+
+        return view('activities.index', compact('activities', 'divisions', 'user', 'divisionStats', 'overallStats'));
     }
 
     public function create()
