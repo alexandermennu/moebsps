@@ -15,30 +15,6 @@
         @endif
     </div>
 
-    {{-- Overall Stats --}}
-    <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
-        <div class="bg-white border border-gray-200 p-4">
-            <p class="text-xs text-gray-500 uppercase tracking-wide">Total</p>
-            <p class="text-2xl font-bold text-gray-800 mt-1">{{ $overallStats['total'] }}</p>
-        </div>
-        <div class="bg-blue-50 border border-blue-200 p-4">
-            <p class="text-xs text-blue-600 uppercase tracking-wide font-medium">In Progress</p>
-            <p class="text-2xl font-bold text-blue-700 mt-1">{{ $overallStats['in_progress'] }}</p>
-        </div>
-        <div class="bg-gray-50 border border-gray-200 p-4">
-            <p class="text-xs text-gray-500 uppercase tracking-wide">Not Started</p>
-            <p class="text-2xl font-bold text-gray-600 mt-1">{{ $overallStats['not_started'] }}</p>
-        </div>
-        <div class="bg-red-50 border border-red-200 p-4">
-            <p class="text-xs text-red-600 uppercase tracking-wide font-medium">Overdue</p>
-            <p class="text-2xl font-bold text-red-700 mt-1">{{ $overallStats['overdue'] }}</p>
-        </div>
-        <div class="bg-green-50 border border-green-200 p-4">
-            <p class="text-xs text-green-600 uppercase tracking-wide font-medium">Completed</p>
-            <p class="text-2xl font-bold text-green-700 mt-1">{{ $overallStats['completed'] }}</p>
-        </div>
-    </div>
-
     {{-- Filters --}}
     <form method="GET" class="flex flex-wrap gap-3 items-end">
         <div>
