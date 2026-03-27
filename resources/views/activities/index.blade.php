@@ -39,42 +39,6 @@
         </div>
     </div>
 
-    {{-- Division Summary Cards --}}
-    @if(!$user->hasPersonalAccessOnly())
-    <div class="bg-white border border-gray-200 p-4">
-        <h3 class="text-xs font-semibold text-gray-700 uppercase tracking-wide mb-3">By Division</h3>
-        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
-            @foreach($divisionStats as $key => $stats)
-                <div class="border border-gray-200 p-3 hover:border-gray-400 hover:bg-gray-50 transition cursor-pointer"
-                     onclick="window.location.href='{{ route('activities.index', ['division_id' => $key !== 'minister' ? $key : 'minister']) }}'">
-                    <div class="flex items-center justify-between mb-2">
-                        <span class="text-[10px] font-semibold text-gray-500 uppercase">{{ $stats['code'] ?? Str::limit($stats['name'], 15) }}</span>
-                        <span class="text-lg font-bold text-gray-800">{{ $stats['total'] }}</span>
-                    </div>
-                    <p class="text-xs text-gray-600 truncate mb-2">{{ $stats['name'] }}</p>
-                    <div class="flex flex-wrap gap-2 text-[10px]">
-                        @if($stats['in_progress'] > 0)
-                            <span class="text-blue-600">{{ $stats['in_progress'] }} active</span>
-                        @endif
-                        @if($stats['overdue'] > 0)
-                            <span class="text-red-600 font-medium">{{ $stats['overdue'] }} overdue</span>
-                        @endif
-                        @if($stats['completed'] > 0)
-                            <span class="text-green-600">{{ $stats['completed'] }} done</span>
-                        @endif
-                        @if($stats['not_started'] > 0)
-                            <span class="text-gray-500">{{ $stats['not_started'] }} pending</span>
-                        @endif
-                        @if($stats['total'] == 0)
-                            <span class="text-gray-400">No assignments</span>
-                        @endif
-                    </div>
-                </div>
-            @endforeach
-        </div>
-    </div>
-    @endif
-
     {{-- Filters --}}
     <form method="GET" class="flex flex-wrap gap-3 items-end">
         <div>
@@ -190,5 +154,41 @@
     </div>
 
     {{ $activities->links() }}
+
+    {{-- Division Summary Cards --}}
+    @if(!$user->hasPersonalAccessOnly())
+    <div class="bg-white border border-gray-200 p-4">
+        <h3 class="text-xs font-semibold text-gray-700 uppercase tracking-wide mb-3">By Division</h3>
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+            @foreach($divisionStats as $key => $stats)
+                <div class="border border-gray-200 p-3 hover:border-gray-400 hover:bg-gray-50 transition cursor-pointer"
+                     onclick="window.location.href='{{ route('activities.index', ['division_id' => $key !== 'minister' ? $key : 'minister']) }}'">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-[10px] font-semibold text-gray-500 uppercase">{{ $stats['code'] ?? Str::limit($stats['name'], 15) }}</span>
+                        <span class="text-lg font-bold text-gray-800">{{ $stats['total'] }}</span>
+                    </div>
+                    <p class="text-xs text-gray-600 truncate mb-2">{{ $stats['name'] }}</p>
+                    <div class="flex flex-wrap gap-2 text-[10px]">
+                        @if($stats['in_progress'] > 0)
+                            <span class="text-blue-600">{{ $stats['in_progress'] }} active</span>
+                        @endif
+                        @if($stats['overdue'] > 0)
+                            <span class="text-red-600 font-medium">{{ $stats['overdue'] }} overdue</span>
+                        @endif
+                        @if($stats['completed'] > 0)
+                            <span class="text-green-600">{{ $stats['completed'] }} done</span>
+                        @endif
+                        @if($stats['not_started'] > 0)
+                            <span class="text-gray-500">{{ $stats['not_started'] }} pending</span>
+                        @endif
+                        @if($stats['total'] == 0)
+                            <span class="text-gray-400">No assignments</span>
+                        @endif
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    </div>
+    @endif
 </div>
 @endsection
