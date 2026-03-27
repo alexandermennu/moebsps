@@ -51,8 +51,12 @@ class ActivityController extends Controller
             $query->where('priority', $request->priority);
         }
 
-        if ($request->filled('division_id') && $user->hasFullAccess()) {
-            $query->where('division_id', $request->division_id);
+        if ($request->filled('division_id')) {
+            if ($request->division_id === 'minister') {
+                $query->whereNull('division_id');
+            } else {
+                $query->where('division_id', $request->division_id);
+            }
         }
 
         if ($request->filled('search')) {
