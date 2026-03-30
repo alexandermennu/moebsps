@@ -131,14 +131,15 @@ class ActivityController extends Controller
 
         $divisions = Division::where('is_active', true)->get();
 
-        // Build user list: users in the same division as the current user
+        // Build user list based on user's role
         // Exclude counselors (handled separately) and Minister (doesn't get assigned tasks)
         $usersQuery = User::where('is_active', true)
             ->where('role', '!=', User::ROLE_COUNSELOR)
             ->where('role', '!=', User::ROLE_MINISTER);
         
-        // Directors and Minister's Office staff only see users in their own division
-        if ($user->isDirector() || $user->hasFullAccess()) {
+        // Directors only see users in their own division
+        // Minister's Office staff can see all users to assign tasks across divisions
+        if ($user->isDirector()) {
             $usersQuery->where('division_id', $user->division_id);
         }
         $users = $usersQuery->orderBy('name')->get();
@@ -259,14 +260,15 @@ class ActivityController extends Controller
 
         $divisions = Division::where('is_active', true)->get();
 
-        // Build user list: users in the same division as the current user
+        // Build user list based on user's role
         // Exclude counselors (handled separately) and Minister (doesn't get assigned tasks)
         $usersQuery = User::where('is_active', true)
             ->where('role', '!=', User::ROLE_COUNSELOR)
             ->where('role', '!=', User::ROLE_MINISTER);
         
-        // Directors and Minister's Office staff only see users in their own division
-        if ($user->isDirector() || $user->hasFullAccess()) {
+        // Directors only see users in their own division
+        // Minister's Office staff can see all users to assign tasks across divisions
+        if ($user->isDirector()) {
             $usersQuery->where('division_id', $user->division_id);
         }
         $users = $usersQuery->orderBy('name')->get();
@@ -285,7 +287,11 @@ class ActivityController extends Controller
         // Check if current assignee is a counselor
         $assigneeIsCounselor = $activity->assignee && $activity->assignee->isCounselor();
 
-        return view('activities.edit', compact('activity', 'user', 'divisions', 'users', 'counselors', 'canAssignCounselor', 'assigneeIsCounselor'));
+        // Check if user is only an assignee (not the creator)
+        // Assignees can only edit status and progress
+        $isAssigneeOnly = $activity->assigned_to === $user->id && $activity->created_by !== $user->id;
+
+        return view('activities.edit', compact('activity', 'user', 'divisions', 'users', 'counselors', 'canAssignCounselor', 'assigneeIsCounselor', 'isAssigneeOnly'));
     }
 
     public function update(Request $request, Activity $activity)
@@ -305,6 +311,39 @@ class ActivityController extends Controller
             abort(403);
         }
 
+        // Check if user is only an assignee (not the creator)
+        $isAssigneeOnly = $activity->assigned_to === $user->id && $activity->created_by !== $user->id;
+
+        if ($isAssigneeOnly) {
+            // Assignees can only update status and progress
+            $validated = $request->validate([
+                'status' => 'required|in:not_started,in_progress,completed,overdue',
+                'progress_percentage' => 'required|integer|min:0|max:100',
+            ]);
+
+            // Progress can only be > 0 if status is not 'not_started'
+            if ($validated['status'] === 'not_started' && $validated['progress_percentage'] > 0) {
+                return back()->withErrors(['progress_percentage' => 'Progress cannot be set while status is "Not Started". Change status first.'])->withInput();
+            }
+
+            if ($validated['status'] === 'completed') {
+                $validated['completed_date'] = now();
+                $validated['progress_percentage'] = 100;
+                $validated['is_overdue'] = false;
+            }
+
+            // If starting work, set start_date if not already set
+            if ($validated['status'] === 'in_progress' && !$activity->start_date) {
+                $validated['start_date'] = now();
+            }
+
+            $activity->update($validated);
+
+            return redirect()->route('activities.show', $activity)
+                ->with('success', 'Progress updated successfully.');
+        }
+
+        // Full update for creators/managers
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
@@ -344,6 +383,7 @@ class ActivityController extends Controller
             $validated['start_date'] = now();
         }
 
+        // Directors use their own division; Minister's Office staff can select any division
         if ($user->isDirector()) {
             $validated['division_id'] = $user->division_id;
         }
