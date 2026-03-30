@@ -12,7 +12,7 @@
     <div class="bg-white border border-gray-200 p-6">
         <h2 class="text-sm font-semibold text-gray-900 uppercase tracking-wide border-b border-gray-200 pb-2 mb-6">Create New Assignment</h2>
 
-        <form method="POST" action="{{ route('activities.store') }}">
+        <form method="POST" action="{{ route('activities.store') }}" enctype="multipart/form-data">
             @csrf
 
             <div class="mb-4">
@@ -116,6 +116,32 @@
                           placeholder="Any additional notes...">{{ old('remarks') }}</textarea>
             </div>
 
+            {{-- File Attachments --}}
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Attach Files (Optional)</label>
+                <div id="drop_zone" class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400 transition-colors cursor-pointer"
+                     onclick="document.getElementById('file_input').click()">
+                    <svg class="mx-auto h-10 w-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                    </svg>
+                    <p class="mt-2 text-sm text-gray-600">Click to select files or drag & drop</p>
+                    <p class="text-xs text-gray-400 mt-1">Max 10MB per file. PDF, Word, Excel, Images, etc.</p>
+                </div>
+                <input type="file" name="files[]" id="file_input" multiple
+                       accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.gif,.txt,.csv,.zip"
+                       class="hidden" onchange="previewFiles(this)">
+                
+                {{-- File Preview Area --}}
+                <div id="file_preview_area" class="hidden mt-3">
+                    <div class="flex items-center justify-between mb-2">
+                        <label class="text-sm font-medium text-gray-700">Selected Files <span id="file_count_badge" class="ml-1 px-2 py-0.5 bg-blue-100 text-blue-700 text-xs font-semibold rounded-full">0</span></label>
+                        <button type="button" onclick="clearAllFiles()" class="text-xs text-red-600 hover:text-red-800 font-medium">Clear All</button>
+                    </div>
+                    <div id="file_preview_list" class="grid grid-cols-2 md:grid-cols-4 gap-3"></div>
+                    <p class="text-xs text-gray-500 mt-2">Click the drop area to add more files. Click × on a file to remove it.</p>
+                </div>
+            </div>
+
             <div class="flex gap-3">
                 <button type="submit" id="submit_btn" class="px-4 py-2 bg-gray-800 text-white text-sm font-medium hover:bg-gray-700">Create Assignment</button>
                 <a href="{{ route('activities.index') }}" class="px-4 py-2 border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50">Cancel</a>
@@ -216,6 +242,140 @@ document.addEventListener('DOMContentLoaded', function() {
     } else if (assigneeSelect) {
         hiddenInput.value = assigneeSelect.value;
     }
+    
+    // File upload drag and drop
+    const dropZone = document.getElementById('drop_zone');
+    if (dropZone) {
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+            }, false);
+        });
+        
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, () => {
+                dropZone.classList.add('border-blue-400', 'bg-blue-50');
+            }, false);
+        });
+        
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, () => {
+                dropZone.classList.remove('border-blue-400', 'bg-blue-50');
+            }, false);
+        });
+        
+        dropZone.addEventListener('drop', (e) => {
+            const droppedFiles = Array.from(e.dataTransfer.files);
+            droppedFiles.forEach(file => {
+                if (!selectedFiles.some(f => f.name === file.name && f.size === file.size)) {
+                    selectedFiles.push(file);
+                }
+            });
+            updateFileInput();
+            renderPreviews();
+        }, false);
+    }
 });
+
+// File upload functionality
+let selectedFiles = [];
+
+function previewFiles(input) {
+    const newFiles = Array.from(input.files);
+    newFiles.forEach(file => {
+        if (!selectedFiles.some(f => f.name === file.name && f.size === file.size)) {
+            selectedFiles.push(file);
+        }
+    });
+    updateFileInput();
+    renderPreviews();
+}
+
+function updateFileInput() {
+    const fileInput = document.getElementById('file_input');
+    const dt = new DataTransfer();
+    selectedFiles.forEach(file => dt.items.add(file));
+    fileInput.files = dt.files;
+}
+
+function renderPreviews() {
+    const previewArea = document.getElementById('file_preview_area');
+    const previewList = document.getElementById('file_preview_list');
+    
+    if (selectedFiles.length === 0) {
+        previewArea.classList.add('hidden');
+        previewList.innerHTML = '';
+        return;
+    }
+    
+    previewArea.classList.remove('hidden');
+    previewList.innerHTML = '';
+    
+    selectedFiles.forEach((file, index) => {
+        const card = document.createElement('div');
+        card.className = 'relative bg-white border border-gray-200 rounded-lg overflow-hidden group';
+        
+        const previewContent = document.createElement('div');
+        previewContent.className = 'h-24 flex items-center justify-center bg-gray-50';
+        
+        if (file.type.startsWith('image/')) {
+            const img = document.createElement('img');
+            img.className = 'w-full h-24 object-cover';
+            const reader = new FileReader();
+            reader.onload = (e) => { img.src = e.target.result; };
+            reader.readAsDataURL(file);
+            previewContent.appendChild(img);
+        } else if (file.type === 'application/pdf') {
+            previewContent.innerHTML = '<svg class="w-10 h-10 text-red-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"/></svg>';
+        } else if (file.name.match(/\.(doc|docx)$/i)) {
+            previewContent.innerHTML = '<svg class="w-10 h-10 text-blue-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"/></svg>';
+        } else if (file.name.match(/\.(xls|xlsx)$/i)) {
+            previewContent.innerHTML = '<svg class="w-10 h-10 text-green-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"/></svg>';
+        } else {
+            previewContent.innerHTML = '<svg class="w-10 h-10 text-gray-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"/></svg>';
+        }
+        
+        const removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.className = 'absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600';
+        removeBtn.innerHTML = '×';
+        removeBtn.onclick = () => removeFile(index);
+        
+        const info = document.createElement('div');
+        info.className = 'p-2';
+        info.innerHTML = `
+            <p class="text-xs font-medium text-gray-700 truncate" title="${file.name}">${file.name}</p>
+            <p class="text-xs text-gray-400">${formatFileSize(file.size)}</p>
+        `;
+        
+        card.appendChild(previewContent);
+        card.appendChild(removeBtn);
+        card.appendChild(info);
+        previewList.appendChild(card);
+    });
+    
+    document.getElementById('file_count_badge').textContent = selectedFiles.length;
+}
+
+function removeFile(index) {
+    selectedFiles.splice(index, 1);
+    updateFileInput();
+    renderPreviews();
+}
+
+function clearAllFiles() {
+    selectedFiles = [];
+    updateFileInput();
+    renderPreviews();
+}
+
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
 </script>
 @endsection

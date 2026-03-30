@@ -200,6 +200,27 @@ class ActivityController extends Controller
             'status' => 'not_started',
         ]);
 
+        // Handle file uploads
+        if ($request->hasFile('files')) {
+            foreach ($request->file('files') as $file) {
+                if ($file->isValid()) {
+                    $filename = time() . '_' . $file->getClientOriginalName();
+                    $path = $file->storeAs('activity_files/' . $activity->id, $filename, 'local');
+                    
+                    ActivityFile::create([
+                        'activity_id' => $activity->id,
+                        'uploaded_by' => $user->id,
+                        'original_filename' => $file->getClientOriginalName(),
+                        'stored_filename' => $filename,
+                        'file_path' => $path,
+                        'file_size' => $file->getSize(),
+                        'mime_type' => $file->getMimeType(),
+                        'description' => null,
+                    ]);
+                }
+            }
+        }
+
         if ($activity->assigned_to) {
             BureauNotification::send(
                 $activity->assigned_to,
