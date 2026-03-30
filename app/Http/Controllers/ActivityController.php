@@ -131,11 +131,14 @@ class ActivityController extends Controller
 
         $divisions = Division::where('is_active', true)->get();
 
-        // Build smart user list: exclude counselors and Minister only
+        // Build user list: users in the same division as the current user
+        // Exclude counselors (handled separately) and Minister (doesn't get assigned tasks)
         $usersQuery = User::where('is_active', true)
             ->where('role', '!=', User::ROLE_COUNSELOR)
             ->where('role', '!=', User::ROLE_MINISTER);
-        if ($user->isDirector()) {
+        
+        // Directors and Minister's Office staff only see users in their own division
+        if ($user->isDirector() || $user->hasFullAccess()) {
             $usersQuery->where('division_id', $user->division_id);
         }
         $users = $usersQuery->orderBy('name')->get();
@@ -158,23 +161,10 @@ class ActivityController extends Controller
     {
         $user = $request->user();
 
-        // Check if assigning to Minister's Office staff (no division)
-        $assigneeId = $request->input('assigned_to');
-        $isMinisterOfficeAssignee = false;
-        if ($assigneeId) {
-            $assignee = User::find($assigneeId);
-            $isMinisterOfficeAssignee = $assignee && $assignee->division_id === null;
-        }
-
-        // Division is optional for Minister's Office staff
-        $divisionRule = $isMinisterOfficeAssignee 
-            ? 'nullable' 
-            : 'required|exists:divisions,id';
-
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'division_id' => $divisionRule,
+            'division_id' => 'required|exists:divisions,id',
             'assigned_to' => 'nullable|exists:users,id',
             'priority' => 'required|in:low,medium,high,critical',
             'start_date' => 'nullable|date',
@@ -196,18 +186,10 @@ class ActivityController extends Controller
             }
         }
 
-        // Handle division_id - use user's division if director, or null if empty
-        $divisionId = null;
-        if ($user->isDirector()) {
-            $divisionId = $user->division_id;
-        } elseif (!empty($validated['division_id'])) {
-            $divisionId = $validated['division_id'];
-        }
-
         $activity = Activity::create([
             'title' => $validated['title'],
             'description' => $validated['description'] ?? null,
-            'division_id' => $divisionId,
+            'division_id' => $validated['division_id'],
             'assigned_to' => $validated['assigned_to'] ?? null,
             'priority' => $validated['priority'],
             'start_date' => $validated['start_date'] ?? null,
@@ -277,11 +259,14 @@ class ActivityController extends Controller
 
         $divisions = Division::where('is_active', true)->get();
 
-        // Build smart user list: exclude counselors and Minister only
+        // Build user list: users in the same division as the current user
+        // Exclude counselors (handled separately) and Minister (doesn't get assigned tasks)
         $usersQuery = User::where('is_active', true)
             ->where('role', '!=', User::ROLE_COUNSELOR)
             ->where('role', '!=', User::ROLE_MINISTER);
-        if ($user->isDirector()) {
+        
+        // Directors and Minister's Office staff only see users in their own division
+        if ($user->isDirector() || $user->hasFullAccess()) {
             $usersQuery->where('division_id', $user->division_id);
         }
         $users = $usersQuery->orderBy('name')->get();

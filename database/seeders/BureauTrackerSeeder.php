@@ -24,6 +24,7 @@ class BureauTrackerSeeder extends Seeder
 
         // Create Divisions
         $divisions = [
+            ['name' => 'Office of the Minister', 'code' => 'OOM', 'description' => 'Office of the Minister - Administrative leadership and coordination'],
             ['name' => 'Division of School Health', 'code' => 'DSH', 'description' => 'School health programs and student wellness initiatives'],
             ['name' => 'Division of Career Guidance & Psychosocial Counseling', 'code' => 'CGPC', 'description' => 'Career guidance services and psychosocial counseling support'],
             ['name' => 'Division of School Feeding', 'code' => 'DSF', 'description' => 'School feeding programs and nutrition services'],
@@ -41,6 +42,9 @@ class BureauTrackerSeeder extends Seeder
             'bureauhead@moebsps.com',
         ])->delete();
 
+        // Get Office of the Minister division
+        $oomDiv = Division::where('code', 'OOM')->first();
+
         // Create Administrative Assistant
         User::updateOrCreate(
             ['email' => 'admin@moebsps.com'],
@@ -48,6 +52,7 @@ class BureauTrackerSeeder extends Seeder
                 'name' => 'Administrative Assistant',
                 'password' => Hash::make('password'),
                 'role' => User::ROLE_ADMIN_ASSISTANT,
+                'division_id' => $oomDiv->id,
                 'position' => 'Administrative Assistant',
                 'is_active' => true,
             ]
@@ -60,6 +65,7 @@ class BureauTrackerSeeder extends Seeder
                 'name' => 'Technical Assistant',
                 'password' => Hash::make('password'),
                 'role' => User::ROLE_TECH_ASSISTANT,
+                'division_id' => $oomDiv->id,
                 'position' => 'Technical Assistant',
                 'is_active' => true,
             ]
@@ -72,6 +78,7 @@ class BureauTrackerSeeder extends Seeder
                 'name' => 'Minister',
                 'password' => Hash::make('password'),
                 'role' => User::ROLE_MINISTER,
+                'division_id' => $oomDiv->id,
                 'position' => 'Minister',
                 'is_active' => true,
             ]

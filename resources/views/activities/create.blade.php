@@ -29,7 +29,16 @@
                           placeholder="Detailed description of the assignment...">{{ old('description') }}</textarea>
             </div>
 
-            @if(!$user->isDirector())
+            @if($user->isDirector() || $user->hasFullAccess())
+                {{-- Directors and Minister's Office staff use their own division --}}
+                <input type="hidden" name="division_id" value="{{ $user->division_id }}">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Division</label>
+                    <p class="px-3 py-2 bg-gray-50 border border-gray-200 rounded-md text-sm text-gray-600">
+                        {{ $user->division?->name ?? 'Office of the Minister' }}
+                    </p>
+                </div>
+            @else
                 <div class="mb-4" id="division_wrapper">
                     <label for="division_id" id="division_label" class="block text-sm font-medium text-gray-700 mb-1">Division *</label>
                     <select name="division_id" id="division_id"
@@ -40,8 +49,6 @@
                         @endforeach
                     </select>
                 </div>
-            @else
-                <input type="hidden" name="division_id" value="{{ $user->division_id }}">
             @endif
 
             <div class="mb-4">
@@ -50,16 +57,13 @@
                         class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-gray-500">
                     <option value="">Unassigned</option>
                     @foreach($users as $u)
-                        <option value="{{ $u->id }}" data-division="{{ $u->division_id }}" data-minister-office="{{ $u->division_id === null ? 'true' : 'false' }}" {{ old('assigned_to') == $u->id ? 'selected' : '' }}>{{ $u->name }} ({{ $u->role_label }})</option>
+                        <option value="{{ $u->id }}" {{ old('assigned_to') == $u->id ? 'selected' : '' }}>{{ $u->name }} ({{ $u->role_label }})</option>
                     @endforeach
                     @if($canAssignCounselor && $counselors->count() > 0)
-                        <option value="__counselor__" data-division="__counselor__" data-minister-office="false" {{ old('assigned_to') && $counselors->pluck('id')->contains(old('assigned_to')) ? 'selected' : '' }}>A Counselor ({{ $counselors->count() }} available)</option>
+                        <option value="__counselor__" {{ old('assigned_to') && $counselors->pluck('id')->contains(old('assigned_to')) ? 'selected' : '' }}>A Counselor ({{ $counselors->count() }} available)</option>
                     @endif
                 </select>
                 <input type="hidden" name="assigned_to" id="assigned_to_hidden" value="{{ old('assigned_to') }}">
-                @if(!$user->isDirector())
-                    <p id="division_hint" class="text-xs text-gray-400 mt-1 hidden">Showing staff from the selected division</p>
-                @endif
             </div>
 
             @if($canAssignCounselor && $counselors->count() > 0)
@@ -118,46 +122,10 @@
     </div>
 </div>
 <script>
-// Store all users data for filtering
-const allUsers = [
-    @foreach($users as $u)
-    { id: {{ $u->id }}, name: "{{ addslashes($u->name) }}", role: "{{ $u->role_label }}", division_id: {{ $u->division_id ?? 'null' }}, isMinisterOffice: {{ ($u->division_id === null) ? 'true' : 'false' }} },
-    @endforeach
-];
-const canAssignCounselor = {{ $canAssignCounselor ? 'true' : 'false' }};
-const counselorCount = {{ $counselors->count() }};
-
 function handleAssigneeChange(select) {
     const wrapper = document.getElementById('counselor_dropdown_wrapper');
     const hiddenInput = document.getElementById('assigned_to_hidden');
     const counselorSelect = document.getElementById('counselor_select');
-    const divisionSelect = document.getElementById('division_id');
-    const divisionLabel = document.getElementById('division_label');
-    
-    // Check if selected user is from Minister's Office (no division)
-    const selectedOption = select.options[select.selectedIndex];
-    const isMinisterOffice = selectedOption && selectedOption.getAttribute('data-minister-office') === 'true';
-    const staffDivisionId = selectedOption ? selectedOption.getAttribute('data-division') : null;
-    
-    // Auto-select division based on selected staff, or clear if Minister's Office
-    if (divisionSelect) {
-        if (isMinisterOffice) {
-            // Clear division for Minister's Office staff
-            divisionSelect.value = '';
-        } else if (staffDivisionId && staffDivisionId !== '' && staffDivisionId !== '__counselor__') {
-            // Auto-select division for regular staff
-            divisionSelect.value = staffDivisionId;
-        }
-    }
-    
-    // Make division optional for Minister's office staff
-    if (divisionSelect && divisionLabel) {
-        if (isMinisterOffice && select.value) {
-            divisionLabel.innerHTML = 'Division <span class="text-xs text-gray-400">(optional for Minister\'s Office staff)</span>';
-        } else {
-            divisionLabel.innerHTML = 'Division *';
-        }
-    }
 
     if (select.value === '__counselor__') {
         if (wrapper) wrapper.classList.remove('hidden');
@@ -173,121 +141,16 @@ function handleCounselorChange(select) {
     document.getElementById('assigned_to_hidden').value = select.value;
 }
 
-function filterStaffByDivision(divisionId) {
-    const assigneeSelect = document.getElementById('assignee_select');
-    const hiddenInput = document.getElementById('assigned_to_hidden');
-    const hint = document.getElementById('division_hint');
-    
-    if (!assigneeSelect) return;
-    
-    // Clear current options except the first (Unassigned)
-    const currentValue = hiddenInput ? hiddenInput.value : '';
-    assigneeSelect.innerHTML = '<option value="">Unassigned</option>';
-    
-    // Filter users: show division staff + always show Minister's Office staff
-    const filteredUsers = divisionId 
-        ? allUsers.filter(u => u.division_id == divisionId || u.isMinisterOffice)
-        : allUsers;
-    
-    // Separate Minister's Office staff and division staff
-    const divisionStaff = filteredUsers.filter(u => !u.isMinisterOffice);
-    const ministerStaff = filteredUsers.filter(u => u.isMinisterOffice);
-    
-    // Add division staff first
-    divisionStaff.forEach(u => {
-        const option = document.createElement('option');
-        option.value = u.id;
-        option.textContent = `${u.name} (${u.role})`;
-        option.setAttribute('data-division', u.division_id || '');
-        option.setAttribute('data-minister-office', 'false');
-        if (u.id == currentValue) option.selected = true;
-        assigneeSelect.appendChild(option);
-    });
-    
-    // Add Minister's Office staff with separator
-    if (ministerStaff.length > 0 && divisionId) {
-        const separator = document.createElement('option');
-        separator.disabled = true;
-        separator.textContent = '── Office of the Minister ──';
-        assigneeSelect.appendChild(separator);
-    }
-    
-    ministerStaff.forEach(u => {
-        const option = document.createElement('option');
-        option.value = u.id;
-        option.textContent = `${u.name} (${u.role})`;
-        option.setAttribute('data-division', '');
-        option.setAttribute('data-minister-office', 'true');
-        if (u.id == currentValue) option.selected = true;
-        assigneeSelect.appendChild(option);
-    });
-    
-    // Add counselor option if available
-    if (canAssignCounselor && counselorCount > 0) {
-        const counselorOption = document.createElement('option');
-        counselorOption.value = '__counselor__';
-        counselorOption.setAttribute('data-division', '__counselor__');
-        counselorOption.setAttribute('data-minister-office', 'false');
-        counselorOption.textContent = `A Counselor (${counselorCount} available)`;
-        assigneeSelect.appendChild(counselorOption);
-    }
-    
-    // Reset selection if current value not in filtered list
-    if (currentValue && currentValue !== '__counselor__') {
-        const stillExists = filteredUsers.some(u => u.id == currentValue);
-        if (!stillExists) {
-            assigneeSelect.value = '';
-            hiddenInput.value = '';
-            const wrapper = document.getElementById('counselor_dropdown_wrapper');
-            if (wrapper) wrapper.classList.add('hidden');
-        }
-    }
-
-    // Show/hide hint
-    if (hint) {
-        hint.classList.toggle('hidden', !divisionId);
-    }
-}
-
 document.addEventListener('DOMContentLoaded', function() {
     const assigneeSelect = document.getElementById('assignee_select');
     const hiddenInput = document.getElementById('assigned_to_hidden');
-    const divisionSelect = document.getElementById('division_id');
+
+    // Handle form submission - ensure hidden input is synced
     const form = document.querySelector('form');
-
-    // Set up division change listener
-    if (divisionSelect) {
-        divisionSelect.addEventListener('change', function() {
-            filterStaffByDivision(this.value);
-        });
-        // Filter on page load if division is pre-selected
-        if (divisionSelect.value) {
-            filterStaffByDivision(divisionSelect.value);
-        }
-    }
-
-    // Handle form submission - skip division validation for Minister's Office staff
     if (form) {
         form.addEventListener('submit', function(e) {
-            // Ensure hidden input is synced with visible select before submission
             if (assigneeSelect && assigneeSelect.value && assigneeSelect.value !== '__counselor__') {
                 hiddenInput.value = assigneeSelect.value;
-            }
-            
-            const selectedOption = assigneeSelect.options[assigneeSelect.selectedIndex];
-            const isMinisterOffice = selectedOption && selectedOption.getAttribute('data-minister-office') === 'true';
-            
-            if (isMinisterOffice && divisionSelect && !divisionSelect.value) {
-                // Allow submission without division for Minister's Office staff
-                return true;
-            }
-            
-            // Normal validation - check division if not Minister's Office
-            if (!isMinisterOffice && divisionSelect && !divisionSelect.value) {
-                e.preventDefault();
-                alert('Please select a division');
-                divisionSelect.focus();
-                return false;
             }
         });
     }
@@ -300,8 +163,6 @@ document.addEventListener('DOMContentLoaded', function() {
         if (counselorSelect) hiddenInput.value = counselorSelect.value;
     } else if (assigneeSelect) {
         hiddenInput.value = assigneeSelect.value;
-        // Check initial state for Minister's Office
-        handleAssigneeChange(assigneeSelect);
     }
 });
 </script>
