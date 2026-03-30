@@ -137,8 +137,7 @@
         <h3 class="text-xs font-semibold text-gray-700 uppercase tracking-wide mb-3">By Division</h3>
         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
             @foreach($divisionStats as $key => $stats)
-                <div class="border border-gray-200 p-3 hover:border-gray-400 hover:bg-gray-50 transition cursor-pointer"
-                     onclick="window.location.href='{{ route('activities.index', ['division_id' => $key !== 'minister' ? $key : 'minister']) }}'">
+                <div class="border border-gray-200 p-3">
                     <div class="flex items-center justify-between mb-2">
                         <span class="text-[10px] font-semibold text-gray-500 uppercase">{{ $stats['code'] ?? Str::limit($stats['name'], 15) }}</span>
                         <span class="text-lg font-bold text-gray-800">{{ $stats['total'] }}</span>
