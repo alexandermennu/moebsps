@@ -660,6 +660,15 @@ class User extends Authenticatable
         return false;
     }
 
+    /**
+     * Can this user submit new incidents/cases?
+     * Anyone with access to SIR can submit incidents.
+     */
+    public function canSubmitIncidents(): bool
+    {
+        return $this->canAccessSir();
+    }
+
     // ── Module Access Helpers ───────────────────────────────
 
     /**

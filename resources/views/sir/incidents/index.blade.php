@@ -35,7 +35,7 @@
                 Export PDF
             </a>
             <a href="{{ route($dashboardRoute) }}" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50 rounded-md">Dashboard</a>
-            @if($canManage)
+            @if($canSubmit ?? $canManage)
             <a href="{{ route($createRoute) }}" class="px-4 py-2 bg-{{ $themeColor }}-700 text-white text-sm font-medium hover:bg-{{ $themeColor }}-800 rounded-md">
                 {{ $isSrgbv ? 'Report Case' : 'Report Incident' }}
             </a>

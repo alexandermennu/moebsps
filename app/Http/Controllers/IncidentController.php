@@ -154,6 +154,7 @@ class IncidentController extends Controller
             'user' => $user,
             'module' => $module ?? 'other', // Default to 'other' for legacy routes
             'canManage' => $this->canManageIncidents($user),
+            'canSubmit' => $user->canSubmitIncidents(),
             'openCount' => $openCount,
             'criticalCount' => $criticalCount,
             'closedCount' => $closedCount,

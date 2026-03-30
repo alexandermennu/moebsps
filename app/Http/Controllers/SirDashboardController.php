@@ -78,6 +78,7 @@ class SirDashboardController extends Controller
         if (!$user->canAccessSrgbv()) abort(403);
 
         $canManage = $user->canManageIncidents();
+        $canSubmit = $user->canSubmitIncidents();
 
         $totalIncidents = Incident::srgbv()->count();
         $openIncidents = Incident::srgbv()->open()->count();
@@ -227,6 +228,7 @@ class SirDashboardController extends Controller
         return view('sir.srgbv-dashboard', [
             'user' => $user,
             'canManage' => $canManage,
+            'canSubmit' => $canSubmit,
             'totalIncidents' => $totalIncidents,
             'openIncidents' => $openIncidents,
             'closedIncidents' => $closedIncidents,
@@ -261,6 +263,7 @@ class SirDashboardController extends Controller
         if (!$user->canAccessOtherIncidents()) abort(403);
 
         $canManage = $user->canManageIncidents();
+        $canSubmit = $user->canSubmitIncidents();
 
         $totalIncidents = Incident::where('type', '!=', Incident::TYPE_SRGBV)->count();
         $openIncidents = Incident::where('type', '!=', Incident::TYPE_SRGBV)->open()->count();
@@ -377,6 +380,7 @@ class SirDashboardController extends Controller
         return view('sir.other-dashboard', [
             'user' => $user,
             'canManage' => $canManage,
+            'canSubmit' => $canSubmit,
             'totalIncidents' => $totalIncidents,
             'openIncidents' => $openIncidents,
             'closedIncidents' => $closedIncidents,
