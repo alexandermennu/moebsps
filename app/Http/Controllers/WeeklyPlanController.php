@@ -13,7 +13,8 @@ class WeeklyPlanController extends Controller
     {
         $user = $request->user();
 
-        if ($user->hasPersonalAccessOnly()) {
+        // Check module access
+        if (!$user->canAccessWeeklyPlans()) {
             abort(403, 'You do not have access to weekly plans.');
         }
 

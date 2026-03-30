@@ -130,6 +130,13 @@ class UserController extends Controller
             'phone' => 'nullable|string|max:20',
             'is_active' => 'boolean',
             'sir_access' => 'nullable|in:srgbv,other_incidents,both',
+            // Module access controls
+            'access_assignments' => 'nullable',
+            'access_weekly_updates' => 'nullable',
+            'access_weekly_plans' => 'nullable',
+            'access_activity_tracker' => 'nullable',
+            'access_messages' => 'nullable',
+            'access_my_staff' => 'nullable',
             'profile_photo' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             'counselor_school' => 'required_if:role,counselor|nullable|string|max:255',
             'counselor_county' => 'required_if:role,counselor|nullable|in:' . implode(',', User::COUNTIES),
@@ -166,6 +173,14 @@ class UserController extends Controller
         $validated['approved_at'] = now();
         $validated['approved_by'] = auth()->id();
         unset($validated['profile_photo']);
+
+        // Process module access fields (convert to boolean or null)
+        $moduleAccessFields = ['access_assignments', 'access_weekly_updates', 'access_weekly_plans', 
+                               'access_activity_tracker', 'access_messages', 'access_my_staff'];
+        foreach ($moduleAccessFields as $field) {
+            $validated[$field] = $request->filled($field) && $request->input($field) === '1' ? true : 
+                                 ($request->has($field) && $request->input($field) === '' ? false : null);
+        }
 
         // Counselor-only fields — remove entirely for non-counselor roles
         $counselorOnlyFields = [
@@ -229,6 +244,13 @@ class UserController extends Controller
             'phone' => 'nullable|string|max:20',
             'is_active' => 'boolean',
             'sir_access' => 'nullable|in:srgbv,other_incidents,both',
+            // Module access controls
+            'access_assignments' => 'nullable',
+            'access_weekly_updates' => 'nullable',
+            'access_weekly_plans' => 'nullable',
+            'access_activity_tracker' => 'nullable',
+            'access_messages' => 'nullable',
+            'access_my_staff' => 'nullable',
             'profile_photo' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             'remove_photo' => 'nullable|boolean',
             'counselor_school' => 'required_if:role,counselor|nullable|string|max:255',
@@ -268,6 +290,14 @@ class UserController extends Controller
 
         $validated['is_active'] = $request->boolean('is_active');
         unset($validated['profile_photo'], $validated['remove_photo']);
+
+        // Process module access fields (convert to boolean or null)
+        $moduleAccessFields = ['access_assignments', 'access_weekly_updates', 'access_weekly_plans', 
+                               'access_activity_tracker', 'access_messages', 'access_my_staff'];
+        foreach ($moduleAccessFields as $field) {
+            $validated[$field] = $request->filled($field) && $request->input($field) === '1' ? true : 
+                                 ($request->has($field) && $request->input($field) === '' ? false : null);
+        }
 
         // Counselor-only fields — remove entirely for non-counselor roles
         $counselorOnlyFields = [

@@ -14,6 +14,11 @@ class MessageController extends Controller
      */
     public function index(Request $request)
     {
+        // Check module access
+        if (!auth()->user()->canAccessMessages()) {
+            abort(403, 'You do not have access to messages.');
+        }
+
         $folder = $request->get('folder', 'inbox');
         $userId = Auth::id();
 

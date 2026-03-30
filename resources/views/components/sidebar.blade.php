@@ -25,6 +25,7 @@
             </li>
 
             {{-- Assignments --}}
+            @if($user->canAccessAssignments())
             <li>
                 <a href="{{ route('activities.index') }}"
                    class="flex items-center gap-3 px-3 py-2 rounded-md text-sm {{ request()->routeIs('activities.*') ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white' }}">
@@ -32,9 +33,10 @@
                     {{ $user->hasPersonalAccessOnly() ? 'My Assignments' : 'Assignments' }}
                 </a>
             </li>
+            @endif
 
-            {{-- Weekly Updates (only for users with division access or higher) --}}
-            @if(!$user->hasPersonalAccessOnly())
+            {{-- Weekly Updates --}}
+            @if($user->canAccessWeeklyUpdates())
             <li>
                 <a href="{{ route('weekly-updates.index') }}"
                    class="flex items-center gap-3 px-3 py-2 rounded-md text-sm {{ request()->routeIs('weekly-updates.index') || request()->routeIs('weekly-updates.show') || request()->routeIs('weekly-updates.create') || request()->routeIs('weekly-updates.edit') ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white' }}">
@@ -42,8 +44,10 @@
                     Weekly Updates
                 </a>
             </li>
+            @endif
 
             {{-- Weekly Plans --}}
+            @if($user->canAccessWeeklyPlans())
             <li>
                 <a href="{{ route('weekly-plans.index') }}"
                    class="flex items-center gap-3 px-3 py-2 rounded-md text-sm {{ request()->routeIs('weekly-plans.*') ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white' }}">
@@ -51,8 +55,10 @@
                     Weekly Plans
                 </a>
             </li>
+            @endif
 
             {{-- Tracked Activities --}}
+            @if($user->canAccessActivityTracker())
             <li>
                 @php $flaggedCount = \App\Models\TrackedActivity::flagged()->count(); @endphp
                 <a href="{{ route('tracked-activities.index') }}"
@@ -67,7 +73,7 @@
             @endif
 
             {{-- Director Staff Management --}}
-            @if($user->canCreateStaff())
+            @if($user->canAccessMyStaff())
             <li>
                 <a href="{{ route('staff.index') }}"
                    class="flex items-center gap-3 px-3 py-2 rounded-md text-sm {{ request()->routeIs('staff.*') ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white' }}">
@@ -78,7 +84,7 @@
             @endif
 
             {{-- SIR (School Incidents Reporter) --}}
-            @if(auth()->user()->canAccessSir())
+            @if($user->canAccessSir())
             <li class="pt-4">
                 <p class="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">SIR</p>
             </li>
@@ -96,6 +102,7 @@
             @endif
 
             {{-- Messages --}}
+            @if($user->canAccessMessages())
             <li>
                 @php $unreadMsgCount = \App\Models\Message::where('receiver_id', auth()->id())->where('is_read', false)->where('receiver_deleted', false)->whereNull('parent_id')->count(); @endphp
                 <a href="{{ route('messages.index') }}"
@@ -105,6 +112,7 @@
                     <span data-sidebar-badge="messages" class="ml-auto bg-blue-500 text-white text-xs rounded-full px-2 py-0.5 {{ $unreadMsgCount > 0 ? '' : 'hidden' }}">{{ $unreadMsgCount }}</span>
                 </a>
             </li>
+            @endif
 
             {{-- Notifications --}}
             <li>

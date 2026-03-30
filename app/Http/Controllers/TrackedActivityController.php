@@ -13,7 +13,8 @@ class TrackedActivityController extends Controller
     {
         $user = $request->user();
 
-        if ($user->hasPersonalAccessOnly()) {
+        // Check module access
+        if (!$user->canAccessActivityTracker()) {
             abort(403, 'You do not have access to tracked activities.');
         }
 

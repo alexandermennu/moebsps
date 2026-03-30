@@ -19,8 +19,9 @@ class StaffController extends Controller
     {
         $user = $request->user();
 
-        if (!$user->canCreateStaff()) {
-            abort(403);
+        // Check module access
+        if (!$user->canAccessMyStaff()) {
+            abort(403, 'You do not have access to staff management.');
         }
 
         // Check if CGPC division (can have counselors)

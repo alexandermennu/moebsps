@@ -16,8 +16,8 @@ class WeeklyUpdateController extends Controller
     {
         $user = $request->user();
 
-        // Personal access only - cannot view weekly updates
-        if ($user->hasPersonalAccessOnly()) {
+        // Check module access
+        if (!$user->canAccessWeeklyUpdates()) {
             abort(403, 'You do not have access to weekly updates.');
         }
 

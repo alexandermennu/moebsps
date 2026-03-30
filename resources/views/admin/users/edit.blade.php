@@ -75,6 +75,86 @@
                 <p class="text-xs text-gray-400 mt-1">Admins, Minister & Counselors automatically have access. Use this to grant access to other staff.</p>
             </div>
 
+            {{-- Module Access Control --}}
+            <div class="mb-4 p-4 bg-gray-50 border border-gray-200 rounded-md">
+                <h3 class="text-sm font-semibold text-gray-800 mb-3">System Module Access</h3>
+                <p class="text-xs text-gray-500 mb-4">Control which sections of the system this user can access.</p>
+                
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {{-- Assignments --}}
+                    <div class="flex items-start gap-2">
+                        <input type="hidden" name="access_assignments" value="">
+                        <input type="checkbox" name="access_assignments" id="access_assignments" value="1"
+                               {{ old('access_assignments', $user->access_assignments ?? true) ? 'checked' : '' }}
+                               class="h-4 w-4 mt-0.5 text-slate-600 border-gray-300 rounded focus:ring-slate-500">
+                        <div>
+                            <label for="access_assignments" class="text-sm font-medium text-gray-700">Assignments</label>
+                            <p class="text-[11px] text-gray-400">View and manage assignments</p>
+                        </div>
+                    </div>
+
+                    {{-- Weekly Updates --}}
+                    <div class="flex items-start gap-2">
+                        <input type="hidden" name="access_weekly_updates" value="">
+                        <input type="checkbox" name="access_weekly_updates" id="access_weekly_updates" value="1"
+                               {{ old('access_weekly_updates', $user->access_weekly_updates ?? true) ? 'checked' : '' }}
+                               class="h-4 w-4 mt-0.5 text-slate-600 border-gray-300 rounded focus:ring-slate-500">
+                        <div>
+                            <label for="access_weekly_updates" class="text-sm font-medium text-gray-700">Weekly Updates</label>
+                            <p class="text-[11px] text-gray-400">Submit and view updates</p>
+                        </div>
+                    </div>
+
+                    {{-- Weekly Plans --}}
+                    <div class="flex items-start gap-2">
+                        <input type="hidden" name="access_weekly_plans" value="">
+                        <input type="checkbox" name="access_weekly_plans" id="access_weekly_plans" value="1"
+                               {{ old('access_weekly_plans', $user->access_weekly_plans ?? true) ? 'checked' : '' }}
+                               class="h-4 w-4 mt-0.5 text-slate-600 border-gray-300 rounded focus:ring-slate-500">
+                        <div>
+                            <label for="access_weekly_plans" class="text-sm font-medium text-gray-700">Weekly Plans</label>
+                            <p class="text-[11px] text-gray-400">Submit and view plans</p>
+                        </div>
+                    </div>
+
+                    {{-- Activity Tracker --}}
+                    <div class="flex items-start gap-2">
+                        <input type="hidden" name="access_activity_tracker" value="">
+                        <input type="checkbox" name="access_activity_tracker" id="access_activity_tracker" value="1"
+                               {{ old('access_activity_tracker', $user->access_activity_tracker ?? true) ? 'checked' : '' }}
+                               class="h-4 w-4 mt-0.5 text-slate-600 border-gray-300 rounded focus:ring-slate-500">
+                        <div>
+                            <label for="access_activity_tracker" class="text-sm font-medium text-gray-700">Activity Tracker</label>
+                            <p class="text-[11px] text-gray-400">Track submitted activities</p>
+                        </div>
+                    </div>
+
+                    {{-- Messages --}}
+                    <div class="flex items-start gap-2">
+                        <input type="hidden" name="access_messages" value="">
+                        <input type="checkbox" name="access_messages" id="access_messages" value="1"
+                               {{ old('access_messages', $user->access_messages ?? true) ? 'checked' : '' }}
+                               class="h-4 w-4 mt-0.5 text-slate-600 border-gray-300 rounded focus:ring-slate-500">
+                        <div>
+                            <label for="access_messages" class="text-sm font-medium text-gray-700">Messages</label>
+                            <p class="text-[11px] text-gray-400">Send and receive messages</p>
+                        </div>
+                    </div>
+
+                    {{-- My Staff --}}
+                    <div class="flex items-start gap-2">
+                        <input type="hidden" name="access_my_staff" value="">
+                        <input type="checkbox" name="access_my_staff" id="access_my_staff" value="1"
+                               {{ old('access_my_staff', $user->access_my_staff) ? 'checked' : '' }}
+                               class="h-4 w-4 mt-0.5 text-slate-600 border-gray-300 rounded focus:ring-slate-500">
+                        <div>
+                            <label for="access_my_staff" class="text-sm font-medium text-gray-700">My Staff</label>
+                            <p class="text-[11px] text-gray-400">Manage division staff</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="grid grid-cols-2 gap-4 mb-4">
                 <div>
                     <label for="position" class="block text-sm font-medium text-gray-700 mb-1">Position</label>

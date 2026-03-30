@@ -11,7 +11,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Storage;
 
-#[Fillable(['name', 'email', 'password', 'role', 'sir_access', 'division_id', 'position', 'phone', 'profile_photo', 'is_active', 'approval_status', 'created_by_user_id', 'approved_at', 'approved_by', 'rejection_reason', 'address', 'city', 'date_of_birth', 'gender', 'nationality', 'emergency_contact_name', 'emergency_contact_phone', 'emergency_contact_relationship', 'counselor_school', 'counselor_county', 'counselor_status', 'counselor_qualification', 'counselor_specialization', 'counselor_years_experience', 'counselor_training', 'counselor_school_phone', 'counselor_appointed_at', 'counselor_assignment_date', 'counselor_school_district', 'counselor_school_level', 'counselor_school_type', 'counselor_school_population', 'counselor_num_boys', 'counselor_num_girls', 'counselor_school_address', 'counselor_school_principal', 'counselor_profile_status', 'counselor_profile_reviewed_at', 'counselor_profile_reviewed_by', 'counselor_profile_review_notes'])]
+#[Fillable(['name', 'email', 'password', 'role', 'sir_access', 'access_assignments', 'access_weekly_updates', 'access_weekly_plans', 'access_activity_tracker', 'access_messages', 'access_my_staff', 'division_id', 'position', 'phone', 'profile_photo', 'is_active', 'approval_status', 'created_by_user_id', 'approved_at', 'approved_by', 'rejection_reason', 'address', 'city', 'date_of_birth', 'gender', 'nationality', 'emergency_contact_name', 'emergency_contact_phone', 'emergency_contact_relationship', 'counselor_school', 'counselor_county', 'counselor_status', 'counselor_qualification', 'counselor_specialization', 'counselor_years_experience', 'counselor_training', 'counselor_school_phone', 'counselor_appointed_at', 'counselor_assignment_date', 'counselor_school_district', 'counselor_school_level', 'counselor_school_type', 'counselor_school_population', 'counselor_num_boys', 'counselor_num_girls', 'counselor_school_address', 'counselor_school_principal', 'counselor_profile_status', 'counselor_profile_reviewed_at', 'counselor_profile_reviewed_by', 'counselor_profile_review_notes'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -22,7 +22,10 @@ class User extends Authenticatable
      * Fallback $fillable in case the #[Fillable] attribute is not processed.
      */
     protected $fillable = [
-        'name', 'email', 'password', 'role', 'sir_access', 'division_id', 'position', 'phone',
+        'name', 'email', 'password', 'role', 'sir_access',
+        'access_assignments', 'access_weekly_updates', 'access_weekly_plans',
+        'access_activity_tracker', 'access_messages', 'access_my_staff',
+        'division_id', 'position', 'phone',
         'profile_photo', 'is_active', 'approval_status', 'created_by_user_id',
         'approved_at', 'approved_by', 'rejection_reason',
         'address', 'city', 'date_of_birth', 'gender', 'nationality',
@@ -77,8 +80,31 @@ class User extends Authenticatable
             'counselor_appointed_at' => 'date',
             'counselor_assignment_date' => 'date',
             'counselor_profile_reviewed_at' => 'datetime',
+            'access_assignments' => 'boolean',
+            'access_weekly_updates' => 'boolean',
+            'access_weekly_plans' => 'boolean',
+            'access_activity_tracker' => 'boolean',
+            'access_messages' => 'boolean',
+            'access_my_staff' => 'boolean',
         ];
     }
+
+    // ── Module Access Constants ─────────────────────────────
+    const MODULE_ASSIGNMENTS = 'access_assignments';
+    const MODULE_WEEKLY_UPDATES = 'access_weekly_updates';
+    const MODULE_WEEKLY_PLANS = 'access_weekly_plans';
+    const MODULE_ACTIVITY_TRACKER = 'access_activity_tracker';
+    const MODULE_MESSAGES = 'access_messages';
+    const MODULE_MY_STAFF = 'access_my_staff';
+
+    const MODULES = [
+        self::MODULE_ASSIGNMENTS => 'Assignments',
+        self::MODULE_WEEKLY_UPDATES => 'Weekly Updates',
+        self::MODULE_WEEKLY_PLANS => 'Weekly Plans',
+        self::MODULE_ACTIVITY_TRACKER => 'Activity Tracker',
+        self::MODULE_MESSAGES => 'Messages',
+        self::MODULE_MY_STAFF => 'My Staff',
+    ];
 
     // ── Approval Constants ──────────────────────────────────
     const APPROVAL_APPROVED = 'approved';
@@ -632,5 +658,112 @@ class User extends Authenticatable
         if ($this->isDirector() && $this->division &&
             in_array($this->division->code, ['CGPC', 'CEDP'])) return true;
         return false;
+    }
+
+    // ── Module Access Helpers ───────────────────────────────
+
+    /**
+     * Can this user access the Assignments module?
+     * By default: All users have access (it's the core feature).
+     * If access_assignments is explicitly set to false, deny access.
+     */
+    public function canAccessAssignments(): bool
+    {
+        // If explicitly disabled, deny
+        if ($this->access_assignments === false) return false;
+
+        // If explicitly enabled or null (default), allow
+        return true;
+    }
+
+    /**
+     * Can this user access the Weekly Updates module?
+     * Default: Users with division access or higher.
+     * Personal-access-only roles (record_clerk, secretary) don't have default access.
+     */
+    public function canAccessWeeklyUpdates(): bool
+    {
+        // If explicitly set, use that value
+        if ($this->access_weekly_updates !== null) {
+            return $this->access_weekly_updates;
+        }
+
+        // Default: division access or higher (excludes personal-access-only roles)
+        return !$this->hasPersonalAccessOnly();
+    }
+
+    /**
+     * Can this user access the Weekly Plans module?
+     * Default: Users with division access or higher.
+     */
+    public function canAccessWeeklyPlans(): bool
+    {
+        // If explicitly set, use that value
+        if ($this->access_weekly_plans !== null) {
+            return $this->access_weekly_plans;
+        }
+
+        // Default: division access or higher
+        return !$this->hasPersonalAccessOnly();
+    }
+
+    /**
+     * Can this user access the Activity Tracker module?
+     * Default: Users with division access or higher.
+     */
+    public function canAccessActivityTracker(): bool
+    {
+        // If explicitly set, use that value
+        if ($this->access_activity_tracker !== null) {
+            return $this->access_activity_tracker;
+        }
+
+        // Default: division access or higher
+        return !$this->hasPersonalAccessOnly();
+    }
+
+    /**
+     * Can this user access Messages?
+     * Default: All users can access messages.
+     */
+    public function canAccessMessages(): bool
+    {
+        // If explicitly disabled, deny
+        if ($this->access_messages === false) return false;
+
+        // Default: everyone can message
+        return true;
+    }
+
+    /**
+     * Can this user access the "My Staff" module?
+     * Default: Only Directors.
+     * Can be granted to other roles explicitly.
+     */
+    public function canAccessMyStaff(): bool
+    {
+        // If explicitly set, use that value
+        if ($this->access_my_staff !== null) {
+            return $this->access_my_staff;
+        }
+
+        // Default: only directors
+        return $this->isDirector();
+    }
+
+    /**
+     * Get an array of all module access statuses for display.
+     */
+    public function getModuleAccessSummary(): array
+    {
+        return [
+            'assignments' => $this->canAccessAssignments(),
+            'weekly_updates' => $this->canAccessWeeklyUpdates(),
+            'weekly_plans' => $this->canAccessWeeklyPlans(),
+            'activity_tracker' => $this->canAccessActivityTracker(),
+            'sir' => $this->canAccessSir(),
+            'messages' => $this->canAccessMessages(),
+            'my_staff' => $this->canAccessMyStaff(),
+        ];
     }
 }

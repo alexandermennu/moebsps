@@ -14,6 +14,12 @@ class ActivityController extends Controller
     public function index(Request $request)
     {
         $user = $request->user();
+
+        // Check module access
+        if (!$user->canAccessAssignments()) {
+            abort(403, 'You do not have access to assignments.');
+        }
+
         $query = Activity::with(['division', 'assignee', 'creator']);
 
         // Personal-only users see only their assigned tasks
