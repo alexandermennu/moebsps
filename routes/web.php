@@ -94,6 +94,7 @@ Route::middleware(['auth', 'active'])->group(function () {
     Route::post('activities/{activity}/files', [ActivityController::class, 'uploadFiles'])->name('activities.files');
     Route::delete('activities/{activity}/files/{file}', [ActivityController::class, 'deleteFile'])->name('activities.files.delete');
     Route::get('activities/{activity}/files/{file}/download', [ActivityController::class, 'downloadFile'])->name('activities.files.download');
+    Route::get('activities/{activity}/files/{file}/view', [ActivityController::class, 'viewFile'])->name('activities.files.view');
 
     // Tracked Activities (from weekly submissions)
     Route::get('tracked-activities', [TrackedActivityController::class, 'index'])->name('tracked-activities.index');

@@ -501,6 +501,41 @@ class ActivityController extends Controller
     }
 
     /**
+     * View a file inline (for images and PDFs).
+     */
+    public function viewFile(Activity $activity, ActivityFile $file)
+    {
+        $user = auth()->user();
+
+        // Verify file belongs to activity
+        if ($file->activity_id !== $activity->id) {
+            abort(404);
+        }
+
+        // Check access - same as show
+        $isAssignee = $activity->assigned_to === $user->id;
+
+        if (!$isAssignee) {
+            if ($user->hasPersonalAccessOnly()) {
+                abort(403);
+            }
+            if ($user->isDivisionScoped() && $activity->division_id !== $user->division_id) {
+                abort(403);
+            }
+        }
+
+        if (!Storage::disk('local')->exists($file->path)) {
+            abort(404, 'File not found.');
+        }
+
+        // Return file for inline viewing
+        return response()->file(Storage::disk('local')->path($file->path), [
+            'Content-Type' => $file->mime_type,
+            'Content-Disposition' => 'inline; filename="' . $file->original_filename . '"',
+        ]);
+    }
+
+    /**
      * Download a file.
      */
     public function downloadFile(Activity $activity, ActivityFile $file)

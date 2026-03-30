@@ -131,13 +131,14 @@
                             class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-gray-500">
                         <option value="">Unassigned</option>
                         @foreach($users as $u)
-                            <option value="{{ $u->id }}" {{ old('assigned_to', $assigneeIsCounselor ? '' : $activity->assigned_to) == $u->id ? 'selected' : '' }}>{{ $u->name }} ({{ $u->role_label }})</option>
+                            <option value="{{ $u->id }}" data-division="{{ $u->division_id }}" {{ old('assigned_to', $assigneeIsCounselor ? '' : $activity->assigned_to) == $u->id ? 'selected' : '' }}>{{ $u->name }} ({{ $u->role_label }})</option>
                         @endforeach
                         @if($canAssignCounselor && $counselors->count() > 0)
-                            <option value="__counselor__" {{ $assigneeIsCounselor ? 'selected' : '' }}>A Counselor ({{ $counselors->count() }} available)</option>
+                            <option value="__counselor__" data-division="__counselor__" {{ $assigneeIsCounselor ? 'selected' : '' }}>A Counselor ({{ $counselors->count() }} available)</option>
                         @endif
                     </select>
                     <input type="hidden" name="assigned_to" id="assigned_to_hidden" value="{{ old('assigned_to', $activity->assigned_to) }}">
+                    <p id="division_filter_hint" class="text-xs text-gray-400 mt-1 hidden">Showing staff from the selected division</p>
                 </div>
 
                 @if($canAssignCounselor && $counselors->count() > 0)
@@ -248,7 +249,7 @@ function handleCounselorChange(select) {
 function handleDivisionChange(divisionId) {
     const assigneeSelect = document.getElementById('assignee_select');
     const hiddenInput = document.getElementById('assigned_to_hidden');
-    const hint = document.getElementById('division_hint');
+    const hint = document.getElementById('division_filter_hint');
     const options = assigneeSelect.querySelectorAll('option');
 
     options.forEach(option => {

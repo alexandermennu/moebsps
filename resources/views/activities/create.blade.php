@@ -58,13 +58,14 @@
                         class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-gray-500">
                     <option value="">Unassigned</option>
                     @foreach($users as $u)
-                        <option value="{{ $u->id }}" {{ old('assigned_to') == $u->id ? 'selected' : '' }}>{{ $u->name }} ({{ $u->role_label }})</option>
+                        <option value="{{ $u->id }}" data-division="{{ $u->division_id }}" {{ old('assigned_to') == $u->id ? 'selected' : '' }}>{{ $u->name }} ({{ $u->role_label }})</option>
                     @endforeach
                     @if($canAssignCounselor && $counselors->count() > 0)
-                        <option value="__counselor__" {{ old('assigned_to') && $counselors->pluck('id')->contains(old('assigned_to')) ? 'selected' : '' }}>A Counselor ({{ $counselors->count() }} available)</option>
+                        <option value="__counselor__" data-division="__counselor__" {{ old('assigned_to') && $counselors->pluck('id')->contains(old('assigned_to')) ? 'selected' : '' }}>A Counselor ({{ $counselors->count() }} available)</option>
                     @endif
                 </select>
                 <input type="hidden" name="assigned_to" id="assigned_to_hidden" value="{{ old('assigned_to') }}">
+                <p id="division_filter_hint" class="text-xs text-gray-400 mt-1 hidden">Showing staff from the selected division</p>
             </div>
 
             @if($canAssignCounselor && $counselors->count() > 0)
@@ -142,9 +143,59 @@ function handleCounselorChange(select) {
     document.getElementById('assigned_to_hidden').value = select.value;
 }
 
+function filterAssigneesByDivision(divisionId) {
+    const assigneeSelect = document.getElementById('assignee_select');
+    const hiddenInput = document.getElementById('assigned_to_hidden');
+    const hint = document.getElementById('division_filter_hint');
+    
+    if (!assigneeSelect) return;
+    
+    const options = assigneeSelect.querySelectorAll('option');
+    let hasVisibleOptions = false;
+    
+    options.forEach(option => {
+        // Always show "Unassigned" and "A Counselor" options
+        if (option.value === '' || option.value === '__counselor__') {
+            option.style.display = '';
+            return;
+        }
+        
+        const optionDivision = option.getAttribute('data-division');
+        
+        if (!divisionId || optionDivision == divisionId) {
+            option.style.display = '';
+            hasVisibleOptions = true;
+        } else {
+            option.style.display = 'none';
+            // If currently selected option is now hidden, reset selection
+            if (option.selected) {
+                assigneeSelect.value = '';
+                hiddenInput.value = '';
+            }
+        }
+    });
+    
+    // Show/hide hint
+    if (hint) {
+        hint.classList.toggle('hidden', !divisionId);
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     const assigneeSelect = document.getElementById('assignee_select');
     const hiddenInput = document.getElementById('assigned_to_hidden');
+    const divisionSelect = document.getElementById('division_id');
+
+    // Set up division change listener for filtering assignees
+    if (divisionSelect) {
+        divisionSelect.addEventListener('change', function() {
+            filterAssigneesByDivision(this.value);
+        });
+        // Apply filter on page load if division is pre-selected
+        if (divisionSelect.value) {
+            filterAssigneesByDivision(divisionSelect.value);
+        }
+    }
 
     // Handle form submission - ensure hidden input is synced
     const form = document.querySelector('form');
