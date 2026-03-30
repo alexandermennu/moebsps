@@ -29,6 +29,7 @@ class WeeklyPlan extends Model
 
     /**
      * Get a friendly week label like "March Week 2, 2026"
+     * When a week spans two months, use the month where Friday falls
      */
     public function getWeekLabelAttribute(): string
     {
@@ -36,10 +37,11 @@ class WeeklyPlan extends Model
             return 'Unknown Week';
         }
 
-        $date = $this->week_start;
-        $month = $date->format('F');
-        $year = $date->format('Y');
-        $weekOfMonth = $this->getWeekOfMonth($date);
+        // Use Friday (end of work week) to determine the month
+        $friday = $this->week_end ?? $this->week_start->copy()->addDays(4);
+        $month = $friday->format('F');
+        $year = $friday->format('Y');
+        $weekOfMonth = self::getWeekOfMonthForDate($friday);
         
         return "{$month} Week {$weekOfMonth}, {$year}";
     }
@@ -53,21 +55,40 @@ class WeeklyPlan extends Model
             return 'Unknown';
         }
 
-        $date = $this->week_start;
-        $month = $date->format('M');
-        $weekOfMonth = $this->getWeekOfMonth($date);
+        $friday = $this->week_end ?? $this->week_start->copy()->addDays(4);
+        $month = $friday->format('M');
+        $weekOfMonth = self::getWeekOfMonthForDate($friday);
         
         return "{$month} Week {$weekOfMonth}";
     }
 
     /**
-     * Calculate which week of the month a date falls in
+     * Calculate which week of the month a date falls in (1-4)
+     * Based on which Monday of the month the week starts on
      */
-    private function getWeekOfMonth(Carbon $date): int
+    public static function getWeekOfMonthForDate(Carbon $date): int
     {
-        $dayOfMonth = $date->day;
-        $weekNumber = (int) ceil($dayOfMonth / 7);
-        return max(1, min($weekNumber, 5));
+        // Find the Monday of this week
+        $monday = $date->copy()->startOfWeek(Carbon::MONDAY);
+        
+        // If Monday is in a different month than the date, this is Week 1 of the new month
+        if ($monday->month !== $date->month) {
+            return 1;
+        }
+        
+        // Count which Monday of the month this is
+        $firstDayOfMonth = $monday->copy()->startOfMonth();
+        $firstMonday = $firstDayOfMonth->copy();
+        
+        // Find the first Monday of the month
+        if ($firstMonday->dayOfWeek !== Carbon::MONDAY) {
+            $firstMonday = $firstMonday->next(Carbon::MONDAY);
+        }
+        
+        // Calculate the week number (1-based)
+        $weekNumber = (int) floor($monday->diffInWeeks($firstMonday)) + 1;
+        
+        return max(1, min($weekNumber, 4)); // Cap at 4 weeks
     }
 
     /**
@@ -95,9 +116,10 @@ class WeeklyPlan extends Model
             $monday = $currentMonday->copy()->addWeeks($i);
             $friday = $monday->copy()->addDays(4);
             
-            $month = $monday->format('F');
-            $year = $monday->format('Y');
-            $weekOfMonth = (int) ceil($monday->day / 7);
+            // Use Friday to determine the month (when week spans two months)
+            $month = $friday->format('F');
+            $year = $friday->format('Y');
+            $weekOfMonth = self::getWeekOfMonthForDate($friday);
             
             // Check if this is the current week (contains today)
             $isCurrentWeek = $today->between($monday, $friday->copy()->endOfDay());
@@ -105,7 +127,7 @@ class WeeklyPlan extends Model
             $weeks[] = [
                 'number' => $weekOfMonth,
                 'label' => "{$month} Week {$weekOfMonth}, {$year}",
-                'label_short' => "{$monday->format('M')} Week {$weekOfMonth}",
+                'label_short' => "{$friday->format('M')} Week {$weekOfMonth}",
                 'start' => $monday,
                 'end' => $friday,
                 'start_formatted' => $monday->format('Y-m-d'),
