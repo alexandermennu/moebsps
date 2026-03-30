@@ -132,7 +132,7 @@
     {{ $activities->links() }}
 
     {{-- Division Summary Cards --}}
-    @if(!$user->hasPersonalAccessOnly())
+    @if($user->hasFullAccess())
     <div class="bg-white border border-gray-200 p-4">
         <h3 class="text-xs font-semibold text-gray-700 uppercase tracking-wide mb-3">By Division</h3>
         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
