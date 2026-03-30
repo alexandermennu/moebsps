@@ -269,6 +269,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // Handle form submission - skip division validation for Minister's Office staff
     if (form) {
         form.addEventListener('submit', function(e) {
+            // Ensure hidden input is synced with visible select before submission
+            if (assigneeSelect && assigneeSelect.value && assigneeSelect.value !== '__counselor__') {
+                hiddenInput.value = assigneeSelect.value;
+            }
+            
             const selectedOption = assigneeSelect.options[assigneeSelect.selectedIndex];
             const isMinisterOffice = selectedOption && selectedOption.getAttribute('data-minister-office') === 'true';
             

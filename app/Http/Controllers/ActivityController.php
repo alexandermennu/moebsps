@@ -24,32 +24,13 @@ class ActivityController extends Controller
 
         $query = Activity::with(['division', 'assignee', 'creator']);
 
-        // Personal-only users see only their assigned tasks
-        if ($user->hasPersonalAccessOnly()) {
-            $query->where('assigned_to', $user->id);
-        } elseif ($user->isDirector()) {
-            // Directors see their division's assignments (excluding Office of the Minister)
-            // PLUS any tasks assigned directly to them
-            $query->where(function ($q) use ($user) {
-                $q->where(function ($inner) use ($user) {
-                    $inner->where('division_id', $user->division_id)
-                          ->whereHas('creator', function ($c) {
-                              $c->whereNotIn('role', [
-                                  User::ROLE_MINISTER,
-                                  User::ROLE_ADMIN_ASSISTANT,
-                                  User::ROLE_TECH_ASSISTANT,
-                              ]);
-                          });
-                })->orWhere('assigned_to', $user->id);
-            });
-        } elseif ($user->isDivisionScoped()) {
-            // Division-scoped users see their division's assignments
-            // PLUS any tasks assigned directly to them
-            $query->where(function ($q) use ($user) {
-                $q->where('division_id', $user->division_id)
-                  ->orWhere('assigned_to', $user->id);
-            });
-        }
+        // All users (including Minister) see only:
+        // 1. Assignments they created
+        // 2. Assignments assigned to them
+        $query->where(function ($q) use ($user) {
+            $q->where('created_by', $user->id)
+              ->orWhere('assigned_to', $user->id);
+        });
 
         if ($request->filled('status')) {
             $query->where('status', $request->status);
