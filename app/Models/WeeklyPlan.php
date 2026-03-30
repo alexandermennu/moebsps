@@ -78,25 +78,29 @@ class WeeklyPlan extends Model
         $weeks = [];
         $today = now();
         
-        // Start from next Monday (or this Monday if today is weekend)
-        $nextMonday = $today->copy();
-        if ($nextMonday->dayOfWeek === Carbon::SATURDAY) {
-            $nextMonday->addDays(2); // Saturday -> Monday
-        } elseif ($nextMonday->dayOfWeek === Carbon::SUNDAY) {
-            $nextMonday->addDay(); // Sunday -> Monday
+        // Start from the current week's Monday if today is a weekday,
+        // or next Monday if today is weekend
+        $currentMonday = $today->copy();
+        if ($currentMonday->dayOfWeek === Carbon::SATURDAY) {
+            $currentMonday->addDays(2); // Saturday -> next Monday
+        } elseif ($currentMonday->dayOfWeek === Carbon::SUNDAY) {
+            $currentMonday->addDay(); // Sunday -> next Monday
         } else {
-            // Weekday - go to next week's Monday
-            $nextMonday = $nextMonday->next(Carbon::MONDAY);
+            // It's a weekday - get THIS week's Monday
+            $currentMonday = $currentMonday->startOfWeek(Carbon::MONDAY);
         }
         
-        // Generate 6 weeks of options
+        // Generate 6 weeks of options starting from current/next Monday
         for ($i = 0; $i < 6; $i++) {
-            $monday = $nextMonday->copy()->addWeeks($i);
+            $monday = $currentMonday->copy()->addWeeks($i);
             $friday = $monday->copy()->addDays(4);
             
             $month = $monday->format('F');
             $year = $monday->format('Y');
             $weekOfMonth = (int) ceil($monday->day / 7);
+            
+            // Check if this is the current week (contains today)
+            $isCurrentWeek = $today->between($monday, $friday->copy()->endOfDay());
             
             $weeks[] = [
                 'number' => $weekOfMonth,
@@ -106,7 +110,8 @@ class WeeklyPlan extends Model
                 'end' => $friday,
                 'start_formatted' => $monday->format('Y-m-d'),
                 'end_formatted' => $friday->format('Y-m-d'),
-                'is_next_week' => $i === 0,
+                'is_next_week' => $i === 0, // First option is always the default
+                'is_current_week' => $isCurrentWeek,
             ];
         }
         

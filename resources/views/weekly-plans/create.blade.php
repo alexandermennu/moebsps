@@ -31,7 +31,7 @@
                             <option value="{{ $week['start_formatted'] }}|{{ $week['end_formatted'] }}"
                                 {{ ($selectedStart == $week['start_formatted']) || (!$selectedStart && $week['is_next_week']) ? 'selected' : '' }}>
                                 {{ $week['label'] }} ({{ $week['start']->format('M d') }} - {{ $week['end']->format('M d') }})
-                                @if($week['is_next_week']) — Next Week @endif
+                                @if($week['is_current_week'] ?? false) — This Week @elseif($week['is_next_week'] && !($week['is_current_week'] ?? false)) — Next Week @endif
                             </option>
                         @endforeach
                     </select>
