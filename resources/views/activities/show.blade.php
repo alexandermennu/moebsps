@@ -168,19 +168,24 @@
                         
                         {{-- File Preview Area --}}
                         <div id="file_preview_area" class="hidden mb-3">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Selected Files</label>
+                            <div class="flex items-center justify-between mb-2">
+                                <label class="text-sm font-medium text-gray-700">Selected Files <span id="file_count_badge" class="ml-1 px-2 py-0.5 bg-blue-100 text-blue-700 text-xs font-semibold rounded-full">0</span></label>
+                                <button type="button" onclick="clearAllFiles()" class="text-xs text-red-600 hover:text-red-800 font-medium">Clear All</button>
+                            </div>
                             <div id="file_preview_list" class="grid grid-cols-2 md:grid-cols-4 gap-3"></div>
+                            <p class="text-xs text-gray-500 mt-2">Click <strong>+</strong> or drag more files to add. Click × on a file to remove it.</p>
                         </div>
 
                         {{-- Upload Progress --}}
-                        <div id="upload_progress_area" class="hidden mb-3">
-                            <div class="flex items-center justify-between mb-1">
-                                <span class="text-sm font-medium text-gray-700">Uploading...</span>
-                                <span id="upload_progress_text" class="text-sm text-gray-500">0%</span>
+                        <div id="upload_progress_area" class="hidden mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-sm font-semibold text-blue-800">Uploading files...</span>
+                                <span id="upload_progress_text" class="text-sm font-bold text-blue-600">0%</span>
                             </div>
-                            <div class="w-full bg-gray-200 rounded-full h-2">
-                                <div id="upload_progress_bar" class="bg-blue-600 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                            <div class="w-full bg-blue-200 rounded-full h-3 overflow-hidden">
+                                <div id="upload_progress_bar" class="bg-blue-600 h-3 rounded-full transition-all duration-200" style="width: 0%"></div>
                             </div>
+                            <p id="upload_status_text" class="text-xs text-blue-600 mt-2">Preparing upload...</p>
                         </div>
 
                         <div class="mb-3">
@@ -407,18 +412,50 @@ function handleStatusChange(select) {
 // File Upload Preview & Progress
 let selectedFiles = [];
 
-function previewFiles(input) {
+function previewFiles(input, append = true) {
+    const newFiles = Array.from(input.files);
+    
+    if (append && newFiles.length > 0) {
+        // Add new files to existing selection (avoid duplicates by name)
+        newFiles.forEach(file => {
+            if (!selectedFiles.some(f => f.name === file.name && f.size === file.size)) {
+                selectedFiles.push(file);
+            }
+        });
+    } else if (!append) {
+        selectedFiles = newFiles;
+    }
+    
+    // Update the file input with all accumulated files
+    updateFileInput();
+    renderPreviews();
+}
+
+function removeFile(index) {
+    selectedFiles.splice(index, 1);
+    updateFileInput();
+    renderPreviews();
+}
+
+function updateFileInput() {
+    const fileInput = document.getElementById('file_input');
+    const dt = new DataTransfer();
+    selectedFiles.forEach(file => dt.items.add(file));
+    fileInput.files = dt.files;
+}
+
+function renderPreviews() {
     const previewArea = document.getElementById('file_preview_area');
     const previewList = document.getElementById('file_preview_list');
-    previewList.innerHTML = '';
-    selectedFiles = Array.from(input.files);
     
     if (selectedFiles.length === 0) {
         previewArea.classList.add('hidden');
+        previewList.innerHTML = '';
         return;
     }
     
     previewArea.classList.remove('hidden');
+    previewList.innerHTML = '';
     
     selectedFiles.forEach((file, index) => {
         const card = document.createElement('div');
@@ -428,13 +465,11 @@ function previewFiles(input) {
         previewContent.className = 'h-24 flex items-center justify-center bg-gray-50';
         
         if (file.type.startsWith('image/')) {
-            // Image preview
             const img = document.createElement('img');
             img.className = 'w-full h-24 object-cover';
             const reader = new FileReader();
             reader.onload = (e) => { img.src = e.target.result; };
             reader.readAsDataURL(file);
-            previewContent.innerHTML = '';
             previewContent.appendChild(img);
         } else if (file.type === 'application/pdf') {
             previewContent.innerHTML = '<svg class="w-10 h-10 text-red-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"/></svg>';
@@ -446,14 +481,12 @@ function previewFiles(input) {
             previewContent.innerHTML = '<svg class="w-10 h-10 text-gray-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"/></svg>';
         }
         
-        // Remove button
         const removeBtn = document.createElement('button');
         removeBtn.type = 'button';
-        removeBtn.className = 'absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity';
+        removeBtn.className = 'absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600';
         removeBtn.innerHTML = '×';
-        removeBtn.onclick = () => removeFile(index, input);
+        removeBtn.onclick = () => removeFile(index);
         
-        // File info
         const info = document.createElement('div');
         info.className = 'p-2';
         info.innerHTML = `
@@ -466,17 +499,15 @@ function previewFiles(input) {
         card.appendChild(info);
         previewList.appendChild(card);
     });
+    
+    // Update file count badge
+    document.getElementById('file_count_badge').textContent = selectedFiles.length;
 }
 
-function removeFile(index, input) {
-    selectedFiles.splice(index, 1);
-    
-    // Update the file input with remaining files
-    const dt = new DataTransfer();
-    selectedFiles.forEach(file => dt.items.add(file));
-    input.files = dt.files;
-    
-    previewFiles(input);
+function clearAllFiles() {
+    selectedFiles = [];
+    updateFileInput();
+    renderPreviews();
 }
 
 function cancelUpload() {
@@ -530,9 +561,17 @@ document.addEventListener('DOMContentLoaded', function() {
     
     dropZone.addEventListener('drop', (e) => {
         const dt = e.dataTransfer;
-        const files = dt.files;
-        fileInput.files = files;
-        previewFiles(fileInput);
+        const droppedFiles = Array.from(dt.files);
+        
+        // Accumulate dropped files with existing selection
+        droppedFiles.forEach(file => {
+            if (!selectedFiles.some(f => f.name === file.name && f.size === file.size)) {
+                selectedFiles.push(file);
+            }
+        });
+        
+        updateFileInput();
+        renderPreviews();
     }, false);
     
     // AJAX Upload with Progress
@@ -541,22 +580,46 @@ document.addEventListener('DOMContentLoaded', function() {
         form.addEventListener('submit', function(e) {
             e.preventDefault();
             
-            const formData = new FormData(form);
+            if (selectedFiles.length === 0) {
+                alert('Please select at least one file to upload.');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('_token', document.querySelector('input[name="_token"]').value);
+            formData.append('description', document.getElementById('file_description').value || '');
+            
+            // Add all accumulated files
+            selectedFiles.forEach(file => {
+                formData.append('files[]', file);
+            });
+            
             const xhr = new XMLHttpRequest();
             const progressArea = document.getElementById('upload_progress_area');
             const progressBar = document.getElementById('upload_progress_bar');
             const progressText = document.getElementById('upload_progress_text');
             const uploadBtn = document.getElementById('upload_btn');
+            const previewArea = document.getElementById('file_preview_area');
+            const statusText = document.getElementById('upload_status_text');
+            const fileCount = selectedFiles.length;
+            const totalSize = selectedFiles.reduce((sum, f) => sum + f.size, 0);
             
+            // Show progress immediately
             progressArea.classList.remove('hidden');
+            previewArea.classList.add('hidden');
+            progressBar.style.width = '0%';
+            progressText.textContent = '0%';
+            statusText.textContent = `Uploading ${fileCount} file${fileCount > 1 ? 's' : ''} (${formatFileSize(totalSize)})...`;
             uploadBtn.disabled = true;
-            uploadBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            uploadBtn.innerHTML = '<svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Uploading...';
+            uploadBtn.classList.add('opacity-75');
             
             xhr.upload.addEventListener('progress', function(e) {
                 if (e.lengthComputable) {
                     const percentComplete = Math.round((e.loaded / e.total) * 100);
                     progressBar.style.width = percentComplete + '%';
                     progressText.textContent = percentComplete + '%';
+                    statusText.textContent = `Uploading: ${formatFileSize(e.loaded)} of ${formatFileSize(e.total)}`;
                 }
             });
             
@@ -564,23 +627,32 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (xhr.status === 200 || xhr.status === 302) {
                     progressBar.style.width = '100%';
                     progressText.textContent = '100%';
+                    statusText.textContent = 'Upload complete! Refreshing...';
+                    progressBar.classList.remove('bg-blue-600');
+                    progressBar.classList.add('bg-green-500');
                     setTimeout(() => {
                         window.location.reload();
-                    }, 500);
+                    }, 800);
                 } else {
                     alert('Upload failed. Please try again.');
-                    progressArea.classList.add('hidden');
-                    uploadBtn.disabled = false;
-                    uploadBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    resetUploadUI();
                 }
             });
             
             xhr.addEventListener('error', function() {
-                alert('Upload failed. Please try again.');
-                progressArea.classList.add('hidden');
-                uploadBtn.disabled = false;
-                uploadBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                alert('Upload failed. Please check your connection and try again.');
+                resetUploadUI();
             });
+            
+            function resetUploadUI() {
+                progressArea.classList.add('hidden');
+                previewArea.classList.remove('hidden');
+                uploadBtn.disabled = false;
+                uploadBtn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg> Upload';
+                uploadBtn.classList.remove('opacity-75');
+                progressBar.classList.remove('bg-green-500');
+                progressBar.classList.add('bg-blue-600');
+            }
             
             xhr.open('POST', form.action, true);
             xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
