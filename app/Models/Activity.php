@@ -51,6 +51,11 @@ class Activity extends Model
         return $this->hasMany(ActivityComment::class);
     }
 
+    public function files(): HasMany
+    {
+        return $this->hasMany(ActivityFile::class);
+    }
+
     public function isOverdue(): bool
     {
         return $this->status !== 'completed' && $this->due_date->isPast();

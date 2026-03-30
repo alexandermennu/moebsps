@@ -80,7 +80,7 @@
             <div class="grid grid-cols-2 gap-4 mb-4">
                 <div>
                     <label for="status" class="block text-sm font-medium text-gray-700 mb-1">Status *</label>
-                    <select name="status" id="status" required
+                    <select name="status" id="status" required onchange="handleEditStatusChange(this)"
                             class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-gray-500">
                         <option value="not_started" {{ old('status', $activity->status) === 'not_started' ? 'selected' : '' }}>Not Started</option>
                         <option value="in_progress" {{ old('status', $activity->status) === 'in_progress' ? 'selected' : '' }}>In Progress</option>
@@ -113,12 +113,19 @@
                 </div>
             </div>
 
+            @php $isNotStarted = old('status', $activity->status) === 'not_started'; @endphp
             <div class="mb-4">
-                <label for="progress_percentage" class="block text-sm font-medium text-gray-700 mb-1">Progress ({{ old('progress_percentage', $activity->progress_percentage) }}%)</label>
+                <label for="progress_percentage" class="block text-sm font-medium text-gray-700 mb-1">
+                    Progress (<span id="edit_progress_value">{{ old('progress_percentage', $activity->progress_percentage) }}</span>%)
+                </label>
                 <input type="range" name="progress_percentage" id="progress_percentage" min="0" max="100" step="5"
                        value="{{ old('progress_percentage', $activity->progress_percentage) }}"
-                       class="w-full h-2 bg-gray-200 appearance-none cursor-pointer"
-                       oninput="this.previousElementSibling.textContent = 'Progress (' + this.value + '%)'">
+                       {{ $isNotStarted ? 'disabled' : '' }}
+                       class="w-full h-2 bg-gray-200 appearance-none cursor-pointer {{ $isNotStarted ? 'opacity-50 cursor-not-allowed' : '' }}"
+                       oninput="document.getElementById('edit_progress_value').textContent = this.value">
+                <p id="edit_progress_hint" class="text-xs text-amber-600 mt-1 {{ $isNotStarted ? '' : 'hidden' }}">
+                    Change status to "In Progress" to update progress.
+                </p>
             </div>
 
             <div class="mb-6">
@@ -208,5 +215,29 @@ document.addEventListener('DOMContentLoaded', function() {
         hiddenInput.value = assigneeSelect.value;
     }
 });
+
+function handleEditStatusChange(select) {
+    const progressSlider = document.getElementById('progress_percentage');
+    const progressHint = document.getElementById('edit_progress_hint');
+    const isNotStarted = select.value === 'not_started';
+    
+    if (isNotStarted) {
+        progressSlider.disabled = true;
+        progressSlider.value = 0;
+        document.getElementById('edit_progress_value').textContent = '0';
+        progressSlider.classList.add('opacity-50', 'cursor-not-allowed');
+        if (progressHint) progressHint.classList.remove('hidden');
+    } else {
+        progressSlider.disabled = false;
+        progressSlider.classList.remove('opacity-50', 'cursor-not-allowed');
+        if (progressHint) progressHint.classList.add('hidden');
+        
+        // If completed, set to 100
+        if (select.value === 'completed') {
+            progressSlider.value = 100;
+            document.getElementById('edit_progress_value').textContent = '100';
+        }
+    }
+}
 </script>
 @endsection

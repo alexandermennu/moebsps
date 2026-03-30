@@ -4,10 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\Activity;
 use App\Models\ActivityComment;
+use App\Models\ActivityFile;
 use App\Models\BureauNotification;
 use App\Models\Division;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class ActivityController extends Controller
 {
@@ -270,7 +272,7 @@ class ActivityController extends Controller
             }
         }
 
-        $activity->load(['division', 'assignee', 'creator', 'comments.user']);
+        $activity->load(['division', 'assignee', 'creator', 'comments.user', 'files.uploader']);
 
         return view('activities.show', compact('activity', 'user'));
     }
@@ -360,10 +362,20 @@ class ActivityController extends Controller
             }
         }
 
+        // Progress can only be > 0 if status is not 'not_started'
+        if ($validated['status'] === 'not_started' && $validated['progress_percentage'] > 0) {
+            return back()->withErrors(['progress_percentage' => 'Progress cannot be set while status is "Not Started". Change status first.'])->withInput();
+        }
+
         if ($validated['status'] === 'completed') {
             $validated['completed_date'] = now();
             $validated['progress_percentage'] = 100;
             $validated['is_overdue'] = false;
+        }
+
+        // If starting work, set start_date if not already set
+        if ($validated['status'] === 'in_progress' && !$activity->start_date) {
+            $validated['start_date'] = now();
         }
 
         if ($user->isDirector()) {
@@ -392,12 +404,168 @@ class ActivityController extends Controller
             ->with('success', 'Comment added successfully.');
     }
 
+    /**
+     * Update progress and status (for assignees).
+     * Assignees can only update status and progress (not other fields).
+     * Progress can only be updated if status is not 'not_started'.
+     */
+    public function updateProgress(Request $request, Activity $activity)
+    {
+        $user = $request->user();
+
+        // Only the assignee or managers can update progress
+        $isAssignee = $activity->assigned_to === $user->id;
+        $isManager = $user->canManageDivision();
+
+        if (!$isAssignee && !$isManager) {
+            abort(403, 'You do not have permission to update this assignment.');
+        }
+
+        $validated = $request->validate([
+            'status' => 'required|in:not_started,in_progress,completed,overdue',
+            'progress_percentage' => 'required|integer|min:0|max:100',
+        ]);
+
+        // Progress can only be > 0 if status is not 'not_started'
+        if ($validated['status'] === 'not_started' && $validated['progress_percentage'] > 0) {
+            return back()->withErrors(['progress_percentage' => 'Progress cannot be set while status is "Not Started". Change status first.']);
+        }
+
+        // Auto-set progress to 100 when completed
+        if ($validated['status'] === 'completed') {
+            $validated['progress_percentage'] = 100;
+            $validated['completed_date'] = now();
+            $validated['is_overdue'] = false;
+        }
+
+        // If starting work, set start_date if not already set
+        if ($validated['status'] === 'in_progress' && !$activity->start_date) {
+            $validated['start_date'] = now();
+        }
+
+        $activity->update($validated);
+
+        return redirect()->route('activities.show', $activity)
+            ->with('success', 'Progress updated successfully.');
+    }
+
+    /**
+     * Upload files to an activity.
+     */
+    public function uploadFiles(Request $request, Activity $activity)
+    {
+        $user = $request->user();
+
+        // Assignee or managers can upload files
+        $isAssignee = $activity->assigned_to === $user->id;
+        $isManager = $user->canManageDivision();
+
+        if (!$isAssignee && !$isManager) {
+            abort(403, 'You do not have permission to upload files to this assignment.');
+        }
+
+        $request->validate([
+            'files' => 'required|array|min:1',
+            'files.*' => 'file|max:10240|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,jpg,jpeg,png,gif,txt,csv,zip',
+            'description' => 'nullable|string|max:500',
+        ]);
+
+        $uploadedFiles = [];
+
+        foreach ($request->file('files') as $file) {
+            $filename = uniqid() . '_' . time() . '.' . $file->getClientOriginalExtension();
+            $path = $file->storeAs('activity-files/' . $activity->id, $filename, 'local');
+
+            $activityFile = ActivityFile::create([
+                'activity_id' => $activity->id,
+                'uploaded_by' => $user->id,
+                'filename' => $filename,
+                'original_filename' => $file->getClientOriginalName(),
+                'mime_type' => $file->getMimeType(),
+                'file_size' => $file->getSize(),
+                'path' => $path,
+                'description' => $request->description,
+            ]);
+
+            $uploadedFiles[] = $activityFile;
+        }
+
+        return redirect()->route('activities.show', $activity)
+            ->with('success', count($uploadedFiles) . ' file(s) uploaded successfully.');
+    }
+
+    /**
+     * Download a file.
+     */
+    public function downloadFile(Activity $activity, ActivityFile $file)
+    {
+        $user = auth()->user();
+
+        // Verify file belongs to activity
+        if ($file->activity_id !== $activity->id) {
+            abort(404);
+        }
+
+        // Check access - same as show
+        $isAssignee = $activity->assigned_to === $user->id;
+
+        if (!$isAssignee) {
+            if ($user->hasPersonalAccessOnly()) {
+                abort(403);
+            }
+            if ($user->isDivisionScoped() && $activity->division_id !== $user->division_id) {
+                abort(403);
+            }
+        }
+
+        if (!Storage::disk('local')->exists($file->path)) {
+            abort(404, 'File not found.');
+        }
+
+        return Storage::disk('local')->download($file->path, $file->original_filename);
+    }
+
+    /**
+     * Delete a file.
+     */
+    public function deleteFile(Activity $activity, ActivityFile $file)
+    {
+        $user = auth()->user();
+
+        // Verify file belongs to activity
+        if ($file->activity_id !== $activity->id) {
+            abort(404);
+        }
+
+        // Only file uploader or managers can delete
+        $isUploader = $file->uploaded_by === $user->id;
+        $isManager = $user->canManageDivision();
+
+        if (!$isUploader && !$isManager) {
+            abort(403, 'You do not have permission to delete this file.');
+        }
+
+        // Delete from storage
+        Storage::disk('local')->delete($file->path);
+
+        // Delete record
+        $file->delete();
+
+        return redirect()->route('activities.show', $activity)
+            ->with('success', 'File deleted successfully.');
+    }
+
     public function destroy(Activity $activity)
     {
         $user = auth()->user();
 
         if (!$user->hasFullAccess()) {
             abort(403);
+        }
+
+        // Delete all associated files from storage
+        foreach ($activity->files as $file) {
+            Storage::disk('local')->delete($file->path);
         }
 
         $activity->delete();

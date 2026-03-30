@@ -90,6 +90,10 @@ Route::middleware(['auth', 'active'])->group(function () {
     // Activities
     Route::resource('activities', ActivityController::class);
     Route::post('activities/{activity}/comment', [ActivityController::class, 'addComment'])->name('activities.comment');
+    Route::patch('activities/{activity}/progress', [ActivityController::class, 'updateProgress'])->name('activities.progress');
+    Route::post('activities/{activity}/files', [ActivityController::class, 'uploadFiles'])->name('activities.files');
+    Route::delete('activities/{activity}/files/{file}', [ActivityController::class, 'deleteFile'])->name('activities.files.delete');
+    Route::get('activities/{activity}/files/{file}/download', [ActivityController::class, 'downloadFile'])->name('activities.files.download');
 
     // Tracked Activities (from weekly submissions)
     Route::get('tracked-activities', [TrackedActivityController::class, 'index'])->name('tracked-activities.index');
