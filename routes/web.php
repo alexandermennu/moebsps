@@ -93,6 +93,7 @@ Route::middleware(['auth', 'active'])->group(function () {
 
     // Tracked Activities (from weekly submissions)
     Route::get('tracked-activities', [TrackedActivityController::class, 'index'])->name('tracked-activities.index');
+    Route::delete('tracked-activities/{trackedActivity}', [TrackedActivityController::class, 'destroy'])->name('tracked-activities.destroy');
 
     // Notifications
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');

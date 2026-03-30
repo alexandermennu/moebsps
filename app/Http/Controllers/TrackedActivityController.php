@@ -74,4 +74,19 @@ class TrackedActivityController extends Controller
 
         return view('tracked-activities.index', compact('activities', 'stats', 'settings', 'divisions', 'user'));
     }
+
+    public function destroy(TrackedActivity $trackedActivity)
+    {
+        $user = auth()->user();
+
+        // Only users with full access can delete tracked activities
+        if (!$user->hasFullAccess()) {
+            abort(403, 'You do not have permission to delete tracked activities.');
+        }
+
+        $trackedActivity->delete();
+
+        return redirect()->route('tracked-activities.index')
+            ->with('success', 'Activity removed from tracker.');
+    }
 }
