@@ -47,4 +47,28 @@ class NotificationController extends Controller
         return redirect()->route('notifications.index')
             ->with('success', 'All notifications marked as read.');
     }
+
+    public function destroy(BureauNotification $notification)
+    {
+        if ($notification->user_id !== auth()->id()) {
+            abort(403);
+        }
+
+        $notification->delete();
+
+        return redirect()->route('notifications.index')
+            ->with('success', 'Notification deleted.');
+    }
+
+    public function destroyAllRead(Request $request)
+    {
+        $deleted = $request->user()
+            ->bureauNotifications()
+            ->where('type', '!=', 'message')
+            ->where('is_read', true)
+            ->delete();
+
+        return redirect()->route('notifications.index')
+            ->with('success', "Deleted {$deleted} read notification(s).");
+    }
 }
