@@ -85,7 +85,7 @@
                     <div class="flex items-start gap-2">
                         <input type="hidden" name="access_assignments" value="">
                         <input type="checkbox" name="access_assignments" id="access_assignments" value="1"
-                               {{ old('access_assignments', $user->access_assignments ?? true) ? 'checked' : '' }}
+                               {{ old('access_assignments', $user->access_assignments) !== false ? 'checked' : '' }}
                                class="h-4 w-4 mt-0.5 text-slate-600 border-gray-300 rounded focus:ring-slate-500">
                         <div>
                             <label for="access_assignments" class="text-sm font-medium text-gray-700">Assignments</label>
@@ -97,7 +97,7 @@
                     <div class="flex items-start gap-2">
                         <input type="hidden" name="access_weekly_updates" value="">
                         <input type="checkbox" name="access_weekly_updates" id="access_weekly_updates" value="1"
-                               {{ old('access_weekly_updates', $user->access_weekly_updates ?? true) ? 'checked' : '' }}
+                               {{ old('access_weekly_updates', $user->access_weekly_updates) !== false ? 'checked' : '' }}
                                class="h-4 w-4 mt-0.5 text-slate-600 border-gray-300 rounded focus:ring-slate-500">
                         <div>
                             <label for="access_weekly_updates" class="text-sm font-medium text-gray-700">Weekly Updates</label>
@@ -109,7 +109,7 @@
                     <div class="flex items-start gap-2">
                         <input type="hidden" name="access_weekly_plans" value="">
                         <input type="checkbox" name="access_weekly_plans" id="access_weekly_plans" value="1"
-                               {{ old('access_weekly_plans', $user->access_weekly_plans ?? true) ? 'checked' : '' }}
+                               {{ old('access_weekly_plans', $user->access_weekly_plans) !== false ? 'checked' : '' }}
                                class="h-4 w-4 mt-0.5 text-slate-600 border-gray-300 rounded focus:ring-slate-500">
                         <div>
                             <label for="access_weekly_plans" class="text-sm font-medium text-gray-700">Weekly Plans</label>
@@ -121,7 +121,7 @@
                     <div class="flex items-start gap-2">
                         <input type="hidden" name="access_activity_tracker" value="">
                         <input type="checkbox" name="access_activity_tracker" id="access_activity_tracker" value="1"
-                               {{ old('access_activity_tracker', $user->access_activity_tracker ?? true) ? 'checked' : '' }}
+                               {{ old('access_activity_tracker', $user->access_activity_tracker) !== false ? 'checked' : '' }}
                                class="h-4 w-4 mt-0.5 text-slate-600 border-gray-300 rounded focus:ring-slate-500">
                         <div>
                             <label for="access_activity_tracker" class="text-sm font-medium text-gray-700">Activity Tracker</label>
@@ -133,7 +133,7 @@
                     <div class="flex items-start gap-2">
                         <input type="hidden" name="access_messages" value="">
                         <input type="checkbox" name="access_messages" id="access_messages" value="1"
-                               {{ old('access_messages', $user->access_messages ?? true) ? 'checked' : '' }}
+                               {{ old('access_messages', $user->access_messages) !== false ? 'checked' : '' }}
                                class="h-4 w-4 mt-0.5 text-slate-600 border-gray-300 rounded focus:ring-slate-500">
                         <div>
                             <label for="access_messages" class="text-sm font-medium text-gray-700">Messages</label>

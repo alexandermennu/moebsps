@@ -174,12 +174,17 @@ class UserController extends Controller
         $validated['approved_by'] = auth()->id();
         unset($validated['profile_photo']);
 
-        // Process module access fields (convert to boolean or null)
+        // Process module access fields
+        // Hidden field sends '' when unchecked, checkbox sends '1' when checked
         $moduleAccessFields = ['access_assignments', 'access_weekly_updates', 'access_weekly_plans', 
                                'access_activity_tracker', 'access_messages', 'access_my_staff'];
         foreach ($moduleAccessFields as $field) {
-            $validated[$field] = $request->filled($field) && $request->input($field) === '1' ? true : 
-                                 ($request->has($field) && $request->input($field) === '' ? false : null);
+            if ($request->input($field) === '1') {
+                $validated[$field] = true;
+            } else {
+                // Empty string from hidden field means explicitly unchecked = false
+                $validated[$field] = false;
+            }
         }
 
         // Counselor-only fields — remove entirely for non-counselor roles
@@ -291,12 +296,17 @@ class UserController extends Controller
         $validated['is_active'] = $request->boolean('is_active');
         unset($validated['profile_photo'], $validated['remove_photo']);
 
-        // Process module access fields (convert to boolean or null)
+        // Process module access fields
+        // Hidden field sends '' when unchecked, checkbox sends '1' when checked
         $moduleAccessFields = ['access_assignments', 'access_weekly_updates', 'access_weekly_plans', 
                                'access_activity_tracker', 'access_messages', 'access_my_staff'];
         foreach ($moduleAccessFields as $field) {
-            $validated[$field] = $request->filled($field) && $request->input($field) === '1' ? true : 
-                                 ($request->has($field) && $request->input($field) === '' ? false : null);
+            if ($request->input($field) === '1') {
+                $validated[$field] = true;
+            } else {
+                // Empty string from hidden field means explicitly unchecked = false
+                $validated[$field] = false;
+            }
         }
 
         // Counselor-only fields — remove entirely for non-counselor roles
