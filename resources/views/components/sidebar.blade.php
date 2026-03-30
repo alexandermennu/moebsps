@@ -1,4 +1,7 @@
-@php $user = auth()->user(); @endphp
+@php 
+    $user = auth()->user(); 
+    $systemName = \App\Models\SystemSetting::getValue('system_name', 'Bureau Activity Tracker');
+@endphp
 
 <aside class="fixed inset-y-0 left-0 w-64 bg-slate-800 text-white flex flex-col z-20">
     {{-- Logo / Brand --}}
@@ -7,7 +10,7 @@
             <img src="/images/logo.png" alt="MOEBSPS" class="w-10 h-10 object-contain">
             <div>
                 <h2 class="text-lg font-bold tracking-wide">MOEBSPS</h2>
-                <p class="text-xs text-slate-400">Bureau Activity Tracker</p>
+                <p class="text-xs text-slate-400">{{ $systemName }}</p>
             </div>
         </div>
     </div>
@@ -27,10 +30,26 @@
             {{-- Assignments --}}
             @if($user->canAccessAssignments())
             <li>
+                @php
+                    // Count active assignments (assigned to user, not completed)
+                    $myActiveAssignments = \App\Models\Activity::where('assigned_to', $user->id)
+                        ->whereIn('status', ['not_started', 'in_progress'])
+                        ->count();
+                    // Count overdue assignments
+                    $overdueAssignments = \App\Models\Activity::where('assigned_to', $user->id)
+                        ->whereIn('status', ['not_started', 'in_progress'])
+                        ->where('due_date', '<', now()->toDateString())
+                        ->count();
+                @endphp
                 <a href="{{ route('activities.index') }}"
                    class="flex items-center gap-3 px-3 py-2 rounded-md text-sm {{ request()->routeIs('activities.*') ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white' }}">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
                     {{ $user->hasPersonalAccessOnly() ? 'My Assignments' : 'Assignments' }}
+                    @if($overdueAssignments > 0)
+                        <span class="ml-auto bg-red-500 text-white text-xs rounded-full px-2 py-0.5" title="{{ $overdueAssignments }} overdue">{{ $overdueAssignments }}</span>
+                    @elseif($myActiveAssignments > 0)
+                        <span class="ml-auto bg-blue-500 text-white text-xs rounded-full px-2 py-0.5" title="{{ $myActiveAssignments }} active">{{ $myActiveAssignments }}</span>
+                    @endif
                 </a>
             </li>
             @endif
