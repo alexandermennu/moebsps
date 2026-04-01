@@ -139,46 +139,40 @@
             });
         @endphp
         
-        <div class="space-y-4">
+        <div class="grid grid-cols-3 gap-4">
             @foreach($groupedByMonth as $monthLabel => $weeks)
-                <div>
-                    <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">{{ $monthLabel }}</h4>
-                    <div class="space-y-1">
-                        @foreach($weeks as $weekData)
-                            <div class="flex items-center justify-between bg-white border border-gray-200 px-4 py-2.5 hover:bg-gray-50">
-                                <div class="flex items-center gap-3">
-                                    <span class="font-medium text-blue-600 text-sm">{{ $weekData->week_label }}</span>
-                                    <span class="text-gray-500 text-sm">({{ $weekData->week_start->format('M d') }} – {{ $weekData->week_end->format('M d') }})</span>
-                                </div>
-                                <div class="flex items-center gap-4">
-                                    <span class="text-sm text-gray-600">{{ $weekData->submitted_count }}/{{ $weekData->total_divisions }} submitted</span>
-                                    @if($weekData->submitted_count == 0)
-                                        <span class="inline-flex items-center gap-1 text-xs text-gray-400">
-                                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>
-                                            No Data
-                                        </span>
-                                    @elseif($weekData->is_complete)
-                                        <span class="inline-flex items-center gap-1 text-xs text-green-700">
-                                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
-                                            Complete
-                                        </span>
-                                    @else
-                                        <span class="inline-flex items-center gap-1 text-xs text-orange-600">
-                                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
-                                            Incomplete
-                                        </span>
-                                    @endif
-                                    @if($weekData->submitted_count > 0)
-                                        <a href="{{ route('weekly-updates.consolidated', ['week_start' => $weekData->week_start->toDateString()]) }}" class="px-3 py-1 bg-blue-600 text-white text-xs font-medium hover:bg-blue-700">View</a>
-                                    @else
-                                        <span class="px-3 py-1 bg-gray-100 text-gray-400 text-xs font-medium">View</span>
-                                    @endif
-                                </div>
-                            </div>
-                        @endforeach
+                @php
+                    $totalSubmissions = $weeks->sum('submitted_count');
+                    $totalPossible = $weeks->sum('total_divisions');
+                    $hasData = $totalSubmissions > 0;
+                    $firstWeek = $weeks->first();
+                @endphp
+                <div class="bg-white border border-gray-200 p-4 hover:shadow-sm transition-shadow">
+                    <div class="flex items-start justify-between">
+                        <h4 class="text-lg font-semibold text-gray-900">{{ $monthLabel }}</h4>
+                        <a href="{{ route('weekly-updates.index', ['month' => $firstWeek->week_start->format('Y-m')]) }}" class="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-600 text-white text-xs font-medium hover:bg-blue-700">
+                            View Details
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                        </a>
+                    </div>
+                    <div class="mt-3 flex items-center gap-2 text-sm text-gray-500">
+                        @if($hasData)
+                            <svg class="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                            <span>{{ $totalSubmissions }} submissions</span>
+                        @else
+                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                            <span>No Data</span>
+                        @endif
                     </div>
                 </div>
             @endforeach
+        </div>
+        
+        <div class="mt-4 text-center">
+            <a href="{{ route('weekly-updates.index', ['view' => 'all']) }}" class="inline-flex items-center gap-1 text-blue-600 hover:text-blue-700 font-medium text-sm">
+                View All Reports
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            </a>
         </div>
     </div>
     @endif
