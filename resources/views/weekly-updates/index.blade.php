@@ -101,31 +101,31 @@
 
         <div x-show="expanded" x-cloak class="divide-y divide-gray-100">
             @foreach($previousWeeksGrouped as $weekData)
-                <div class="px-5 py-3 flex items-center justify-between hover:bg-gray-50" x-data="{ open: false }">
-                    <button @click="open = !open" class="flex items-center gap-2 text-left flex-1">
-                        <svg class="w-4 h-4 text-gray-400 transition-transform" :class="{ 'rotate-90': open }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                        </svg>
-                        <div>
-                            <span class="font-medium text-gray-800">{{ $weekData->week_label }}</span>
-                            <span class="text-gray-500">({{ $weekData->week_start->format('M d') }} – {{ $weekData->week_end->format('M d') }})</span>
+                <div x-data="{ open: false }">
+                    <div class="px-5 py-3 flex items-center justify-between hover:bg-gray-50">
+                        <button @click="open = !open" class="flex items-center gap-2 text-left flex-1">
+                            <svg class="w-4 h-4 text-gray-400 transition-transform" :class="{ 'rotate-90': open }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                            </svg>
+                            <div>
+                                <span class="font-medium text-gray-800">{{ $weekData->week_label }}</span>
+                                <span class="text-gray-500">({{ $weekData->week_start->format('M d') }} – {{ $weekData->week_end->format('M d') }})</span>
+                            </div>
+                        </button>
+                        <div class="flex items-center gap-4">
+                            <span class="text-sm text-gray-600">{{ $weekData->submitted_count }} updates</span>
+                            @if($weekData->approved_count === $weekData->submitted_count && $weekData->submitted_count > 0)
+                                <span class="text-xs px-1.5 py-0.5 bg-green-100 text-green-700 font-medium">All Approved</span>
+                            @elseif($weekData->approved_count > 0)
+                                <span class="text-xs px-1.5 py-0.5 bg-blue-100 text-blue-700 font-medium">{{ $weekData->approved_count }}/{{ $weekData->submitted_count }} Approved</span>
+                            @else
+                                <span class="text-xs px-1.5 py-0.5 bg-gray-100 text-gray-600 font-medium">Pending</span>
+                            @endif
                         </div>
-                    </button>
-                    <div class="flex items-center gap-4">
-                        <span class="text-sm text-gray-600">{{ $weekData->submitted_count }} updates</span>
-                        @if($weekData->approved_count === $weekData->submitted_count && $weekData->submitted_count > 0)
-                            <span class="text-xs px-1.5 py-0.5 bg-green-100 text-green-700 font-medium">All Approved</span>
-                        @elseif($weekData->approved_count > 0)
-                            <span class="text-xs px-1.5 py-0.5 bg-blue-100 text-blue-700 font-medium">{{ $weekData->approved_count }}/{{ $weekData->submitted_count }} Approved</span>
-                        @else
-                            <span class="text-xs px-1.5 py-0.5 bg-gray-100 text-gray-600 font-medium">Pending</span>
-                        @endif
                     </div>
-                </div>
 
-                {{-- Expanded week details --}}
-                <template x-if="open">
-                    <div class="bg-gray-50 border-t border-gray-100">
+                    {{-- Expanded week details --}}
+                    <div x-show="open" class="bg-gray-50 border-t border-gray-100">
                         @foreach($weekData->updates as $update)
                             <div class="px-5 py-2 pl-12 flex items-center justify-between border-b border-gray-100 last:border-0">
                                 <span class="text-sm text-gray-700">{{ $update->division->name }}</span>
@@ -142,7 +142,7 @@
                             </div>
                         @endforeach
                     </div>
-                </template>
+                </div>
             @endforeach
         </div>
     </div>
