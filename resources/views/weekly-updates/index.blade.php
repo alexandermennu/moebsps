@@ -4,15 +4,15 @@
 @section('page-title', 'Weekly Updates')
 
 @section('content')
-<div class="space-y-4">
+<div class="space-y-5">
     {{-- Header Section --}}
     <div class="flex items-center justify-between">
         <div>
-            <h2 class="text-base font-semibold text-gray-900">
+            <h2 class="text-lg font-semibold text-gray-900">
                 Reporting Week: {{ $reportingWeekLabel }} 
-                <span class="font-normal text-gray-500 text-sm">({{ $reportingWeekStart->format('M d') }} – {{ $reportingWeekEnd->format('M d') }})</span>
+                <span class="font-normal text-gray-500">({{ $reportingWeekStart->format('M d') }} – {{ $reportingWeekEnd->format('M d') }})</span>
             </h2>
-            <p class="text-xs text-gray-600 mt-0.5">
+            <p class="text-sm text-gray-600 mt-0.5">
                 {{ $submittedCount }}/{{ $allDivisions->count() }} divisions submitted
                 @if($overdueCount > 0) | <span class="text-red-600">{{ $overdueCount }} overdue</span>@endif
                 @if($pendingCount > 0) | <span class="text-orange-600">{{ $pendingCount }} pending</span>@endif
@@ -20,30 +20,30 @@
         </div>
         <div class="flex items-center gap-2">
             @if($user->hasFullAccess() || $user->isDirector())
-                <button type="button" class="px-3 py-1.5 bg-white border border-gray-300 text-gray-700 text-xs font-medium hover:bg-gray-50">
+                <button type="button" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50">
                     Send Reminder
                 </button>
-                <a href="{{ route('weekly-updates.consolidated') }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white text-xs font-medium hover:bg-blue-700">
+                <a href="{{ route('weekly-updates.consolidated') }}" class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium hover:bg-blue-700">
                     View Consolidated Report
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                 </a>
             @endif
         </div>
     </div>
 
     {{-- Status Summary Pills --}}
-    <div class="flex items-center gap-4">
-        <div class="flex items-center gap-1.5">
-            <span class="w-2.5 h-2.5 rounded-full bg-green-500"></span>
-            <span class="text-xs text-gray-700">{{ $onTimeCount }} On Time</span>
+    <div class="flex items-center gap-5">
+        <div class="flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full bg-green-500"></span>
+            <span class="text-sm text-gray-700">{{ $onTimeCount }} On Time</span>
         </div>
-        <div class="flex items-center gap-1.5">
-            <span class="w-2.5 h-2.5 rounded-full bg-orange-500"></span>
-            <span class="text-xs text-gray-700">{{ $lateCount }} Late</span>
+        <div class="flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full bg-orange-500"></span>
+            <span class="text-sm text-gray-700">{{ $lateCount }} Late</span>
         </div>
-        <div class="flex items-center gap-1.5">
-            <span class="w-2.5 h-2.5 rounded-full bg-red-500"></span>
-            <span class="text-xs text-gray-700">{{ $notSubmittedCount }} Not Submitted</span>
+        <div class="flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full bg-red-500"></span>
+            <span class="text-sm text-gray-700">{{ $notSubmittedCount }} Not Submitted</span>
         </div>
     </div>
 
@@ -52,71 +52,71 @@
         <table class="w-full text-sm">
             <thead class="bg-gray-50 border-b border-gray-200">
                 <tr>
-                    <th class="text-left px-4 py-2.5 text-[11px] text-gray-500 uppercase tracking-wide font-medium">Division</th>
-                    <th class="text-left px-4 py-2.5 text-[11px] text-gray-500 uppercase tracking-wide font-medium">Status</th>
-                    <th class="text-left px-4 py-2.5 text-[11px] text-gray-500 uppercase tracking-wide font-medium">Submission Details</th>
-                    <th class="text-left px-4 py-2.5 text-[11px] text-gray-500 uppercase tracking-wide font-medium">Content</th>
-                    <th class="text-center px-4 py-2.5 text-[11px] text-gray-500 uppercase tracking-wide font-medium">Action</th>
-                    <th class="text-right px-4 py-2.5 text-[11px] text-gray-500 uppercase tracking-wide font-medium"></th>
+                    <th class="text-left px-4 py-3 text-xs text-gray-500 uppercase tracking-wide font-medium">Division</th>
+                    <th class="text-left px-4 py-3 text-xs text-gray-500 uppercase tracking-wide font-medium">Status</th>
+                    <th class="text-left px-4 py-3 text-xs text-gray-500 uppercase tracking-wide font-medium">Submission Details</th>
+                    <th class="text-left px-4 py-3 text-xs text-gray-500 uppercase tracking-wide font-medium">Content</th>
+                    <th class="text-center px-4 py-3 text-xs text-gray-500 uppercase tracking-wide font-medium">Action</th>
+                    <th class="text-right px-4 py-3 text-xs text-gray-500 uppercase tracking-wide font-medium"></th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-100">
                 @forelse($divisionStatuses as $divStatus)
                     <tr class="hover:bg-gray-50">
-                        <td class="px-4 py-2.5">
+                        <td class="px-4 py-3">
                             <span class="font-medium text-gray-900">{{ $divStatus->division->name }}</span>
                         </td>
-                        <td class="px-4 py-2.5">
+                        <td class="px-4 py-3">
                             @if($divStatus->status_color === 'green')
-                                <span class="inline-flex items-center gap-1.5 text-green-600 font-medium text-xs">
+                                <span class="inline-flex items-center gap-1.5 text-green-600 font-medium text-sm">
                                     <span class="w-2 h-2 rounded-full bg-green-500"></span>
                                     {{ $divStatus->status_label }}
                                 </span>
                             @elseif($divStatus->status_color === 'orange')
-                                <span class="inline-flex items-center gap-1.5 text-orange-600 font-medium text-xs">
+                                <span class="inline-flex items-center gap-1.5 text-orange-600 font-medium text-sm">
                                     <span class="w-2 h-2 rounded-full bg-orange-500"></span>
                                     {{ $divStatus->status_label }}
                                 </span>
                             @elseif($divStatus->status_color === 'red')
-                                <span class="inline-flex items-center gap-1.5 text-red-600 font-medium text-xs">
+                                <span class="inline-flex items-center gap-1.5 text-red-600 font-medium text-sm">
                                     <span class="w-2 h-2 rounded-full bg-red-500"></span>
                                     {{ $divStatus->status_label }}
                                 </span>
                             @else
-                                <span class="inline-flex items-center gap-1.5 text-gray-500 font-medium text-xs">
+                                <span class="inline-flex items-center gap-1.5 text-gray-500 font-medium text-sm">
                                     <span class="w-2 h-2 rounded-full bg-gray-400"></span>
                                     {{ $divStatus->status_label }}
                                 </span>
                             @endif
-                            <p class="text-[11px] text-gray-500">{{ $divStatus->status_detail }}</p>
+                            <p class="text-xs text-gray-500">{{ $divStatus->status_detail }}</p>
                         </td>
-                        <td class="px-4 py-2.5 text-gray-600 text-xs">
+                        <td class="px-4 py-3 text-gray-600 text-sm">
                             {{ $divStatus->submission_details }}
                         </td>
-                        <td class="px-4 py-2.5 text-gray-600 text-xs">
+                        <td class="px-4 py-3 text-gray-600 text-sm">
                             @if($divStatus->has_content)
                                 {{ $divStatus->activity_count }} {{ Str::plural('activity', $divStatus->activity_count) }}
                             @else
                                 <span class="text-gray-400">No data</span>
                             @endif
                         </td>
-                        <td class="px-4 py-2.5 text-center">
+                        <td class="px-4 py-3 text-center">
                             @if($divStatus->update)
-                                <a href="{{ route('weekly-updates.show', $divStatus->update) }}" class="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-600 text-white text-[11px] font-medium hover:bg-blue-700">
+                                <a href="{{ route('weekly-updates.show', $divStatus->update) }}" class="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-600 text-white text-xs font-medium hover:bg-blue-700">
                                     View Report
-                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                                 </a>
                             @elseif($user->hasFullAccess() || $user->isDirector())
-                                <button type="button" class="inline-flex items-center gap-1 px-2.5 py-1 bg-orange-50 text-orange-700 text-[11px] font-medium hover:bg-orange-100 border border-orange-200">
+                                <button type="button" class="inline-flex items-center gap-1 px-3 py-1.5 bg-orange-50 text-orange-700 text-xs font-medium hover:bg-orange-100 border border-orange-200">
                                     Request Submission
-                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                                 </button>
                             @else
                                 <span class="text-gray-400">—</span>
                             @endif
                         </td>
-                        <td class="px-4 py-2.5 text-right">
-                            <a href="{{ $divStatus->update ? route('weekly-updates.show', $divStatus->update) : route('activities.index', ['division_id' => $divStatus->division->id]) }}" class="text-blue-600 hover:underline text-xs">View</a>
+                        <td class="px-4 py-3 text-right">
+                            <a href="{{ $divStatus->update ? route('weekly-updates.show', $divStatus->update) : route('activities.index', ['division_id' => $divStatus->division->id]) }}" class="text-blue-600 hover:underline text-sm">View</a>
                         </td>
                     </tr>
                 @empty
