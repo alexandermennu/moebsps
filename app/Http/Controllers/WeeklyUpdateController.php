@@ -21,31 +21,35 @@ class WeeklyUpdateController extends Controller
             abort(403, 'You do not have access to weekly updates.');
         }
 
-        // Calculate current week (Monday to Friday)
+        // Weekly Updates are for the PREVIOUS week's activities
+        // If today is in week of April 1, we submit updates for week of March 23-27
         $today = now();
-        $currentWeekStart = $today->copy()->startOfWeek(\Carbon\Carbon::MONDAY);
-        $currentWeekEnd = $currentWeekStart->copy()->addDays(4); // Friday
+        $thisWeekStart = $today->copy()->startOfWeek(\Carbon\Carbon::MONDAY);
+        
+        // The week we're reporting on (last week)
+        $reportingWeekStart = $thisWeekStart->copy()->subWeek();
+        $reportingWeekEnd = $reportingWeekStart->copy()->addDays(4); // Friday
 
-        // Get all divisions for current week tracking
+        // Get all divisions for tracking
         $divisionsQuery = Division::where('is_active', true);
         if ($user->isDivisionScoped()) {
             $divisionsQuery->where('id', $user->division_id);
         }
         $allDivisions = $divisionsQuery->get();
 
-        // Current week updates
-        $currentWeekQuery = WeeklyUpdate::with(['division', 'submitter', 'reviewer'])
-            ->where('week_start', $currentWeekStart->toDateString());
+        // Updates due this week (for last week's activities)
+        $dueThisWeekQuery = WeeklyUpdate::with(['division', 'submitter', 'reviewer'])
+            ->where('week_start', $reportingWeekStart->toDateString());
         
         if ($user->isDivisionScoped()) {
-            $currentWeekQuery->where('division_id', $user->division_id);
+            $dueThisWeekQuery->where('division_id', $user->division_id);
         }
         
-        $currentWeekUpdates = $currentWeekQuery->get();
+        $dueThisWeekUpdates = $dueThisWeekQuery->get();
 
-        // Build current week division status
-        $currentWeekStatus = $allDivisions->map(function ($division) use ($currentWeekUpdates) {
-            $update = $currentWeekUpdates->firstWhere('division_id', $division->id);
+        // Build division status for updates due this week
+        $dueThisWeekStatus = $allDivisions->map(function ($division) use ($dueThisWeekUpdates) {
+            $update = $dueThisWeekUpdates->firstWhere('division_id', $division->id);
             return (object) [
                 'division' => $division,
                 'update' => $update,
@@ -53,9 +57,9 @@ class WeeklyUpdateController extends Controller
             ];
         });
 
-        // Previous weeks - grouped by week
+        // Previous weeks - updates from before last week
         $previousWeeksQuery = WeeklyUpdate::with(['division', 'submitter', 'reviewer'])
-            ->where('week_start', '<', $currentWeekStart->toDateString());
+            ->where('week_start', '<', $reportingWeekStart->toDateString());
 
         if ($user->isDivisionScoped()) {
             $previousWeeksQuery->where('division_id', $user->division_id);
@@ -86,9 +90,9 @@ class WeeklyUpdateController extends Controller
 
         return view('weekly-updates.index', compact(
             'user', 
-            'currentWeekStart', 
-            'currentWeekEnd', 
-            'currentWeekStatus',
+            'reportingWeekStart', 
+            'reportingWeekEnd', 
+            'dueThisWeekStatus',
             'previousWeeksGrouped',
             'allDivisions'
         ));

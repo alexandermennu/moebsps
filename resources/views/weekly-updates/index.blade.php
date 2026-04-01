@@ -24,20 +24,21 @@
         </div>
     </div>
 
-    {{-- Current Week Status --}}
+    {{-- Updates Due This Week (for last week's activities) --}}
     <div>
         <div class="flex items-center justify-between mb-2">
             <h3 class="text-[11px] text-gray-500 uppercase tracking-wide font-medium">
-                Current Week: 
-                @if($currentWeekStart->format('F') === $currentWeekEnd->format('F'))
-                    {{ $currentWeekStart->format('M d') }} – {{ $currentWeekEnd->format('d, Y') }}
+                Updates Due This Week (for 
+                @if($reportingWeekStart->format('F') === $reportingWeekEnd->format('F'))
+                    {{ $reportingWeekStart->format('M d') }} – {{ $reportingWeekEnd->format('d, Y') }}
                 @else
-                    {{ $currentWeekStart->format('M d') }} – {{ $currentWeekEnd->format('M d, Y') }}
+                    {{ $reportingWeekStart->format('M d') }} – {{ $reportingWeekEnd->format('M d, Y') }}
                 @endif
+                )
             </h3>
             @php
-                $submittedCount = $currentWeekStatus->filter(fn($s) => $s->status !== 'not_submitted')->count();
-                $totalCount = $currentWeekStatus->count();
+                $submittedCount = $dueThisWeekStatus->filter(fn($s) => $s->status !== 'not_submitted')->count();
+                $totalCount = $dueThisWeekStatus->count();
             @endphp
             <span class="text-xs text-gray-500">{{ $submittedCount }}/{{ $totalCount }} divisions submitted</span>
         </div>
@@ -55,7 +56,7 @@
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100">
-                        @forelse($currentWeekStatus as $divStatus)
+                        @forelse($dueThisWeekStatus as $divStatus)
                             <tr class="hover:bg-gray-50">
                                 <td class="px-5 py-3">
                                     <div class="font-medium text-gray-800">{{ $divStatus->division->name }}</div>
