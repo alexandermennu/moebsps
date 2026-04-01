@@ -28,13 +28,7 @@
     <div>
         <div class="flex items-center justify-between mb-2">
             <h3 class="text-[11px] text-gray-500 uppercase tracking-wide font-medium">
-                Updates Due This Week (for 
-                @if($reportingWeekStart->format('F') === $reportingWeekEnd->format('F'))
-                    {{ $reportingWeekStart->format('M d') }} – {{ $reportingWeekEnd->format('d, Y') }}
-                @else
-                    {{ $reportingWeekStart->format('M d') }} – {{ $reportingWeekEnd->format('M d, Y') }}
-                @endif
-                )
+                Updates Due This Week
             </h3>
             @php
                 $submittedCount = $dueThisWeekStatus->filter(fn($s) => $s->status !== 'not_submitted')->count();
@@ -48,6 +42,7 @@
                 <table class="w-full text-sm">
                     <thead class="bg-gray-50 border-b border-gray-200">
                         <tr>
+                            <th class="text-left px-5 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium">Week</th>
                             <th class="text-left px-5 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium">Division</th>
                             <th class="text-left px-5 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium">Submitted By</th>
                             <th class="text-center px-5 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium">Status</th>
@@ -58,6 +53,10 @@
                     <tbody class="divide-y divide-gray-100">
                         @forelse($dueThisWeekStatus as $divStatus)
                             <tr class="hover:bg-gray-50">
+                                <td class="px-5 py-3">
+                                    <div class="font-medium text-gray-800">{{ $reportingWeekLabel }}</div>
+                                    <div class="text-xs text-gray-500">{{ $reportingWeekStart->format('M d') }} - {{ $reportingWeekEnd->format('M d') }}</div>
+                                </td>
                                 <td class="px-5 py-3">
                                     <div class="font-medium text-gray-800">{{ $divStatus->division->name }}</div>
                                     <div class="text-xs text-gray-500">{{ $divStatus->division->code }}</div>
@@ -90,7 +89,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="px-5 py-8 text-center text-gray-500">No divisions found.</td>
+                                <td colspan="6" class="px-5 py-8 text-center text-gray-500">No divisions found.</td>
                             </tr>
                         @endforelse
                     </tbody>

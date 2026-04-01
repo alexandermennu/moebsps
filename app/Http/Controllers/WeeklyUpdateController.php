@@ -88,14 +88,38 @@ class WeeklyUpdateController extends Controller
             ];
         })->take(12); // Show last 12 weeks
 
+        // Generate week label for the reporting week
+        $reportingWeekLabel = $this->getWeekLabel($reportingWeekStart);
+
         return view('weekly-updates.index', compact(
             'user', 
             'reportingWeekStart', 
-            'reportingWeekEnd', 
+            'reportingWeekEnd',
+            'reportingWeekLabel',
             'dueThisWeekStatus',
             'previousWeeksGrouped',
             'allDivisions'
         ));
+    }
+
+    /**
+     * Get a friendly week label like "March Week 2, 2026"
+     */
+    private function getWeekLabel($date): string
+    {
+        $month = $date->format('F');
+        $year = $date->format('Y');
+        
+        // Calculate which week of the month this is
+        $firstOfMonth = $date->copy()->startOfMonth();
+        $firstMonday = $firstOfMonth->copy()->startOfWeek(\Carbon\Carbon::MONDAY);
+        if ($firstMonday->month != $date->month) {
+            $firstMonday->addWeek();
+        }
+        $weekOfMonth = (int) ceil(($date->diffInDays($firstMonday) + 1) / 7) + 1;
+        if ($weekOfMonth < 1) $weekOfMonth = 1;
+        
+        return "{$month} Week {$weekOfMonth}, {$year}";
     }
 
     public function create()
