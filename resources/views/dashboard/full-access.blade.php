@@ -1,10 +1,51 @@
 @extends('layouts.app')
 
-@section('title', 'Dashboard')
-@section('page-title', 'Bureau Dashboard')
+@section('title', 'Bureau Overview')
+@section('page-title', 'Bureau Overview')
+
+@php
+    $systemAcronym = \App\Models\SystemSetting::getValue('system_acronym', 'SPS');
+    $bureauName = \App\Models\SystemSetting::getValue('system_name', 'Bureau of Student Personnel Services');
+    $academicYear = \App\Models\SystemSetting::getValue('academic_year', date('Y'));
+    $activePersonnel = \App\Models\User::where('is_active', true)->count();
+    $activeDivisions = \App\Models\Division::where('is_active', true)->count();
+@endphp
 
 @section('content')
 <div class="space-y-6">
+
+    {{-- ── BIRD EYE VIEW HEADER ────────────────────────────────── --}}
+    <div class="bg-gradient-to-r from-blue-600 to-blue-500 rounded-lg p-6 text-white">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                </div>
+                <div>
+                    <h2 class="text-xl font-bold">{{ $systemAcronym }} Bird Eye View</h2>
+                    <p class="text-blue-100 text-sm">{{ $bureauName }} - Executive Overview</p>
+                </div>
+            </div>
+            <a href="#" class="inline-flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm font-medium transition">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                Quick Search
+            </a>
+        </div>
+        <div class="grid grid-cols-3 gap-4 mt-6">
+            <div class="bg-white/10 rounded-lg p-4">
+                <p class="text-3xl font-bold">{{ $activePersonnel }}</p>
+                <p class="text-blue-100 text-sm">Active Personnel</p>
+            </div>
+            <div class="bg-white/10 rounded-lg p-4">
+                <p class="text-3xl font-bold">{{ $activeDivisions }}</p>
+                <p class="text-blue-100 text-sm">Operating Divisions</p>
+            </div>
+            <div class="bg-white/10 rounded-lg p-4">
+                <p class="text-3xl font-bold">{{ $academicYear }}</p>
+                <p class="text-blue-100 text-sm">Academic Year</p>
+            </div>
+        </div>
+    </div>
 
     {{-- ── HEADER ──────────────────────────────────────────────── --}}
     <div class="border-b border-gray-300 pb-4">
