@@ -21,58 +21,77 @@ class WeeklyUpdateController extends Controller
             abort(403, 'You do not have access to weekly updates.');
         }
 
-        $query = WeeklyUpdate::with(['division', 'submitter', 'reviewer']);
+        // Calculate current week (Monday to Friday)
+        $today = now();
+        $currentWeekStart = $today->copy()->startOfWeek(\Carbon\Carbon::MONDAY);
+        $currentWeekEnd = $currentWeekStart->copy()->addDays(4); // Friday
+
+        // Get all divisions for current week tracking
+        $divisionsQuery = Division::where('is_active', true);
+        if ($user->isDivisionScoped()) {
+            $divisionsQuery->where('id', $user->division_id);
+        }
+        $allDivisions = $divisionsQuery->get();
+
+        // Current week updates
+        $currentWeekQuery = WeeklyUpdate::with(['division', 'submitter', 'reviewer'])
+            ->where('week_start', $currentWeekStart->toDateString());
+        
+        if ($user->isDivisionScoped()) {
+            $currentWeekQuery->where('division_id', $user->division_id);
+        }
+        
+        $currentWeekUpdates = $currentWeekQuery->get();
+
+        // Build current week division status
+        $currentWeekStatus = $allDivisions->map(function ($division) use ($currentWeekUpdates) {
+            $update = $currentWeekUpdates->firstWhere('division_id', $division->id);
+            return (object) [
+                'division' => $division,
+                'update' => $update,
+                'status' => $update ? $update->status : 'not_submitted',
+            ];
+        });
+
+        // Previous weeks - grouped by week
+        $previousWeeksQuery = WeeklyUpdate::with(['division', 'submitter', 'reviewer'])
+            ->where('week_start', '<', $currentWeekStart->toDateString());
 
         if ($user->isDivisionScoped()) {
-            $query->where('division_id', $user->division_id);
+            $previousWeeksQuery->where('division_id', $user->division_id);
         }
 
         if ($request->filled('status')) {
-            $query->where('status', $request->status);
+            $previousWeeksQuery->where('status', $request->status);
         }
 
-        if ($request->filled('division_id') && !$user->isDivisionScoped()) {
-            $query->where('division_id', $request->division_id);
-        }
+        $previousUpdates = $previousWeeksQuery->orderBy('week_start', 'desc')->get();
 
-        $updates = $query->latest()->paginate(15);
+        // Group previous updates by week
+        $previousWeeksGrouped = $previousUpdates->groupBy(function ($update) {
+            return $update->week_start->toDateString();
+        })->map(function ($weekUpdates, $weekStart) use ($allDivisions) {
+            $firstUpdate = $weekUpdates->first();
+            return (object) [
+                'week_start' => $firstUpdate->week_start,
+                'week_end' => $firstUpdate->week_end,
+                'week_label' => $firstUpdate->week_label,
+                'week_label_short' => $firstUpdate->week_label_short,
+                'updates' => $weekUpdates,
+                'total_divisions' => $allDivisions->count(),
+                'submitted_count' => $weekUpdates->count(),
+                'approved_count' => $weekUpdates->where('status', 'approved')->count(),
+            ];
+        })->take(12); // Show last 12 weeks
 
-        // Division summaries for the bottom cards (full-access & directors)
-        $divisionSummaries = collect();
-        if ($user->hasFullAccess() || $user->isDirector()) {
-            $summaryQuery = Division::where('is_active', true);
-            if ($user->isDirector() && !$user->hasFullAccess()) {
-                $summaryQuery->where('id', $user->division_id);
-            }
-            $divisionSummaries = $summaryQuery
-                ->withCount([
-                    'weeklyUpdates as total_updates',
-                    'weeklyUpdates as approved_updates' => fn($q) => $q->where('status', 'approved'),
-                    'weeklyUpdates as submitted_updates' => fn($q) => $q->where('status', 'submitted'),
-                    'weeklyUpdates as rejected_updates' => fn($q) => $q->where('status', 'rejected'),
-                ])
-                ->with(['weeklyUpdates' => function ($q) {
-                    $q->with('activities')->whereIn('status', ['submitted', 'approved'])->latest()->take(1);
-                }])
-                ->get()
-                ->map(function ($division) {
-                    $latest = $division->weeklyUpdates->first();
-                    $division->latest_update = $latest;
-                    $activityStats = ['completed' => 0, 'ongoing' => 0, 'not_started' => 0];
-                    if ($latest && $latest->activities->count()) {
-                        foreach ($latest->activities as $act) {
-                            $flag = $act->status_flag ?? 'na';
-                            if (isset($activityStats[$flag])) {
-                                $activityStats[$flag]++;
-                            }
-                        }
-                    }
-                    $division->activity_stats = $activityStats;
-                    return $division;
-                });
-        }
-
-        return view('weekly-updates.index', compact('updates', 'user', 'divisionSummaries'));
+        return view('weekly-updates.index', compact(
+            'user', 
+            'currentWeekStart', 
+            'currentWeekEnd', 
+            'currentWeekStatus',
+            'previousWeeksGrouped',
+            'allDivisions'
+        ));
     }
 
     public function create()

@@ -1,15 +1,16 @@
 @php 
     $user = auth()->user(); 
     $systemName = \App\Models\SystemSetting::getValue('system_name', 'Bureau Activity Tracker');
+    $systemAcronym = \App\Models\SystemSetting::getValue('system_acronym', 'MOEBSPS');
 @endphp
 
 <aside class="fixed inset-y-0 left-0 w-64 bg-slate-800 text-white flex flex-col z-20">
     {{-- Logo / Brand --}}
     <div class="px-6 py-5 border-b border-slate-700">
         <div class="flex items-center gap-3">
-            <img src="/images/logo.png" alt="MOEBSPS" class="w-10 h-10 object-contain">
+            <img src="/images/logo.png" alt="{{ $systemAcronym }}" class="w-10 h-10 object-contain">
             <div>
-                <h2 class="text-lg font-bold tracking-wide">MOEBSPS</h2>
+                <h2 class="text-lg font-bold tracking-wide">{{ $systemAcronym }}</h2>
                 <p class="text-xs text-slate-400">{{ $systemName }}</p>
             </div>
         </div>
