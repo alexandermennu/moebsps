@@ -58,61 +58,60 @@
                         <th class="text-left px-5 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium">Status</th>
                         <th class="text-left px-5 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium">Submission Details</th>
                         <th class="text-left px-5 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium">Content</th>
-                        <th class="text-left px-5 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium">Action</th>
-                        <th class="text-right px-5 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium">Action</th>
+                        <th class="text-center px-5 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium">Action</th>
+                        <th class="text-right px-5 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium"></th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
                     @forelse($divisionStatuses as $divStatus)
                         <tr class="hover:bg-gray-50">
-                            <td class="px-5 py-4">
+                            <td class="px-5 py-3">
                                 <div class="font-medium text-gray-900">{{ $divStatus->division->name }}</div>
                             </td>
-                            <td class="px-5 py-4">
+                            <td class="px-5 py-3">
                                 <div class="flex items-center gap-2">
                                     @if($divStatus->status_color === 'green')
-                                        <span class="w-2.5 h-2.5 rounded-full bg-green-500"></span>
-                                        <span class="text-green-600 font-medium">{{ $divStatus->status_label }}</span>
+                                        <span class="flex items-center gap-1.5 text-green-600 font-medium">
+                                            <span class="w-2 h-2 rounded-full bg-green-500"></span>
+                                            {{ $divStatus->status_label }}
+                                        </span>
                                     @elseif($divStatus->status_color === 'orange')
-                                        <span class="w-2.5 h-2.5 rounded-full bg-orange-500"></span>
-                                        <span class="text-orange-600 font-medium">{{ $divStatus->status_label }}</span>
+                                        <span class="flex items-center gap-1.5 text-orange-600 font-medium">
+                                            <span class="w-2 h-2 rounded-full bg-orange-500"></span>
+                                            {{ $divStatus->status_label }}
+                                        </span>
                                     @elseif($divStatus->status_color === 'red')
-                                        <span class="w-2.5 h-2.5 rounded-full bg-red-500"></span>
-                                        <span class="text-red-600 font-medium">{{ $divStatus->status_label }}</span>
+                                        <span class="flex items-center gap-1.5 text-red-600 font-medium">
+                                            <span class="w-2 h-2 rounded-full bg-red-500"></span>
+                                            {{ $divStatus->status_label }}
+                                        </span>
                                     @else
-                                        <span class="w-2.5 h-2.5 rounded-full bg-gray-400"></span>
-                                        <span class="text-gray-600 font-medium">{{ $divStatus->status_label }}</span>
+                                        <span class="flex items-center gap-1.5 text-gray-500 font-medium">
+                                            <span class="w-2 h-2 rounded-full bg-gray-400"></span>
+                                            {{ $divStatus->status_label }}
+                                        </span>
                                     @endif
                                 </div>
-                                @if($divStatus->update)
-                                    <p class="text-xs text-gray-500 mt-0.5">Submitted {{ $divStatus->update->created_at->format('M d') }}</p>
-                                @else
-                                    <p class="text-xs text-gray-500 mt-0.5">{{ $divStatus->status_detail }}</p>
-                                @endif
+                                <p class="text-xs text-gray-500 mt-0.5">{{ $divStatus->status_detail }}</p>
                             </td>
-                            <td class="px-5 py-4 text-gray-600">
+                            <td class="px-5 py-3 text-gray-600">
                                 {{ $divStatus->submission_details }}
                             </td>
-                            <td class="px-5 py-4 text-gray-600">
+                            <td class="px-5 py-3 text-gray-600">
                                 @if($divStatus->has_content)
-                                    @if($divStatus->activity_count > 0)
-                                        {{ $divStatus->activity_count }} {{ Str::plural('activity', $divStatus->activity_count) }}@if($divStatus->plan_count > 0), @endif
-                                    @endif
-                                    @if($divStatus->plan_count > 0)
-                                        {{ $divStatus->plan_count }} {{ Str::plural('plan', $divStatus->plan_count) }}
-                                    @endif
+                                    {{ $divStatus->activity_count }} {{ Str::plural('activity', $divStatus->activity_count) }}
                                 @else
                                     <span class="text-gray-400">No data</span>
                                 @endif
                             </td>
-                            <td class="px-5 py-4">
+                            <td class="px-5 py-3 text-center">
                                 @if($divStatus->update)
-                                    <a href="{{ route('weekly-updates.show', $divStatus->update) }}" class="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-600 text-white text-xs font-medium hover:bg-blue-700 rounded">
+                                    <a href="{{ route('weekly-updates.show', $divStatus->update) }}" class="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-600 text-white text-xs font-medium hover:bg-blue-700">
                                         View Report
                                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                                     </a>
                                 @elseif($user->hasFullAccess() || $user->isDirector())
-                                    <button type="button" class="inline-flex items-center gap-1 px-3 py-1.5 bg-orange-100 text-orange-700 text-xs font-medium hover:bg-orange-200 rounded border border-orange-200">
+                                    <button type="button" class="inline-flex items-center gap-1 px-3 py-1.5 bg-orange-50 text-orange-700 text-xs font-medium hover:bg-orange-100 border border-orange-200">
                                         Request Submission
                                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                                     </button>
@@ -120,14 +119,8 @@
                                     <span class="text-gray-400">—</span>
                                 @endif
                             </td>
-                            <td class="px-5 py-4 text-right">
-                                @if($divStatus->update)
-                                    <a href="{{ route('weekly-updates.show', $divStatus->update) }}" class="text-blue-600 hover:underline text-sm">View</a>
-                                @elseif($user->canManageDivision() && $divStatus->division->id === $user->division_id)
-                                    <a href="{{ route('weekly-updates.create') }}" class="text-blue-600 hover:underline text-sm">Submit</a>
-                                @else
-                                    <a href="{{ route('activities.index', ['division_id' => $divStatus->division->id]) }}" class="text-blue-600 hover:underline text-sm">View</a>
-                                @endif
+                            <td class="px-5 py-3 text-right">
+                                <a href="{{ $divStatus->update ? route('weekly-updates.show', $divStatus->update) : route('activities.index', ['division_id' => $divStatus->division->id]) }}" class="text-blue-600 hover:underline text-sm">View</a>
                             </td>
                         </tr>
                     @empty

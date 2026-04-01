@@ -29,15 +29,15 @@ class WeeklyUpdateController extends Controller
         $reportingWeekStart = $thisWeekStart->copy()->subWeek();
         $reportingWeekEnd = $reportingWeekStart->copy()->addDays(4); // Friday
         
-        // Due date is typically Monday of current week (first working day after reporting week)
-        $dueDate = $thisWeekStart;
+        // Due date is end of Monday (first working day of current week)
+        $dueDate = $thisWeekStart->copy()->endOfDay();
 
         // Get all divisions for tracking
         $divisionsQuery = Division::where('is_active', true);
         if ($user->isDivisionScoped()) {
             $divisionsQuery->where('id', $user->division_id);
         }
-        $allDivisions = $divisionsQuery->get();
+        $allDivisions = $divisionsQuery->orderBy('name')->get();
 
         // Updates for this reporting week
         $reportingWeekUpdates = WeeklyUpdate::with(['division', 'submitter', 'reviewer', 'activities'])
@@ -51,9 +51,8 @@ class WeeklyUpdateController extends Controller
             // Determine submission status
             $statusInfo = $this->getSubmissionStatus($update, $dueDate, $today);
             
-            // Count content
+            // Count content - activities from the UpdateActivity table
             $activityCount = $update ? $update->activities->count() : 0;
-            $planCount = $update && $update->planned_activities ? count(json_decode($update->planned_activities, true) ?? []) : 0;
             
             return (object) [
                 'division' => $division,
@@ -64,8 +63,7 @@ class WeeklyUpdateController extends Controller
                 'status_detail' => $statusInfo['detail'],
                 'submission_details' => $statusInfo['submission_details'],
                 'activity_count' => $activityCount,
-                'plan_count' => $planCount,
-                'has_content' => $activityCount > 0 || $planCount > 0,
+                'has_content' => $activityCount > 0,
             ];
         });
 
@@ -75,7 +73,7 @@ class WeeklyUpdateController extends Controller
         $lateCount = $divisionStatuses->filter(fn($s) => $s->status === 'late')->count();
         $overdueCount = $divisionStatuses->filter(fn($s) => $s->status === 'overdue')->count();
         $pendingCount = $divisionStatuses->filter(fn($s) => $s->status === 'pending')->count();
-        $notSubmittedCount = $divisionStatuses->filter(fn($s) => in_array($s->status, ['not_submitted', 'overdue']))->count();
+        $notSubmittedCount = $divisionStatuses->filter(fn($s) => in_array($s->status, ['not_submitted', 'overdue', 'pending']))->count();
 
         // Previous weeks - updates from before this reporting week
         $previousWeeksQuery = WeeklyUpdate::with(['division', 'submitter'])
@@ -134,18 +132,17 @@ class WeeklyUpdateController extends Controller
     private function getSubmissionStatus($update, $dueDate, $today)
     {
         if (!$update) {
-            // Not submitted
-            $daysOverdue = $today->diffInDays($dueDate, false);
-            if ($daysOverdue < 0) {
-                $daysOverdue = abs($daysOverdue);
+            // Not submitted - check if overdue
+            if ($today->gt($dueDate)) {
+                $daysOverdue = $today->diffInDays($dueDate);
                 return [
                     'status' => 'overdue',
                     'label' => 'Not Submitted',
                     'color' => 'red',
-                    'detail' => $daysOverdue . ' days overdue',
-                    'submission_details' => $daysOverdue . ' days overdue',
+                    'detail' => $daysOverdue . ' ' . ($daysOverdue == 1 ? 'day' : 'days') . ' overdue',
+                    'submission_details' => $daysOverdue . ' ' . ($daysOverdue == 1 ? 'day' : 'days') . ' overdue',
                 ];
-            } else if ($daysOverdue == 0) {
+            } else if ($today->isSameDay($dueDate) || $today->lt($dueDate)) {
                 return [
                     'status' => 'pending',
                     'label' => 'Pending',
@@ -153,30 +150,32 @@ class WeeklyUpdateController extends Controller
                     'detail' => 'Due today',
                     'submission_details' => 'Due today',
                 ];
-            } else {
-                return [
-                    'status' => 'not_submitted',
-                    'label' => 'Not Submitted',
-                    'color' => 'gray',
-                    'detail' => 'Due in ' . $daysOverdue . ' days',
-                    'submission_details' => 'Due in ' . $daysOverdue . ' days',
-                ];
             }
         }
 
+        // Has been submitted - check if it was on time or late
         $submittedAt = $update->created_at;
-        $wasLate = $submittedAt->gt($dueDate->endOfDay());
-        $daysLate = $wasLate ? $submittedAt->diffInDays($dueDate) : 0;
-
+        $wasLate = $submittedAt->gt($dueDate);
+        
         if ($wasLate) {
+            $daysLate = $submittedAt->startOfDay()->diffInDays($dueDate->startOfDay());
             return [
                 'status' => 'late',
                 'label' => 'Late',
                 'color' => 'orange',
                 'detail' => 'Submitted ' . $submittedAt->format('M d'),
-                'submission_details' => 'Submitted ' . $submittedAt->format('M d') . ' (' . $daysLate . ' days late)',
+                'submission_details' => 'Submitted ' . $submittedAt->format('M d') . ' (' . $daysLate . ' ' . ($daysLate == 1 ? 'day' : 'days') . ' late)',
             ];
         }
+
+        return [
+            'status' => 'on_time',
+            'label' => 'On Time',
+            'color' => 'green',
+            'detail' => 'Submitted ' . $submittedAt->format('M d'),
+            'submission_details' => 'Submitted ' . $submittedAt->format('M d'),
+        ];
+    }
 
         return [
             'status' => 'on_time',
