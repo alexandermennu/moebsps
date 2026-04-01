@@ -7,7 +7,12 @@
 <div class="space-y-4">
     <div class="flex items-center justify-between border-b border-gray-300 pb-4">
         <div>
-            <h2 class="text-sm font-semibold text-gray-900 uppercase tracking-wide">Weekly Updates</h2>
+            <h2 class="text-sm font-semibold text-gray-900 uppercase tracking-wide">
+                Weekly Updates: {{ $reportingWeekLabel }} 
+                <span class="font-normal text-gray-500">
+                    ({{ $reportingWeekStart->format('M d') }} – {{ $reportingWeekEnd->format('M d') }})
+                </span>
+            </h2>
             <p class="text-sm text-gray-500">Review and manage weekly activity reports</p>
         </div>
         <div class="flex items-center gap-2">
@@ -24,145 +29,127 @@
         </div>
     </div>
 
-    {{-- Updates Due This Week (for last week's activities) --}}
-    <div>
-        <div class="flex items-center justify-between mb-2">
-            <h3 class="text-[11px] text-gray-500 uppercase tracking-wide font-medium">
-                Updates Due This Week
-            </h3>
-            @php
-                $submittedCount = $dueThisWeekStatus->filter(fn($s) => $s->status !== 'not_submitted')->count();
-                $totalCount = $dueThisWeekStatus->count();
-            @endphp
-            <span class="text-xs text-gray-500">{{ $submittedCount }}/{{ $totalCount }} divisions submitted</span>
-        </div>
-
-        <div class="bg-white border border-gray-200">
-            <div class="overflow-x-auto">
-                <table class="w-full text-sm">
-                    <thead class="bg-gray-50 border-b border-gray-200">
-                        <tr>
-                            <th class="text-left px-5 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium">Week</th>
-                            <th class="text-left px-5 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium">Division</th>
-                            <th class="text-left px-5 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium">Submitted By</th>
-                            <th class="text-center px-5 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium">Status</th>
-                            <th class="text-left px-5 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium">Submitted</th>
-                            <th class="text-right px-5 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium">Action</th>
+    {{-- Current Week Updates Table --}}
+    <div class="bg-white border border-gray-200">
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead class="bg-gray-50 border-b border-gray-200">
+                    <tr>
+                        <th class="text-left px-5 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium">Division</th>
+                        <th class="text-center px-5 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium">Status</th>
+                        <th class="text-left px-5 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium">Submitted</th>
+                        <th class="text-right px-5 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium">Action</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    @forelse($dueThisWeekStatus as $divStatus)
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-5 py-3">
+                                <div class="font-medium text-gray-800">{{ $divStatus->division->name }}</div>
+                            </td>
+                            <td class="px-5 py-3 text-center">
+                                <span class="text-[10px] px-1.5 py-0.5 font-medium
+                                    {{ $divStatus->status === 'approved' ? 'bg-green-100 text-green-700' : '' }}
+                                    {{ $divStatus->status === 'submitted' ? 'bg-blue-100 text-blue-700' : '' }}
+                                    {{ $divStatus->status === 'rejected' ? 'bg-red-100 text-red-700' : '' }}
+                                    {{ $divStatus->status === 'draft' ? 'bg-yellow-100 text-yellow-700' : '' }}
+                                    {{ $divStatus->status === 'not_submitted' ? 'bg-gray-100 text-gray-500' : '' }}">
+                                    {{ $divStatus->status === 'not_submitted' ? 'Not Submitted' : ucfirst($divStatus->status) }}
+                                </span>
+                            </td>
+                            <td class="px-5 py-3 text-gray-500">
+                                @if($divStatus->update)
+                                    {{ $divStatus->update->created_at->isToday() ? 'Today' : $divStatus->update->created_at->format('M d, Y') }}
+                                @else
+                                    —
+                                @endif
+                            </td>
+                            <td class="px-5 py-3 text-right">
+                                @if($divStatus->update && $divStatus->status === 'draft')
+                                    <a href="{{ route('weekly-updates.edit', $divStatus->update) }}" class="text-xs text-blue-700 hover:underline">Edit</a>
+                                @elseif($divStatus->update)
+                                    <a href="{{ route('weekly-updates.show', $divStatus->update) }}" class="text-xs text-blue-700 hover:underline">View</a>
+                                @elseif($user->canManageDivision() && $divStatus->division->id === $user->division_id)
+                                    <a href="{{ route('weekly-updates.create') }}" class="text-xs text-blue-700 hover:underline">Submit</a>
+                                @else
+                                    <span class="text-xs text-gray-400">—</span>
+                                @endif
+                            </td>
                         </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-100">
-                        @forelse($dueThisWeekStatus as $divStatus)
-                            <tr class="hover:bg-gray-50">
-                                <td class="px-5 py-3">
-                                    <div class="font-medium text-gray-800">{{ $reportingWeekLabel }}</div>
-                                    <div class="text-xs text-gray-500">{{ $reportingWeekStart->format('M d') }} - {{ $reportingWeekEnd->format('M d') }}</div>
-                                </td>
-                                <td class="px-5 py-3">
-                                    <div class="font-medium text-gray-800">{{ $divStatus->division->name }}</div>
-                                    <div class="text-xs text-gray-500">{{ $divStatus->division->code }}</div>
-                                </td>
-                                <td class="px-5 py-3 text-gray-600">
-                                    {{ $divStatus->update ? $divStatus->update->submitter->name : '—' }}
-                                </td>
-                                <td class="px-5 py-3 text-center">
-                                    <span class="text-[10px] px-1.5 py-0.5 font-medium
-                                        {{ $divStatus->status === 'approved' ? 'bg-green-100 text-green-700' : '' }}
-                                        {{ $divStatus->status === 'submitted' ? 'bg-blue-100 text-blue-700' : '' }}
-                                        {{ $divStatus->status === 'rejected' ? 'bg-red-100 text-red-700' : '' }}
-                                        {{ $divStatus->status === 'draft' ? 'bg-gray-100 text-gray-700' : '' }}
-                                        {{ $divStatus->status === 'not_submitted' ? 'bg-gray-100 text-gray-500' : '' }}">
-                                        {{ $divStatus->status === 'not_submitted' ? 'Not Submitted' : ucfirst($divStatus->status) }}
-                                    </span>
-                                </td>
-                                <td class="px-5 py-3 text-gray-500">
-                                    {{ $divStatus->update ? $divStatus->update->created_at->format('M d, Y') : '—' }}
-                                </td>
-                                <td class="px-5 py-3 text-right">
-                                    @if($divStatus->update)
-                                        <a href="{{ route('weekly-updates.show', $divStatus->update) }}" class="text-xs text-blue-700 hover:underline">View</a>
-                                    @elseif($user->canManageDivision() && $divStatus->division->id === $user->division_id)
-                                        <a href="{{ route('weekly-updates.create') }}" class="text-xs text-blue-700 hover:underline">Submit</a>
-                                    @else
-                                        <span class="text-xs text-gray-400">—</span>
-                                    @endif
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="6" class="px-5 py-8 text-center text-gray-500">No divisions found.</td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
+                    @empty
+                        <tr>
+                            <td colspan="4" class="px-5 py-8 text-center text-gray-500">No divisions found.</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
     </div>
 
-    {{-- Previous Weeks --}}
-    <div>
-        <div class="flex items-center justify-between mb-2">
-            <h3 class="text-[11px] text-gray-500 uppercase tracking-wide font-medium">Previous Weeks</h3>
-            <form method="GET" class="flex items-center gap-2">
-                <select name="status" class="px-3 py-1.5 border border-gray-300 text-sm">
-                    <option value="">All Statuses</option>
-                    <option value="approved" {{ request('status') === 'approved' ? 'selected' : '' }}>Approved</option>
-                    <option value="submitted" {{ request('status') === 'submitted' ? 'selected' : '' }}>Submitted</option>
-                    <option value="rejected" {{ request('status') === 'rejected' ? 'selected' : '' }}>Rejected</option>
-                </select>
-                <button type="submit" class="px-3 py-1.5 bg-gray-100 border border-gray-300 text-sm hover:bg-gray-200">Filter</button>
-            </form>
-        </div>
+    {{-- Previous Weeks - Collapsible --}}
+    @if($previousWeeksGrouped->count() > 0)
+    <div class="bg-white border border-gray-200" x-data="{ expanded: false }">
+        <button @click="expanded = !expanded" type="button" class="w-full px-5 py-3 flex items-center justify-between hover:bg-gray-50 border-b border-gray-200">
+            <span class="text-[11px] text-gray-500 uppercase tracking-wide font-medium">Previous Weeks</span>
+            <span class="text-xs text-gray-500 flex items-center gap-2">
+                <span x-text="expanded ? 'Collapse' : 'Expand'">Expand</span>
+                <svg class="w-4 h-4 transition-transform" :class="{ 'rotate-180': expanded }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                </svg>
+            </span>
+        </button>
 
-        <div class="bg-white border border-gray-200">
-            <div class="overflow-x-auto">
-                <table class="w-full text-sm">
-                    <thead class="bg-gray-50 border-b border-gray-200">
-                        <tr>
-                            <th class="text-left px-5 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium">Week</th>
-                            <th class="text-left px-5 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium">Division</th>
-                            <th class="text-left px-5 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium">Submitted By</th>
-                            <th class="text-center px-5 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium">Status</th>
-                            <th class="text-left px-5 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium">Submitted</th>
-                            <th class="text-right px-5 py-3 text-[11px] text-gray-500 uppercase tracking-wide font-medium">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-100">
-                        @php $hasUpdates = false; @endphp
-                        @foreach($previousWeeksGrouped as $weekData)
-                            @foreach($weekData->updates as $update)
-                                @php $hasUpdates = true; @endphp
-                                <tr class="hover:bg-gray-50">
-                                    <td class="px-5 py-3">
-                                        <div class="font-medium text-gray-800">{{ $weekData->week_label }}</div>
-                                        <div class="text-xs text-gray-500">{{ $weekData->week_start->format('M d') }} - {{ $weekData->week_end->format('M d') }}</div>
-                                    </td>
-                                    <td class="px-5 py-3 text-gray-600">{{ $update->division->name }}</td>
-                                    <td class="px-5 py-3 text-gray-600">{{ $update->submitter->name }}</td>
-                                    <td class="px-5 py-3 text-center">
-                                        <span class="text-[10px] px-1.5 py-0.5 font-medium
-                                            {{ $update->status === 'approved' ? 'bg-green-100 text-green-700' : '' }}
-                                            {{ $update->status === 'submitted' ? 'bg-blue-100 text-blue-700' : '' }}
-                                            {{ $update->status === 'rejected' ? 'bg-red-100 text-red-700' : '' }}
-                                            {{ $update->status === 'draft' ? 'bg-gray-100 text-gray-700' : '' }}">
-                                            {{ ucfirst($update->status) }}
-                                        </span>
-                                    </td>
-                                    <td class="px-5 py-3 text-gray-500">{{ $update->created_at->format('M d, Y') }}</td>
-                                    <td class="px-5 py-3 text-right">
-                                        <a href="{{ route('weekly-updates.show', $update) }}" class="text-xs text-blue-700 hover:underline">View</a>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        @endforeach
-                        @if(!$hasUpdates)
-                            <tr>
-                                <td colspan="6" class="px-5 py-8 text-center text-gray-500">No previous weekly updates found.</td>
-                            </tr>
+        <div x-show="expanded" x-cloak class="divide-y divide-gray-100">
+            @foreach($previousWeeksGrouped as $weekData)
+                <div class="px-5 py-3 flex items-center justify-between hover:bg-gray-50" x-data="{ open: false }">
+                    <button @click="open = !open" class="flex items-center gap-2 text-left flex-1">
+                        <svg class="w-4 h-4 text-gray-400 transition-transform" :class="{ 'rotate-90': open }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                        </svg>
+                        <div>
+                            <span class="font-medium text-gray-800">{{ $weekData->week_label }}</span>
+                            <span class="text-gray-500">({{ $weekData->week_start->format('M d') }} – {{ $weekData->week_end->format('M d') }})</span>
+                        </div>
+                    </button>
+                    <div class="flex items-center gap-4">
+                        <span class="text-sm text-gray-600">{{ $weekData->submitted_count }} updates</span>
+                        @if($weekData->approved_count === $weekData->submitted_count && $weekData->submitted_count > 0)
+                            <span class="text-xs px-1.5 py-0.5 bg-green-100 text-green-700 font-medium">All Approved</span>
+                        @elseif($weekData->approved_count > 0)
+                            <span class="text-xs px-1.5 py-0.5 bg-blue-100 text-blue-700 font-medium">{{ $weekData->approved_count }}/{{ $weekData->submitted_count }} Approved</span>
+                        @else
+                            <span class="text-xs px-1.5 py-0.5 bg-gray-100 text-gray-600 font-medium">Pending</span>
                         @endif
-                    </tbody>
-                </table>
-            </div>
+                    </div>
+                </div>
+
+                {{-- Expanded week details --}}
+                <template x-if="open">
+                    <div class="bg-gray-50 border-t border-gray-100">
+                        @foreach($weekData->updates as $update)
+                            <div class="px-5 py-2 pl-12 flex items-center justify-between border-b border-gray-100 last:border-0">
+                                <span class="text-sm text-gray-700">{{ $update->division->name }}</span>
+                                <div class="flex items-center gap-3">
+                                    <span class="text-[10px] px-1.5 py-0.5 font-medium
+                                        {{ $update->status === 'approved' ? 'bg-green-100 text-green-700' : '' }}
+                                        {{ $update->status === 'submitted' ? 'bg-blue-100 text-blue-700' : '' }}
+                                        {{ $update->status === 'rejected' ? 'bg-red-100 text-red-700' : '' }}
+                                        {{ $update->status === 'draft' ? 'bg-gray-100 text-gray-700' : '' }}">
+                                        {{ ucfirst($update->status) }}
+                                    </span>
+                                    <a href="{{ route('weekly-updates.show', $update) }}" class="text-xs text-blue-700 hover:underline">View</a>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                </template>
+            @endforeach
         </div>
     </div>
+    @endif
 </div>
+
+<style>
+    [x-cloak] { display: none !important; }
+</style>
 @endsection
