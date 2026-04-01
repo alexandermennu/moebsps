@@ -22,13 +22,15 @@ class WeeklyUpdateController extends Controller
         }
 
         // Weekly Updates are for the PREVIOUS week's activities
-        // If today is in week of April 1, we submit updates for week of March 23-27
         $today = now();
         $thisWeekStart = $today->copy()->startOfWeek(\Carbon\Carbon::MONDAY);
         
         // The week we're reporting on (last week)
         $reportingWeekStart = $thisWeekStart->copy()->subWeek();
         $reportingWeekEnd = $reportingWeekStart->copy()->addDays(4); // Friday
+        
+        // Due date is typically Monday of current week (first working day after reporting week)
+        $dueDate = $thisWeekStart;
 
         // Get all divisions for tracking
         $divisionsQuery = Division::where('is_active', true);
@@ -37,36 +39,50 @@ class WeeklyUpdateController extends Controller
         }
         $allDivisions = $divisionsQuery->get();
 
-        // Updates due this week (for last week's activities)
-        $dueThisWeekQuery = WeeklyUpdate::with(['division', 'submitter', 'reviewer'])
-            ->where('week_start', $reportingWeekStart->toDateString());
-        
-        if ($user->isDivisionScoped()) {
-            $dueThisWeekQuery->where('division_id', $user->division_id);
-        }
-        
-        $dueThisWeekUpdates = $dueThisWeekQuery->get();
+        // Updates for this reporting week
+        $reportingWeekUpdates = WeeklyUpdate::with(['division', 'submitter', 'reviewer', 'activities'])
+            ->where('week_start', $reportingWeekStart->toDateString())
+            ->get();
 
-        // Build division status for updates due this week
-        $dueThisWeekStatus = $allDivisions->map(function ($division) use ($dueThisWeekUpdates) {
-            $update = $dueThisWeekUpdates->firstWhere('division_id', $division->id);
+        // Build detailed division status
+        $divisionStatuses = $allDivisions->map(function ($division) use ($reportingWeekUpdates, $dueDate, $today) {
+            $update = $reportingWeekUpdates->firstWhere('division_id', $division->id);
+            
+            // Determine submission status
+            $statusInfo = $this->getSubmissionStatus($update, $dueDate, $today);
+            
+            // Count content
+            $activityCount = $update ? $update->activities->count() : 0;
+            $planCount = $update && $update->planned_activities ? count(json_decode($update->planned_activities, true) ?? []) : 0;
+            
             return (object) [
                 'division' => $division,
                 'update' => $update,
-                'status' => $update ? $update->status : 'not_submitted',
+                'status' => $statusInfo['status'],
+                'status_label' => $statusInfo['label'],
+                'status_color' => $statusInfo['color'],
+                'status_detail' => $statusInfo['detail'],
+                'submission_details' => $statusInfo['submission_details'],
+                'activity_count' => $activityCount,
+                'plan_count' => $planCount,
+                'has_content' => $activityCount > 0 || $planCount > 0,
             ];
         });
 
-        // Previous weeks - updates from before last week
-        $previousWeeksQuery = WeeklyUpdate::with(['division', 'submitter', 'reviewer'])
+        // Calculate summary stats
+        $submittedCount = $divisionStatuses->filter(fn($s) => $s->update !== null)->count();
+        $onTimeCount = $divisionStatuses->filter(fn($s) => $s->status === 'on_time')->count();
+        $lateCount = $divisionStatuses->filter(fn($s) => $s->status === 'late')->count();
+        $overdueCount = $divisionStatuses->filter(fn($s) => $s->status === 'overdue')->count();
+        $pendingCount = $divisionStatuses->filter(fn($s) => $s->status === 'pending')->count();
+        $notSubmittedCount = $divisionStatuses->filter(fn($s) => in_array($s->status, ['not_submitted', 'overdue']))->count();
+
+        // Previous weeks - updates from before this reporting week
+        $previousWeeksQuery = WeeklyUpdate::with(['division', 'submitter'])
             ->where('week_start', '<', $reportingWeekStart->toDateString());
 
         if ($user->isDivisionScoped()) {
             $previousWeeksQuery->where('division_id', $user->division_id);
-        }
-
-        if ($request->filled('status')) {
-            $previousWeeksQuery->where('status', $request->status);
         }
 
         $previousUpdates = $previousWeeksQuery->orderBy('week_start', 'desc')->get();
@@ -76,19 +92,22 @@ class WeeklyUpdateController extends Controller
             return $update->week_start->toDateString();
         })->map(function ($weekUpdates, $weekStart) use ($allDivisions) {
             $firstUpdate = $weekUpdates->first();
+            $submittedCount = $weekUpdates->count();
+            $totalDivisions = $allDivisions->count();
             return (object) [
                 'week_start' => $firstUpdate->week_start,
                 'week_end' => $firstUpdate->week_end,
                 'week_label' => $firstUpdate->week_label,
                 'week_label_short' => $firstUpdate->week_label_short,
                 'updates' => $weekUpdates,
-                'total_divisions' => $allDivisions->count(),
-                'submitted_count' => $weekUpdates->count(),
+                'total_divisions' => $totalDivisions,
+                'submitted_count' => $submittedCount,
                 'approved_count' => $weekUpdates->where('status', 'approved')->count(),
+                'is_complete' => $submittedCount >= $totalDivisions,
             ];
-        })->take(12); // Show last 12 weeks
+        })->take(12);
 
-        // Generate week label for the reporting week
+        // Generate week label
         $reportingWeekLabel = $this->getWeekLabel($reportingWeekStart);
 
         return view('weekly-updates.index', compact(
@@ -96,10 +115,76 @@ class WeeklyUpdateController extends Controller
             'reportingWeekStart', 
             'reportingWeekEnd',
             'reportingWeekLabel',
-            'dueThisWeekStatus',
+            'dueDate',
+            'divisionStatuses',
+            'submittedCount',
+            'onTimeCount',
+            'lateCount',
+            'overdueCount',
+            'pendingCount',
+            'notSubmittedCount',
             'previousWeeksGrouped',
             'allDivisions'
         ));
+    }
+
+    /**
+     * Determine submission status for a division
+     */
+    private function getSubmissionStatus($update, $dueDate, $today)
+    {
+        if (!$update) {
+            // Not submitted
+            $daysOverdue = $today->diffInDays($dueDate, false);
+            if ($daysOverdue < 0) {
+                $daysOverdue = abs($daysOverdue);
+                return [
+                    'status' => 'overdue',
+                    'label' => 'Not Submitted',
+                    'color' => 'red',
+                    'detail' => $daysOverdue . ' days overdue',
+                    'submission_details' => $daysOverdue . ' days overdue',
+                ];
+            } else if ($daysOverdue == 0) {
+                return [
+                    'status' => 'pending',
+                    'label' => 'Pending',
+                    'color' => 'orange',
+                    'detail' => 'Due today',
+                    'submission_details' => 'Due today',
+                ];
+            } else {
+                return [
+                    'status' => 'not_submitted',
+                    'label' => 'Not Submitted',
+                    'color' => 'gray',
+                    'detail' => 'Due in ' . $daysOverdue . ' days',
+                    'submission_details' => 'Due in ' . $daysOverdue . ' days',
+                ];
+            }
+        }
+
+        $submittedAt = $update->created_at;
+        $wasLate = $submittedAt->gt($dueDate->endOfDay());
+        $daysLate = $wasLate ? $submittedAt->diffInDays($dueDate) : 0;
+
+        if ($wasLate) {
+            return [
+                'status' => 'late',
+                'label' => 'Late',
+                'color' => 'orange',
+                'detail' => 'Submitted ' . $submittedAt->format('M d'),
+                'submission_details' => 'Submitted ' . $submittedAt->format('M d') . ' (' . $daysLate . ' days late)',
+            ];
+        }
+
+        return [
+            'status' => 'on_time',
+            'label' => 'On Time',
+            'color' => 'green',
+            'detail' => 'Submitted ' . $submittedAt->format('M d'),
+            'submission_details' => 'Submitted ' . $submittedAt->format('M d'),
+        ];
     }
 
     /**
