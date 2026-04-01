@@ -131,29 +131,51 @@
     {{-- Past Reports Section --}}
     @if($previousWeeksGrouped->count() > 0)
     <div>
-        <h3 class="text-xs font-semibold text-gray-900 uppercase tracking-wide border-b border-gray-200 pb-2 mb-3">Past Reports</h3>
+        <h3 class="text-sm font-semibold text-gray-900 uppercase tracking-wide border-b border-gray-200 pb-2 mb-4">Past Reports</h3>
         
-        <div class="space-y-1.5">
-            @foreach($previousWeeksGrouped as $weekData)
-                <div class="flex items-center justify-between bg-white border border-gray-200 px-4 py-2 hover:bg-gray-50">
-                    <div class="flex items-center gap-2">
-                        <span class="font-medium text-blue-600 text-sm">{{ $weekData->week_label }}</span>
-                        <span class="text-gray-500 text-xs">({{ $weekData->week_start->format('M d') }} – {{ $weekData->week_end->format('M d') }})</span>
-                    </div>
-                    <div class="flex items-center gap-3">
-                        <span class="text-xs text-gray-600">{{ $weekData->submitted_count }}/{{ $weekData->total_divisions }} submitted</span>
-                        @if($weekData->is_complete)
-                            <span class="inline-flex items-center gap-1 text-[11px] text-green-700">
-                                <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
-                                Complete
-                            </span>
-                        @else
-                            <span class="inline-flex items-center gap-1 text-[11px] text-orange-600">
-                                <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
-                                Incomplete
-                            </span>
-                        @endif
-                        <a href="{{ route('weekly-updates.consolidated', ['week_start' => $weekData->week_start->toDateString()]) }}" class="px-2.5 py-1 bg-blue-600 text-white text-[11px] font-medium hover:bg-blue-700">View</a>
+        @php
+            $groupedByMonth = $previousWeeksGrouped->groupBy(function($week) {
+                return $week->week_start->format('F Y');
+            });
+        @endphp
+        
+        <div class="space-y-4">
+            @foreach($groupedByMonth as $monthLabel => $weeks)
+                <div>
+                    <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">{{ $monthLabel }}</h4>
+                    <div class="space-y-1">
+                        @foreach($weeks as $weekData)
+                            <div class="flex items-center justify-between bg-white border border-gray-200 px-4 py-2.5 hover:bg-gray-50">
+                                <div class="flex items-center gap-3">
+                                    <span class="font-medium text-blue-600 text-sm">{{ $weekData->week_label }}</span>
+                                    <span class="text-gray-500 text-sm">({{ $weekData->week_start->format('M d') }} – {{ $weekData->week_end->format('M d') }})</span>
+                                </div>
+                                <div class="flex items-center gap-4">
+                                    <span class="text-sm text-gray-600">{{ $weekData->submitted_count }}/{{ $weekData->total_divisions }} submitted</span>
+                                    @if($weekData->submitted_count == 0)
+                                        <span class="inline-flex items-center gap-1 text-xs text-gray-400">
+                                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>
+                                            No Data
+                                        </span>
+                                    @elseif($weekData->is_complete)
+                                        <span class="inline-flex items-center gap-1 text-xs text-green-700">
+                                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                                            Complete
+                                        </span>
+                                    @else
+                                        <span class="inline-flex items-center gap-1 text-xs text-orange-600">
+                                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                                            Incomplete
+                                        </span>
+                                    @endif
+                                    @if($weekData->submitted_count > 0)
+                                        <a href="{{ route('weekly-updates.consolidated', ['week_start' => $weekData->week_start->toDateString()]) }}" class="px-3 py-1 bg-blue-600 text-white text-xs font-medium hover:bg-blue-700">View</a>
+                                    @else
+                                        <span class="px-3 py-1 bg-gray-100 text-gray-400 text-xs font-medium">View</span>
+                                    @endif
+                                </div>
+                            </div>
+                        @endforeach
                     </div>
                 </div>
             @endforeach

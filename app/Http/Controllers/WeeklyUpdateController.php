@@ -85,25 +85,38 @@ class WeeklyUpdateController extends Controller
 
         $previousUpdates = $previousWeeksQuery->orderBy('week_start', 'desc')->get();
 
-        // Group previous updates by week
-        $previousWeeksGrouped = $previousUpdates->groupBy(function ($update) {
-            return $update->week_start->toDateString();
-        })->map(function ($weekUpdates, $weekStart) use ($allDivisions) {
-            $firstUpdate = $weekUpdates->first();
+        // Generate all weeks from January 1st of current year to the week before reporting week
+        $yearStart = $today->copy()->startOfYear()->startOfWeek(\Carbon\Carbon::MONDAY);
+        $previousWeeksGrouped = collect();
+        
+        $weekCursor = $reportingWeekStart->copy()->subWeek(); // Start from week before reporting week
+        
+        while ($weekCursor->gte($yearStart)) {
+            $weekStartStr = $weekCursor->toDateString();
+            $weekEnd = $weekCursor->copy()->addDays(4); // Friday
+            
+            // Find updates for this week
+            $weekUpdates = $previousUpdates->filter(function ($update) use ($weekStartStr) {
+                return $update->week_start->toDateString() === $weekStartStr;
+            });
+            
             $submittedCount = $weekUpdates->count();
             $totalDivisions = $allDivisions->count();
-            return (object) [
-                'week_start' => $firstUpdate->week_start,
-                'week_end' => $firstUpdate->week_end,
-                'week_label' => $firstUpdate->week_label,
-                'week_label_short' => $firstUpdate->week_label_short,
+            
+            $previousWeeksGrouped->push((object) [
+                'week_start' => $weekCursor->copy(),
+                'week_end' => $weekEnd,
+                'week_label' => $this->getWeekLabel($weekCursor),
+                'week_label_short' => $weekCursor->format('M') . ' Week ' . ceil($weekCursor->day / 7),
                 'updates' => $weekUpdates,
                 'total_divisions' => $totalDivisions,
                 'submitted_count' => $submittedCount,
                 'approved_count' => $weekUpdates->where('status', 'approved')->count(),
                 'is_complete' => $submittedCount >= $totalDivisions,
-            ];
-        })->take(12);
+            ]);
+            
+            $weekCursor->subWeek();
+        }
 
         // Generate week label
         $reportingWeekLabel = $this->getWeekLabel($reportingWeekStart);
