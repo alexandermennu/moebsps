@@ -177,15 +177,6 @@ class WeeklyUpdateController extends Controller
         ];
     }
 
-        return [
-            'status' => 'on_time',
-            'label' => 'On Time',
-            'color' => 'green',
-            'detail' => 'Submitted ' . $submittedAt->format('M d'),
-            'submission_details' => 'Submitted ' . $submittedAt->format('M d'),
-        ];
-    }
-
     /**
      * Get a friendly week label like "March Week 2, 2026"
      */
