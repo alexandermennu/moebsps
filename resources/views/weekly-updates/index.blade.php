@@ -21,7 +21,17 @@
             </p>
         </div>
         <div class="flex items-center gap-2">
+            @if($user->canManageDivision() && !$user->hasFullAccess())
+                <a href="{{ route('weekly-updates.create', ['week_start' => $reportingWeekStart->toDateString()]) }}" class="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white text-sm font-medium hover:bg-green-700">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    New Report
+                </a>
+            @endif
             @if($user->hasFullAccess())
+                <a href="{{ route('weekly-updates.create', ['week_start' => $reportingWeekStart->toDateString()]) }}" class="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white text-sm font-medium hover:bg-green-700">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    New Report
+                </a>
                 @if($notSubmittedCount > 0)
                     <form action="{{ route('weekly-updates.send-reminder') }}" method="POST" class="inline">
                         @csrf
@@ -40,6 +50,74 @@
                 </a>
             @endif
         </div>
+    </div>
+
+    {{-- Filter/Search Section --}}
+    <div class="bg-white border border-gray-200 p-4">
+        <form method="GET" action="{{ route('weekly-updates.index') }}" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            {{-- Month Picker --}}
+            <div>
+                <label class="block text-xs text-gray-500 uppercase tracking-wide mb-1">Month</label>
+                <input type="month" name="month" value="{{ request('month', $reportingWeekStart->format('Y-m')) }}" 
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-slate-500">
+            </div>
+
+            {{-- Week Dropdown --}}
+            <div>
+                <label class="block text-xs text-gray-500 uppercase tracking-wide mb-1">Week</label>
+                <select name="week" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-slate-500">
+                    @php
+                        $selectedMonth = request('month', $reportingWeekStart->format('Y-m'));
+                        $monthDate = \Carbon\Carbon::createFromFormat('Y-m', $selectedMonth)->startOfMonth();
+                        $weeksInMonth = \App\Models\WeeklyUpdate::getWeeksInMonth($monthDate->year, $monthDate->month);
+                    @endphp
+                    <option value="">All Weeks</option>
+                    @foreach($weeksInMonth as $week)
+                        <option value="{{ $week['start_formatted'] }}" {{ request('week') == $week['start_formatted'] ? 'selected' : '' }}>
+                            {{ $week['label'] }} ({{ $week['start']->format('M d') }} - {{ $week['end']->format('M d') }})
+                        </option>
+                    @endforeach
+                </select>
+                <p class="text-xs text-gray-400 mt-1">Monday to Friday working days</p>
+            </div>
+
+            {{-- Division Filter --}}
+            @if($user->hasFullAccess())
+            <div>
+                <label class="block text-xs text-gray-500 uppercase tracking-wide mb-1">Division</label>
+                <select name="division" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-slate-500">
+                    <option value="">All Divisions</option>
+                    @foreach($allDivisionsForDropdown as $division)
+                        <option value="{{ $division->id }}" {{ request('division') == $division->id ? 'selected' : '' }}>
+                            {{ $division->name }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+            @endif
+
+            {{-- Search --}}
+            <div class="{{ $user->hasFullAccess() ? '' : 'md:col-span-2' }}">
+                <label class="block text-xs text-gray-500 uppercase tracking-wide mb-1">Search</label>
+                <div class="flex gap-2">
+                    <div class="relative flex-1">
+                        <input type="text" name="search" value="{{ request('search') }}" placeholder="Search by division or submitter..."
+                            class="w-full px-3 py-2 pl-9 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-slate-500">
+                        <svg class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
+                    </div>
+                    <button type="submit" class="px-4 py-2 bg-gray-800 text-white text-sm font-medium hover:bg-gray-700">
+                        Search
+                    </button>
+                    @if(request('search') || request('week') || request('division') || (request('month') && request('month') != $reportingWeekStart->format('Y-m')))
+                    <a href="{{ route('weekly-updates.index') }}" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50" title="Reset all filters">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    </a>
+                    @endif
+                </div>
+            </div>
+        </form>
     </div>
 
     {{-- Status Summary Pills --}}
@@ -144,10 +222,21 @@
                         </td>
                         <td class="px-4 py-3 text-center">
                             @if($divStatus->update)
-                                <a href="{{ route('weekly-updates.show', $divStatus->update) }}" class="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-600 text-white text-xs font-medium hover:bg-blue-700">
-                                    View Report
-                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                                </a>
+                                <div class="flex items-center justify-center gap-2">
+                                    <a href="{{ route('weekly-updates.show', $divStatus->update) }}" class="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-600 text-white text-xs font-medium hover:bg-blue-700">
+                                        View
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                                    </a>
+                                    @if($user->hasFullAccess() || ($user->canManageDivision() && $divStatus->update->submitted_by === $user->id && in_array($divStatus->update->status, ['draft', 'rejected'])))
+                                    <form action="{{ route('weekly-updates.destroy', $divStatus->update) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to delete this report?');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="inline-flex items-center px-2 py-1.5 bg-red-50 text-red-600 text-xs font-medium hover:bg-red-100 border border-red-200">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                        </button>
+                                    </form>
+                                    @endif
+                                </div>
                             @elseif($user->hasFullAccess())
                                 <form action="{{ route('weekly-updates.request-submission', $divStatus->division) }}" method="POST" class="inline">
                                     @csrf
@@ -317,6 +406,36 @@
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
             closeNoDataModal();
+        }
+    });
+
+    // Auto-submit form when month changes (to refresh week options)
+    document.addEventListener('DOMContentLoaded', function() {
+        const monthInput = document.querySelector('input[name="month"]');
+        const weekSelect = document.querySelector('select[name="week"]');
+        const divisionSelect = document.querySelector('select[name="division"]');
+        
+        if (monthInput) {
+            monthInput.addEventListener('change', function() {
+                // Clear the week selection when month changes
+                if (weekSelect) {
+                    weekSelect.value = '';
+                }
+                this.form.submit();
+            });
+        }
+        
+        // Auto-submit when week or division changes
+        if (weekSelect) {
+            weekSelect.addEventListener('change', function() {
+                this.form.submit();
+            });
+        }
+        
+        if (divisionSelect) {
+            divisionSelect.addEventListener('change', function() {
+                this.form.submit();
+            });
         }
     });
 </script>

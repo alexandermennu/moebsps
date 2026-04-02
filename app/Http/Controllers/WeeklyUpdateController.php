@@ -22,29 +22,72 @@ class WeeklyUpdateController extends Controller
             abort(403, 'You do not have access to weekly updates.');
         }
 
-        // Weekly Updates index shows LAST week's reports (submitted last week, reviewed over weekend)
+        // Handle filter parameters
         $today = now();
         $thisWeekStart = $today->copy()->startOfWeek(\Carbon\Carbon::MONDAY);
         
-        // The week we're reporting on (last week - these are the reports being displayed)
-        $reportingWeekStart = $thisWeekStart->copy()->subWeek();
+        // Default: The week we're reporting on (last week - these are the reports being displayed)
+        $defaultReportingWeekStart = $thisWeekStart->copy()->subWeek();
+        
+        // Check if a specific week is selected via filter
+        if ($request->has('week') && $request->week) {
+            $reportingWeekStart = \Carbon\Carbon::parse($request->week);
+        } elseif ($request->has('month') && $request->month) {
+            // If only month is selected, show the latest week of that month
+            $monthDate = \Carbon\Carbon::createFromFormat('Y-m', $request->month);
+            $weeksInMonth = WeeklyUpdate::getWeeksInMonth($monthDate->year, $monthDate->month);
+            if (!empty($weeksInMonth)) {
+                $reportingWeekStart = $weeksInMonth[0]['start']; // Latest week first
+            } else {
+                $reportingWeekStart = $defaultReportingWeekStart;
+            }
+        } else {
+            $reportingWeekStart = $defaultReportingWeekStart;
+        }
+        
         $reportingWeekEnd = $reportingWeekStart->copy()->addDays(4); // Friday
         
-        // Due date was Friday of the reporting week (last week's Friday)
+        // Due date was Friday of the reporting week
         $dueDate = $reportingWeekEnd->copy()->endOfDay();
 
-        // Get all divisions for tracking (exclude Office of the Minister)
-        $divisionsQuery = Division::where('is_active', true)
+        // Get all divisions for the dropdown filter (unfiltered except for user scope)
+        $allDivisionsForDropdown = Division::where('is_active', true)
+            ->where('name', '!=', 'Office of the Minister')
+            ->when($user->isDivisionScoped(), fn($q) => $q->where('id', $user->division_id))
+            ->orderBy('name')
+            ->get();
+
+        // Get divisions to display (applying division filter)
+        $displayDivisionsQuery = Division::where('is_active', true)
             ->where('name', '!=', 'Office of the Minister');
         if ($user->isDivisionScoped()) {
-            $divisionsQuery->where('id', $user->division_id);
+            $displayDivisionsQuery->where('id', $user->division_id);
         }
-        $allDivisions = $divisionsQuery->orderBy('name')->get();
+        if ($request->has('division') && $request->division) {
+            $displayDivisionsQuery->where('id', $request->division);
+        }
+        $allDivisions = $displayDivisionsQuery->orderBy('name')->get();
 
         // Updates for this reporting week
         $reportingWeekUpdates = WeeklyUpdate::with(['division', 'submitter', 'reviewer', 'activities'])
             ->where('week_start', $reportingWeekStart->toDateString())
             ->get();
+        
+        // Apply search filter
+        $searchTerm = $request->get('search');
+        if ($searchTerm) {
+            // Filter updates that match search
+            $reportingWeekUpdates = $reportingWeekUpdates->filter(function ($update) use ($searchTerm) {
+                $searchLower = strtolower($searchTerm);
+                return str_contains(strtolower($update->division->name ?? ''), $searchLower) ||
+                       str_contains(strtolower($update->submitter->name ?? ''), $searchLower);
+            });
+            
+            // Also filter divisions that match search (for showing not-submitted divisions)
+            $allDivisions = $allDivisions->filter(function ($division) use ($searchTerm) {
+                return str_contains(strtolower($division->name), strtolower($searchTerm));
+            });
+        }
 
         // Build detailed division status
         $divisionStatuses = $allDivisions->map(function ($division) use ($reportingWeekUpdates, $dueDate, $today) {
@@ -137,7 +180,8 @@ class WeeklyUpdateController extends Controller
             'pendingCount',
             'notSubmittedCount',
             'previousWeeksGrouped',
-            'allDivisions'
+            'allDivisions',
+            'allDivisionsForDropdown'
         ));
     }
 
