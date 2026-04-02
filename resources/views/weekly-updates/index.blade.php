@@ -21,7 +21,7 @@
             </p>
         </div>
         <div class="flex items-center gap-2">
-            @if($user->hasFullAccess() || $user->isDirector())
+            @if($user->hasFullAccess())
                 @if($notSubmittedCount > 0)
                     <form action="{{ route('weekly-updates.send-reminder') }}" method="POST" class="inline">
                         @csrf
@@ -116,7 +116,7 @@
                                     View Report
                                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                                 </a>
-                            @elseif($user->hasFullAccess() || $user->isDirector())
+                            @elseif($user->hasFullAccess())
                                 <form action="{{ route('weekly-updates.request-submission', $divStatus->division) }}" method="POST" class="inline">
                                     @csrf
                                     <button type="submit" class="inline-flex items-center gap-1 px-3 py-1.5 bg-orange-50 text-orange-700 text-xs font-medium hover:bg-orange-100 border border-orange-200">
@@ -124,6 +124,11 @@
                                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                                     </button>
                                 </form>
+                            @elseif($user->canManageDivision() && $user->division_id == $divStatus->division->id)
+                                <a href="{{ route('weekly-updates.create', ['week_start' => $reportingWeekStart->toDateString()]) }}" class="inline-flex items-center gap-1 px-3 py-1.5 bg-green-600 text-white text-xs font-medium hover:bg-green-700">
+                                    Submit Update
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                                </a>
                             @else
                                 <span class="text-gray-400">—</span>
                             @endif

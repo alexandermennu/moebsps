@@ -228,7 +228,7 @@ class WeeklyUpdateController extends Controller
     {
         $user = $request->user();
 
-        if (!$user->hasFullAccess() && !$user->isDirector()) {
+        if (!$user->hasFullAccess()) {
             abort(403);
         }
 
@@ -310,7 +310,7 @@ class WeeklyUpdateController extends Controller
     {
         $user = $request->user();
 
-        if (!$user->hasFullAccess() && !$user->isDirector()) {
+        if (!$user->hasFullAccess()) {
             abort(403);
         }
 

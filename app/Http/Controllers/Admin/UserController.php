@@ -52,7 +52,11 @@ class UserController extends Controller
                 });
             }
 
-            $divisionStaff[$division->id] = $query->latest()->get();
+            // Order by role: directors first, then by name
+            $divisionStaff[$division->id] = $query
+                ->orderByRaw("CASE WHEN role = 'director' THEN 0 ELSE 1 END")
+                ->orderBy('name')
+                ->get();
 
             // Count counselors for CGPC
             if ($division->code === 'CGPC') {
