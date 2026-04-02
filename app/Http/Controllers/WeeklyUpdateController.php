@@ -21,16 +21,16 @@ class WeeklyUpdateController extends Controller
             abort(403, 'You do not have access to weekly updates.');
         }
 
-        // Weekly Updates are for the PREVIOUS week's activities
+        // Weekly Updates index shows LAST week's reports (submitted last week, reviewed over weekend)
         $today = now();
         $thisWeekStart = $today->copy()->startOfWeek(\Carbon\Carbon::MONDAY);
         
-        // The week we're reporting on (last week)
+        // The week we're reporting on (last week - these are the reports being displayed)
         $reportingWeekStart = $thisWeekStart->copy()->subWeek();
         $reportingWeekEnd = $reportingWeekStart->copy()->addDays(4); // Friday
         
-        // Due date is end of Monday (first working day of current week)
-        $dueDate = $thisWeekStart->copy()->endOfDay();
+        // Due date was Friday of the reporting week (last week's Friday)
+        $dueDate = $reportingWeekEnd->copy()->endOfDay();
 
         // Get all divisions for tracking
         $divisionsQuery = Division::where('is_active', true);
@@ -146,8 +146,8 @@ class WeeklyUpdateController extends Controller
     {
         if (!$update) {
             // Not submitted - check if overdue
-            if ($today->gt($dueDate)) {
-                $daysOverdue = $today->diffInDays($dueDate);
+            if ($today->startOfDay()->gt($dueDate->copy()->startOfDay())) {
+                $daysOverdue = (int) $today->startOfDay()->diffInDays($dueDate->copy()->startOfDay());
                 return [
                     'status' => 'overdue',
                     'label' => 'Not Submitted',
@@ -155,7 +155,7 @@ class WeeklyUpdateController extends Controller
                     'detail' => $daysOverdue . ' ' . ($daysOverdue == 1 ? 'day' : 'days') . ' overdue',
                     'submission_details' => $daysOverdue . ' ' . ($daysOverdue == 1 ? 'day' : 'days') . ' overdue',
                 ];
-            } else if ($today->isSameDay($dueDate) || $today->lt($dueDate)) {
+            } else if ($today->isSameDay($dueDate)) {
                 return [
                     'status' => 'pending',
                     'label' => 'Pending',
@@ -163,15 +163,24 @@ class WeeklyUpdateController extends Controller
                     'detail' => 'Due today',
                     'submission_details' => 'Due today',
                 ];
+            } else {
+                $daysRemaining = (int) $today->startOfDay()->diffInDays($dueDate->copy()->startOfDay());
+                return [
+                    'status' => 'pending',
+                    'label' => 'Pending',
+                    'color' => 'orange',
+                    'detail' => 'Due in ' . $daysRemaining . ' ' . ($daysRemaining == 1 ? 'day' : 'days'),
+                    'submission_details' => 'Due ' . $dueDate->format('l, M d'),
+                ];
             }
         }
 
         // Has been submitted - check if it was on time or late
         $submittedAt = $update->created_at;
-        $wasLate = $submittedAt->gt($dueDate);
+        $wasLate = $submittedAt->startOfDay()->gt($dueDate->copy()->startOfDay());
         
         if ($wasLate) {
-            $daysLate = $submittedAt->startOfDay()->diffInDays($dueDate->startOfDay());
+            $daysLate = (int) $submittedAt->startOfDay()->diffInDays($dueDate->copy()->startOfDay());
             return [
                 'status' => 'late',
                 'label' => 'Late',

@@ -16,6 +16,8 @@
                 {{ $submittedCount }}/{{ $allDivisions->count() }} divisions submitted
                 @if($overdueCount > 0) | <span class="text-red-600">{{ $overdueCount }} overdue</span>@endif
                 @if($pendingCount > 0) | <span class="text-orange-600">{{ $pendingCount }} pending</span>@endif
+                <span class="text-gray-400 ml-2">·</span>
+                <span class="text-gray-500 ml-2">Due: {{ $dueDate->format('l, M d') }}</span>
             </p>
         </div>
         <div class="flex items-center gap-2">
@@ -57,7 +59,6 @@
                     <th class="text-left px-4 py-3 text-xs text-gray-500 uppercase tracking-wide font-medium">Submission Details</th>
                     <th class="text-left px-4 py-3 text-xs text-gray-500 uppercase tracking-wide font-medium">Content</th>
                     <th class="text-center px-4 py-3 text-xs text-gray-500 uppercase tracking-wide font-medium">Action</th>
-                    <th class="text-right px-4 py-3 text-xs text-gray-500 uppercase tracking-wide font-medium"></th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-100">
@@ -115,13 +116,10 @@
                                 <span class="text-gray-400">—</span>
                             @endif
                         </td>
-                        <td class="px-4 py-3 text-right">
-                            <a href="{{ $divStatus->update ? route('weekly-updates.show', $divStatus->update) : route('activities.index', ['division_id' => $divStatus->division->id]) }}" class="text-blue-600 hover:underline text-sm">View</a>
-                        </td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6" class="px-4 py-6 text-center text-gray-500">No divisions found.</td>
+                        <td colspan="5" class="px-4 py-6 text-center text-gray-500">No divisions found.</td>
                     </tr>
                 @endforelse
             </tbody>
