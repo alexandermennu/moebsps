@@ -99,8 +99,11 @@
         </button>
     </form>
 
+    {{-- Section Divider --}}
+    <div class="border-t border-gray-300 my-2"></div>
+
     {{-- Content Section --}}
-    <div class="bg-white border border-gray-200 p-5">
+    <div class="bg-gray-50 border border-gray-200 rounded-lg p-5">
         {{-- Section Header --}}
         <div class="mb-4">
             <h2 class="text-lg font-semibold text-gray-900">
@@ -217,21 +220,10 @@
                         </td>
                         <td class="px-4 py-3 text-center">
                             @if($divStatus->update)
-                                <div class="flex items-center justify-center gap-2">
-                                    <a href="{{ route('weekly-updates.show', $divStatus->update) }}" class="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-600 text-white text-xs font-medium hover:bg-blue-700">
-                                        View
-                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                                    </a>
-                                    @if($user->hasFullAccess() || ($user->canManageDivision() && $divStatus->update->submitted_by === $user->id && in_array($divStatus->update->status, ['draft', 'rejected'])))
-                                    <form action="{{ route('weekly-updates.destroy', $divStatus->update) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to delete this report?');">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="inline-flex items-center px-2 py-1.5 bg-red-50 text-red-600 text-xs font-medium hover:bg-red-100 border border-red-200">
-                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                                        </button>
-                                    </form>
-                                    @endif
-                                </div>
+                                <a href="{{ route('weekly-updates.show', $divStatus->update) }}" class="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-600 text-white text-xs font-medium hover:bg-blue-700">
+                                    View
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                                </a>
                             @elseif($user->hasFullAccess())
                                 <form action="{{ route('weekly-updates.request-submission', $divStatus->division) }}" method="POST" class="inline">
                                     @csrf
