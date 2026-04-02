@@ -273,6 +273,9 @@ class WeeklyUpdateController extends Controller
                     'subject' => "OVERDUE: Weekly Update Submission - {$weekLabel}",
                     'body' => "Dear {$divisionHead->name},<br><br>Your weekly update for <strong>{$weekLabel}</strong> ({$reportingWeekStart->format('M d')} - {$reportingWeekEnd->format('M d')}) is <span style='color: #dc2626; font-weight: bold;'>OVERDUE</span>.<br><br><strong>Due Date:</strong> {$dueDate->format('l, F j, Y')}<br><strong>Days Overdue:</strong> {$daysOverdue} " . ($daysOverdue == 1 ? 'day' : 'days') . "<br><br>Please submit your report immediately.<br><br><a href='{$submitUrl}' style='display: inline-block; background-color: #2563eb; color: white; padding: 10px 20px; text-decoration: none; font-weight: 500; margin-top: 10px;'>Submit Weekly Update</a><br><br>Thank you,<br>{$user->name}",
                     'is_read' => false,
+                    'parent_id' => null,
+                    'sender_deleted' => false,
+                    'receiver_deleted' => false,
                 ]);
                 $notifiedCount++;
             }
@@ -352,6 +355,9 @@ class WeeklyUpdateController extends Controller
                 'subject' => "OVERDUE: Weekly Update Submission - {$weekLabel}",
                 'body' => "Dear {$divisionHead->name},<br><br>Your weekly update for <strong>{$weekLabel}</strong> ({$reportingWeekStart->format('M d')} - {$reportingWeekEnd->format('M d')}) is <span style='color: #dc2626; font-weight: bold;'>OVERDUE</span>.<br><br><strong>Due Date:</strong> {$dueDate->format('l, F j, Y')}<br><strong>Days Overdue:</strong> {$daysOverdue} " . ($daysOverdue == 1 ? 'day' : 'days') . "<br><br>Please submit your report immediately.<br><br><a href='{$submitUrl}' style='display: inline-block; background-color: #2563eb; color: white; padding: 10px 20px; text-decoration: none; font-weight: 500; margin-top: 10px;'>Submit Weekly Update</a><br><br>Thank you,<br>{$user->name}",
                 'is_read' => false,
+                'parent_id' => null,
+                'sender_deleted' => false,
+                'receiver_deleted' => false,
             ]);
 
             return redirect()->route('weekly-updates.index')
