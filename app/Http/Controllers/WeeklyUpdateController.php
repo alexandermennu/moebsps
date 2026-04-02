@@ -220,6 +220,110 @@ class WeeklyUpdateController extends Controller
         return "{$month} Week {$weekOfMonth}, {$year}";
     }
 
+    /**
+     * Send reminder to all divisions that haven't submitted
+     */
+    public function sendReminder(Request $request)
+    {
+        $user = $request->user();
+
+        if (!$user->hasFullAccess() && !$user->isDirector()) {
+            abort(403);
+        }
+
+        // Get reporting week info
+        $today = now();
+        $thisWeekStart = $today->copy()->startOfWeek(\Carbon\Carbon::MONDAY);
+        $reportingWeekStart = $thisWeekStart->copy()->subWeek();
+        $reportingWeekEnd = $reportingWeekStart->copy()->addDays(4);
+        $weekLabel = $this->getWeekLabel($reportingWeekStart);
+
+        // Get divisions that haven't submitted
+        $submittedDivisionIds = WeeklyUpdate::where('week_start', $reportingWeekStart->toDateString())
+            ->pluck('division_id')
+            ->toArray();
+
+        $pendingDivisions = Division::where('is_active', true)
+            ->where('name', '!=', 'Office of the Minister')
+            ->whereNotIn('id', $submittedDivisionIds)
+            ->get();
+
+        $notifiedCount = 0;
+
+        foreach ($pendingDivisions as $division) {
+            // Get division head (director or senior staff)
+            $divisionHead = $division->users()
+                ->where('is_active', true)
+                ->whereIn('role', ['director', 'division_head', 'senior_staff'])
+                ->first();
+
+            if ($divisionHead) {
+                BureauNotification::send(
+                    $divisionHead->id,
+                    'weekly_update_reminder',
+                    'Weekly Update Reminder',
+                    "Please submit your weekly update for {$weekLabel} ({$reportingWeekStart->format('M d')} - {$reportingWeekEnd->format('M d')}). This is a reminder from the Bureau.",
+                    route('weekly-updates.create')
+                );
+                $notifiedCount++;
+            }
+        }
+
+        return redirect()->route('weekly-updates.index')
+            ->with('success', "Reminder sent to {$notifiedCount} division(s) that haven't submitted their weekly update.");
+    }
+
+    /**
+     * Request submission from a specific division
+     */
+    public function requestSubmission(Request $request, Division $division)
+    {
+        $user = $request->user();
+
+        if (!$user->hasFullAccess() && !$user->isDirector()) {
+            abort(403);
+        }
+
+        // Get reporting week info
+        $today = now();
+        $thisWeekStart = $today->copy()->startOfWeek(\Carbon\Carbon::MONDAY);
+        $reportingWeekStart = $thisWeekStart->copy()->subWeek();
+        $reportingWeekEnd = $reportingWeekStart->copy()->addDays(4);
+        $weekLabel = $this->getWeekLabel($reportingWeekStart);
+
+        // Check if already submitted
+        $existingUpdate = WeeklyUpdate::where('week_start', $reportingWeekStart->toDateString())
+            ->where('division_id', $division->id)
+            ->first();
+
+        if ($existingUpdate) {
+            return redirect()->route('weekly-updates.index')
+                ->with('error', "{$division->name} has already submitted their weekly update.");
+        }
+
+        // Get division head
+        $divisionHead = $division->users()
+            ->where('is_active', true)
+            ->whereIn('role', ['director', 'division_head', 'senior_staff'])
+            ->first();
+
+        if ($divisionHead) {
+            BureauNotification::send(
+                $divisionHead->id,
+                'weekly_update_request',
+                'Weekly Update Submission Requested',
+                "The Bureau has requested your weekly update for {$weekLabel} ({$reportingWeekStart->format('M d')} - {$reportingWeekEnd->format('M d')}). Please submit as soon as possible.",
+                route('weekly-updates.create')
+            );
+
+            return redirect()->route('weekly-updates.index')
+                ->with('success', "Submission request sent to {$division->name}.");
+        }
+
+        return redirect()->route('weekly-updates.index')
+            ->with('error', "Could not find a responsible person for {$division->name}.");
+    }
+
     public function create()
     {
         $user = auth()->user();
