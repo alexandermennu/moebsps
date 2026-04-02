@@ -65,6 +65,7 @@
                 <tr>
                     <th class="text-left px-4 py-3 text-xs text-gray-500 uppercase tracking-wide font-medium">Division</th>
                     <th class="text-left px-4 py-3 text-xs text-gray-500 uppercase tracking-wide font-medium">Status</th>
+                    <th class="text-left px-4 py-3 text-xs text-gray-500 uppercase tracking-wide font-medium">Submitted</th>
                     <th class="text-left px-4 py-3 text-xs text-gray-500 uppercase tracking-wide font-medium">Content</th>
                     <th class="text-center px-4 py-3 text-xs text-gray-500 uppercase tracking-wide font-medium">Report Status</th>
                     <th class="text-center px-4 py-3 text-xs text-gray-500 uppercase tracking-wide font-medium">Action</th>
@@ -99,6 +100,14 @@
                                 </span>
                             @endif
                             <p class="text-xs text-gray-500">{{ $divStatus->status_detail }}</p>
+                        </td>
+                        <td class="px-4 py-3 text-gray-600 text-sm">
+                            @if($divStatus->update)
+                                {{ $divStatus->update->created_at->format('M d, Y') }}
+                                <p class="text-xs text-gray-400">{{ $divStatus->update->created_at->format('g:i A') }}</p>
+                            @else
+                                <span class="text-gray-400">—</span>
+                            @endif
                         </td>
                         <td class="px-4 py-3 text-gray-600 text-sm">
                             @if($divStatus->has_content)
@@ -159,7 +168,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="5" class="px-4 py-6 text-center text-gray-500">No divisions found.</td>
+                        <td colspan="6" class="px-4 py-6 text-center text-gray-500">No divisions found.</td>
                     </tr>
                 @endforelse
             </tbody>
