@@ -21,6 +21,7 @@ use App\Http\Controllers\CounselorProfileController;
 use App\Http\Controllers\IncidentController;
 use App\Http\Controllers\SirDashboardController;
 use App\Http\Controllers\PublicIncidentController;
+use App\Http\Controllers\UserTaskController;
 
 /*
 |--------------------------------------------------------------------------
@@ -101,6 +102,16 @@ Route::middleware(['auth', 'active'])->group(function () {
     // Tracked Activities (from weekly submissions)
     Route::get('tracked-activities', [TrackedActivityController::class, 'index'])->name('tracked-activities.index');
     Route::delete('tracked-activities/{trackedActivity}', [TrackedActivityController::class, 'destroy'])->name('tracked-activities.destroy');
+
+    // My Tasks
+    Route::get('/my-tasks', [UserTaskController::class, 'index'])->name('tasks.index');
+    Route::get('/my-tasks/create', [UserTaskController::class, 'create'])->name('tasks.create');
+    Route::post('/my-tasks', [UserTaskController::class, 'store'])->name('tasks.store');
+    Route::post('/my-tasks/quick', [UserTaskController::class, 'quickStore'])->name('tasks.quick-store');
+    Route::get('/my-tasks/{task}/edit', [UserTaskController::class, 'edit'])->name('tasks.edit');
+    Route::put('/my-tasks/{task}', [UserTaskController::class, 'update'])->name('tasks.update');
+    Route::delete('/my-tasks/{task}', [UserTaskController::class, 'destroy'])->name('tasks.destroy');
+    Route::post('/my-tasks/{task}/toggle', [UserTaskController::class, 'toggleComplete'])->name('tasks.toggle-complete');
 
     // Notifications
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');

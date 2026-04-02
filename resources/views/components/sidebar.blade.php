@@ -28,6 +28,24 @@
                 </a>
             </li>
 
+            {{-- My Tasks --}}
+            <li>
+                @php
+                    $pendingTasksCount = \App\Models\UserTask::where('user_id', $user->id)->pending()->count();
+                    $overdueTasksCount = \App\Models\UserTask::where('user_id', $user->id)->overdue()->count();
+                @endphp
+                <a href="{{ route('tasks.index') }}"
+                   class="flex items-center gap-3 px-3 py-2 rounded-md text-sm {{ request()->routeIs('tasks.*') ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white' }}">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+                    My Tasks
+                    @if($overdueTasksCount > 0)
+                        <span class="ml-auto bg-red-500 text-white text-xs rounded-full px-2 py-0.5" title="{{ $overdueTasksCount }} overdue">{{ $overdueTasksCount }}</span>
+                    @elseif($pendingTasksCount > 0)
+                        <span class="ml-auto bg-blue-500 text-white text-xs rounded-full px-2 py-0.5" title="{{ $pendingTasksCount }} pending">{{ $pendingTasksCount }}</span>
+                    @endif
+                </a>
+            </li>
+
             {{-- Assignments --}}
             @if($user->canAccessAssignments())
             <li>
