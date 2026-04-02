@@ -103,34 +103,35 @@
     <div class="border-t border-gray-300 my-2"></div>
 
     {{-- Content Section --}}
-    <div class="bg-gray-50 border border-gray-200 rounded-lg p-5">
-        {{-- Section Header in Yellow Box --}}
-        <div class="bg-yellow-500 text-white px-5 py-4 rounded mb-4">
-            <h2 class="text-lg font-semibold text-white">
+    <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-5">
+        {{-- Section Header --}}
+        <div class="mb-4">
+            <h2 class="text-lg font-semibold text-gray-900">
                 Reporting Week: {{ $reportingWeekLabel }} 
-                <span class="font-normal text-yellow-100">({{ $reportingWeekStart->format('M d') }} – {{ $reportingWeekEnd->format('M d') }})</span>
+                <span class="font-normal text-gray-500">({{ $reportingWeekStart->format('M d') }} – {{ $reportingWeekEnd->format('M d') }})</span>
             </h2>
-            <p class="text-sm text-yellow-50 mt-0.5">
+            <p class="text-sm text-gray-600 mt-0.5">
                 {{ $submittedCount }}/{{ $allDivisions->count() }} divisions submitted
-                @if($lateCount > 0) | <span class="text-orange-200">{{ $lateCount }} late</span>@endif
-                @if($overdueCount > 0) | <span class="text-red-200">{{ $overdueCount }} not submitted</span>@endif
-                <span class="text-yellow-200 ml-2">·</span>
-                <span class="text-yellow-100 ml-2">Due: {{ $dueDate->format('l, M d') }}</span>
+                @if($lateCount > 0) | <span class="text-orange-600">{{ $lateCount }} late</span>@endif
+                @if($overdueCount > 0) | <span class="text-red-600">{{ $overdueCount }} not submitted</span>@endif
+                <span class="text-gray-400 ml-2">·</span>
+                <span class="text-gray-500 ml-2">Due: {{ $dueDate->format('l, M d') }}</span>
             </p>
-            {{-- Status Summary Pills --}}
-            <div class="flex items-center gap-5 mt-3">
-                <div class="flex items-center gap-2">
-                    <span class="w-3 h-3 rounded-full bg-green-400"></span>
-                    <span class="text-sm text-white">{{ $onTimeCount }} On Time</span>
-                </div>
-                <div class="flex items-center gap-2">
-                    <span class="w-3 h-3 rounded-full bg-orange-400"></span>
-                    <span class="text-sm text-white">{{ $lateCount }} Late</span>
-                </div>
-                <div class="flex items-center gap-2">
-                    <span class="w-3 h-3 rounded-full bg-red-400"></span>
-                    <span class="text-sm text-white">{{ $notSubmittedCount }} Not Submitted</span>
-                </div>
+        </div>
+
+        {{-- Status Summary Pills --}}
+        <div class="flex items-center gap-5 mb-4">
+            <div class="flex items-center gap-2">
+                <span class="w-3 h-3 rounded-full bg-green-500"></span>
+                <span class="text-sm text-gray-700">{{ $onTimeCount }} On Time</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="w-3 h-3 rounded-full bg-orange-500"></span>
+                <span class="text-sm text-gray-700">{{ $lateCount }} Late</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="w-3 h-3 rounded-full bg-red-500"></span>
+                <span class="text-sm text-gray-700">{{ $notSubmittedCount }} Not Submitted</span>
             </div>
         </div>
 
