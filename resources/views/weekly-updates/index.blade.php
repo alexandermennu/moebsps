@@ -129,21 +129,41 @@
     {{-- Division Summary Cards --}}
     <div class="grid grid-cols-5 gap-3">
         @foreach($divisionStatuses as $divStatus)
-            <div class="bg-white border border-gray-200 p-3">
-                <div class="flex items-start justify-between">
-                    <h4 class="text-xs font-medium text-gray-900 leading-tight">{{ $divStatus->division->name }}</h4>
-                    @if($divStatus->status_color === 'green')
-                        <span class="w-2.5 h-2.5 rounded-full bg-green-500 flex-shrink-0 mt-0.5"></span>
-                    @elseif($divStatus->status_color === 'orange')
-                        <span class="w-2.5 h-2.5 rounded-full bg-orange-500 flex-shrink-0 mt-0.5"></span>
-                    @elseif($divStatus->status_color === 'red')
-                        <span class="w-2.5 h-2.5 rounded-full bg-red-500 flex-shrink-0 mt-0.5"></span>
-                    @else
-                        <span class="w-2.5 h-2.5 rounded-full bg-gray-400 flex-shrink-0 mt-0.5"></span>
-                    @endif
+            @php
+                $bgColor = match($divStatus->status_color) {
+                    'green' => 'bg-green-50 border-green-200',
+                    'orange' => 'bg-orange-50 border-orange-200',
+                    'red' => 'bg-red-50 border-red-200',
+                    default => 'bg-gray-50 border-gray-200',
+                };
+                $textColor = match($divStatus->status_color) {
+                    'green' => 'text-green-700',
+                    'orange' => 'text-orange-700',
+                    'red' => 'text-red-700',
+                    default => 'text-gray-700',
+                };
+                $dotColor = match($divStatus->status_color) {
+                    'green' => 'bg-green-500',
+                    'orange' => 'bg-orange-500',
+                    'red' => 'bg-red-500',
+                    default => 'bg-gray-400',
+                };
+            @endphp
+            <div class="border {{ $bgColor }} p-3.5">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="w-2.5 h-2.5 rounded-full {{ $dotColor }}"></span>
+                    <span class="text-xs font-semibold {{ $textColor }}">{{ $divStatus->status_label }}</span>
                 </div>
-                <p class="text-[11px] text-gray-500 mt-1">{{ $divStatus->status_label }}</p>
-                <p class="text-[11px] text-gray-400">{{ $divStatus->has_content ? $divStatus->activity_count . ' ' . Str::plural('activity', $divStatus->activity_count) : 'No data' }}</p>
+                <h4 class="text-sm font-semibold text-gray-900 leading-tight">{{ $divStatus->division->name }}</h4>
+                <p class="text-xs text-gray-500 mt-1.5">{{ $divStatus->has_content ? $divStatus->activity_count . ' ' . Str::plural('activity', $divStatus->activity_count) : 'No activities reported' }}</p>
+                @if($divStatus->update)
+                    <a href="{{ route('weekly-updates.show', $divStatus->update) }}" class="inline-flex items-center gap-1 text-xs text-blue-600 hover:underline mt-2">
+                        View Report
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                    </a>
+                @else
+                    <p class="text-xs {{ $textColor }} mt-2">{{ $divStatus->status_detail }}</p>
+                @endif
             </div>
         @endforeach
     </div>
