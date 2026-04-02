@@ -5,7 +5,7 @@
 
 @section('content')
 <div class="space-y-5">
-    {{-- Filter/Search Bar --}}
+    {{-- Filter/Search Bar with Actions --}}
     <div class="bg-white border border-gray-200 p-3">
         <form method="GET" action="{{ route('weekly-updates.index') }}" class="flex items-end gap-3">
             {{-- Month Picker --}}
@@ -71,54 +71,59 @@
                 </a>
                 @endif
             </div>
-        </form>
+
+            {{-- Separator --}}
+            <div class="w-px h-8 bg-gray-300"></div>
+
+            {{-- Action Buttons --}}
+            <div class="flex items-center gap-2">
+                @if($user->canManageDivision() && !$user->hasFullAccess())
+                    <a href="{{ route('weekly-updates.create', ['week_start' => $reportingWeekStart->toDateString()]) }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-600 text-white text-sm font-medium rounded hover:bg-green-700">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                        New Report
+                    </a>
+                @endif
+                @if($user->hasFullAccess())
+                    <a href="{{ route('weekly-updates.create', ['week_start' => $reportingWeekStart->toDateString()]) }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-600 text-white text-sm font-medium rounded hover:bg-green-700">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                        New Report
+                    </a>
+                    @if($notSubmittedCount > 0)
+                        </form>
+                        <form action="{{ route('weekly-updates.send-reminder') }}" method="POST" class="inline">
+                            @csrf
+                            <button type="submit" class="px-3 py-1.5 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded hover:bg-gray-50" onclick="return confirm('Send reminder to {{ $notSubmittedCount }} division(s) that have not submitted?')">
+                                Send Reminder
+                            </button>
+                        </form>
+                    @else
+                        </form>
+                        <button type="button" class="px-3 py-1.5 bg-gray-100 border border-gray-200 text-gray-400 text-sm font-medium rounded cursor-not-allowed" disabled>
+                            Send Reminder
+                        </button>
+                    @endif
+                    <a href="{{ route('weekly-updates.consolidated') }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded hover:bg-blue-700">
+                        Consolidated Report
+                    </a>
+                @else
+                    </form>
+                @endif
+            </div>
     </div>
 
     {{-- Header Section --}}
-    <div class="flex items-center justify-between">
-        <div>
-            <h2 class="text-lg font-semibold text-gray-900">
-                Reporting Week: {{ $reportingWeekLabel }} 
-                <span class="font-normal text-gray-500">({{ $reportingWeekStart->format('M d') }} – {{ $reportingWeekEnd->format('M d') }})</span>
-            </h2>
-            <p class="text-sm text-gray-600 mt-0.5">
-                {{ $submittedCount }}/{{ $allDivisions->count() }} divisions submitted
-                @if($lateCount > 0) | <span class="text-orange-600">{{ $lateCount }} late</span>@endif
-                @if($overdueCount > 0) | <span class="text-red-600">{{ $overdueCount }} not submitted</span>@endif
-                <span class="text-gray-400 ml-2">·</span>
-                <span class="text-gray-500 ml-2">Due: {{ $dueDate->format('l, M d') }}</span>
-            </p>
-        </div>
-        <div class="flex items-center gap-2">
-            @if($user->canManageDivision() && !$user->hasFullAccess())
-                <a href="{{ route('weekly-updates.create', ['week_start' => $reportingWeekStart->toDateString()]) }}" class="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white text-sm font-medium hover:bg-green-700">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                    New Report
-                </a>
-            @endif
-            @if($user->hasFullAccess())
-                <a href="{{ route('weekly-updates.create', ['week_start' => $reportingWeekStart->toDateString()]) }}" class="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white text-sm font-medium hover:bg-green-700">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                    New Report
-                </a>
-                @if($notSubmittedCount > 0)
-                    <form action="{{ route('weekly-updates.send-reminder') }}" method="POST" class="inline">
-                        @csrf
-                        <button type="submit" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50" onclick="return confirm('Send reminder to {{ $notSubmittedCount }} division(s) that have not submitted?')">
-                            Send Reminder
-                        </button>
-                    </form>
-                @else
-                    <button type="button" class="px-4 py-2 bg-gray-100 border border-gray-200 text-gray-400 text-sm font-medium cursor-not-allowed" disabled>
-                        Send Reminder
-                    </button>
-                @endif
-                <a href="{{ route('weekly-updates.consolidated') }}" class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium hover:bg-blue-700">
-                    View Consolidated Report
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-                </a>
-            @endif
-        </div>
+    <div>
+        <h2 class="text-lg font-semibold text-gray-900">
+            Reporting Week: {{ $reportingWeekLabel }} 
+            <span class="font-normal text-gray-500">({{ $reportingWeekStart->format('M d') }} – {{ $reportingWeekEnd->format('M d') }})</span>
+        </h2>
+        <p class="text-sm text-gray-600 mt-0.5">
+            {{ $submittedCount }}/{{ $allDivisions->count() }} divisions submitted
+            @if($lateCount > 0) | <span class="text-orange-600">{{ $lateCount }} late</span>@endif
+            @if($overdueCount > 0) | <span class="text-red-600">{{ $overdueCount }} not submitted</span>@endif
+            <span class="text-gray-400 ml-2">·</span>
+            <span class="text-gray-500 ml-2">Due: {{ $dueDate->format('l, M d') }}</span>
+        </p>
     </div>
 
     {{-- Status Summary Pills --}}
