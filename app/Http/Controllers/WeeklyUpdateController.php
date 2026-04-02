@@ -32,8 +32,9 @@ class WeeklyUpdateController extends Controller
         // Due date was Friday of the reporting week (last week's Friday)
         $dueDate = $reportingWeekEnd->copy()->endOfDay();
 
-        // Get all divisions for tracking
-        $divisionsQuery = Division::where('is_active', true);
+        // Get all divisions for tracking (exclude Office of the Minister)
+        $divisionsQuery = Division::where('is_active', true)
+            ->where('name', '!=', 'Office of the Minister');
         if ($user->isDivisionScoped()) {
             $divisionsQuery->where('id', $user->division_id);
         }
