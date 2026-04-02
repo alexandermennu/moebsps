@@ -187,7 +187,7 @@ class WeeklyUpdateController extends Controller
                 'status' => 'late',
                 'label' => 'Late',
                 'color' => 'orange',
-                'detail' => $daysLate . ' ' . ($daysLate == 1 ? 'day' : 'days') . ' late',
+                'detail' => 'Submitted ' . $submittedAt->format('M d') . ' (' . $daysLate . ' ' . ($daysLate == 1 ? 'day' : 'days') . ' late)',
                 'submission_details' => 'Submitted ' . $submittedAt->format('M d') . ' (' . $daysLate . ' ' . ($daysLate == 1 ? 'day' : 'days') . ' late)',
             ];
         }
