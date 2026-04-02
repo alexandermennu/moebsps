@@ -243,26 +243,22 @@
 </div>
 
 {{-- No Data Alert Modal --}}
-<div id="noDataModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-50">
-    <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 overflow-hidden">
-        <div class="bg-amber-50 px-6 py-4 border-b border-amber-200">
-            <div class="flex items-center gap-3">
-                <div class="flex-shrink-0 w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center">
-                    <svg class="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-                    </svg>
-                </div>
-                <h3 class="text-lg font-semibold text-amber-800">No Reports Available</h3>
+<div id="noDataModal" class="fixed inset-0 z-50 hidden items-center justify-center">
+    <div class="bg-white rounded-lg shadow-2xl border border-gray-200 max-w-sm w-full mx-4 overflow-hidden">
+        <div class="bg-amber-50 px-5 py-3 border-b border-amber-200">
+            <div class="flex items-center gap-2">
+                <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                </svg>
+                <h3 class="text-sm font-semibold text-amber-800">No Reports Available</h3>
             </div>
         </div>
-        <div class="px-6 py-5">
-            <p class="text-gray-600 leading-relaxed" id="noDataMessage">
-                <!-- Message will be inserted here by JavaScript -->
-            </p>
+        <div class="px-5 py-4">
+            <p class="text-sm text-gray-600" id="noDataMessage"></p>
         </div>
-        <div class="bg-gray-50 px-6 py-4 flex justify-end">
-            <button type="button" onclick="closeNoDataModal()" class="px-4 py-2 bg-gray-800 text-white text-sm font-medium rounded hover:bg-gray-700 transition-colors">
-                Got it
+        <div class="bg-gray-50 px-5 py-3 flex justify-end">
+            <button type="button" onclick="closeNoDataModal()" class="px-3 py-1.5 bg-gray-800 text-white text-xs font-medium rounded hover:bg-gray-700">
+                OK
             </button>
         </div>
     </div>
@@ -273,7 +269,7 @@
         const modal = document.getElementById('noDataModal');
         const message = document.getElementById('noDataMessage');
         
-        message.innerHTML = `It looks like <strong>${monthLabel}</strong> doesn't have any weekly update submissions yet. This could mean that divisions haven't submitted their reports for this period, or the reporting cycle hasn't been completed.<br><br>Please check back later or contact your division directors if you believe reports should have been submitted.`;
+        message.textContent = `No submissions found for ${monthLabel}.`;
         
         modal.classList.remove('hidden');
         modal.classList.add('flex');
@@ -284,13 +280,6 @@
         modal.classList.add('hidden');
         modal.classList.remove('flex');
     }
-    
-    // Close modal when clicking outside
-    document.getElementById('noDataModal').addEventListener('click', function(e) {
-        if (e.target === this) {
-            closeNoDataModal();
-        }
-    });
     
     // Close modal on Escape key
     document.addEventListener('keydown', function(e) {
