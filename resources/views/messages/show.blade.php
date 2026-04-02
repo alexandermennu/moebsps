@@ -36,7 +36,7 @@
                 </div>
                 <span class="text-xs text-gray-400">{{ $message->created_at->format('M d, Y \a\t h:i A') }}</span>
             </div>
-            <div class="text-sm text-gray-700 whitespace-pre-wrap">{{ $message->body }}</div>
+            <div class="text-sm text-gray-700 leading-relaxed">{!! $message->body !!}</div>
         </div>
 
         {{-- Replies --}}
@@ -52,7 +52,7 @@
                     </div>
                     <span class="text-xs text-gray-400">{{ $reply->created_at->format('M d, Y \a\t h:i A') }}</span>
                 </div>
-                <div class="text-sm text-gray-700 whitespace-pre-wrap">{{ $reply->body }}</div>
+                <div class="text-sm text-gray-700 leading-relaxed">{!! $reply->body !!}</div>
             </div>
         @endforeach
     </div>

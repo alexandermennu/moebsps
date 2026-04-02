@@ -239,8 +239,8 @@ class WeeklyUpdateController extends Controller
         $reportingWeekEnd = $reportingWeekStart->copy()->addDays(4); // Friday
         $dueDate = $reportingWeekEnd->copy()->endOfDay(); // Due Friday of reporting week
         
-        // Calculate how many days overdue
-        $daysOverdue = (int) $today->startOfDay()->diffInDays($dueDate->copy()->startOfDay());
+        // Calculate how many days overdue (absolute value)
+        $daysOverdue = abs((int) $today->startOfDay()->diffInDays($dueDate->copy()->startOfDay()));
         
         // Get the week label from the reporting week start
         $weekLabel = $reportingWeekStart->format('F') . ' Week ' . $this->getWeekNumber($reportingWeekStart) . ', ' . $reportingWeekStart->format('Y');
@@ -321,8 +321,8 @@ class WeeklyUpdateController extends Controller
         $reportingWeekEnd = $reportingWeekStart->copy()->addDays(4); // Friday
         $dueDate = $reportingWeekEnd->copy()->endOfDay(); // Due Friday of reporting week
         
-        // Calculate how many days overdue
-        $daysOverdue = (int) $today->startOfDay()->diffInDays($dueDate->copy()->startOfDay());
+        // Calculate how many days overdue (absolute value)
+        $daysOverdue = abs((int) $today->startOfDay()->diffInDays($dueDate->copy()->startOfDay()));
         
         $weekLabel = $reportingWeekStart->format('F') . ' Week ' . $this->getWeekNumber($reportingWeekStart) . ', ' . $reportingWeekStart->format('Y');
 
