@@ -7,10 +7,10 @@
 <div class="space-y-5">
     {{-- Page Header with Title and Actions --}}
     <div class="flex items-start justify-between">
-        <div class="bg-blue-700 text-white px-5 py-3 rounded">
-            <p class="text-xs text-blue-200 uppercase tracking-wide">Office of the Assistant Minister</p>
-            <p class="text-xs text-blue-200">Bureau of Student Personnel Services</p>
-            <h1 class="text-lg font-semibold text-white mt-1">Division Weekly Updates ({{ $reportingWeekStart->format('F Y') }})</h1>
+        <div>
+            <p class="text-xs text-gray-400 uppercase tracking-wide">Office of the Assistant Minister</p>
+            <p class="text-xs text-gray-400">Bureau of Student Personnel Services</p>
+            <h1 class="text-lg font-medium text-gray-700 mt-1">Division Weekly Updates ({{ $reportingWeekStart->format('F Y') }})</h1>
         </div>
         <div class="flex items-center gap-2">
             @if($user->canManageDivision())
@@ -104,34 +104,33 @@
 
     {{-- Content Section --}}
     <div class="bg-gray-50 border border-gray-200 rounded-lg p-5">
-        {{-- Section Header --}}
-        <div class="mb-4">
-            <h2 class="text-lg font-semibold text-gray-900">
+        {{-- Section Header in Blue Box --}}
+        <div class="bg-blue-700 text-white px-5 py-4 rounded mb-4">
+            <h2 class="text-lg font-semibold text-white">
                 Reporting Week: {{ $reportingWeekLabel }} 
-                <span class="font-normal text-gray-500">({{ $reportingWeekStart->format('M d') }} – {{ $reportingWeekEnd->format('M d') }})</span>
+                <span class="font-normal text-blue-200">({{ $reportingWeekStart->format('M d') }} – {{ $reportingWeekEnd->format('M d') }})</span>
             </h2>
-            <p class="text-sm text-gray-600 mt-0.5">
+            <p class="text-sm text-blue-100 mt-0.5">
                 {{ $submittedCount }}/{{ $allDivisions->count() }} divisions submitted
-                @if($lateCount > 0) | <span class="text-orange-600">{{ $lateCount }} late</span>@endif
-                @if($overdueCount > 0) | <span class="text-red-600">{{ $overdueCount }} not submitted</span>@endif
-                <span class="text-gray-400 ml-2">·</span>
-                <span class="text-gray-500 ml-2">Due: {{ $dueDate->format('l, M d') }}</span>
+                @if($lateCount > 0) | <span class="text-orange-300">{{ $lateCount }} late</span>@endif
+                @if($overdueCount > 0) | <span class="text-red-300">{{ $overdueCount }} not submitted</span>@endif
+                <span class="text-blue-300 ml-2">·</span>
+                <span class="text-blue-200 ml-2">Due: {{ $dueDate->format('l, M d') }}</span>
             </p>
-        </div>
-
-        {{-- Status Summary Pills --}}
-        <div class="flex items-center gap-5 mb-4">
-            <div class="flex items-center gap-2">
-                <span class="w-3 h-3 rounded-full bg-green-500"></span>
-                <span class="text-sm text-gray-700">{{ $onTimeCount }} On Time</span>
-            </div>
-            <div class="flex items-center gap-2">
-                <span class="w-3 h-3 rounded-full bg-orange-500"></span>
-                <span class="text-sm text-gray-700">{{ $lateCount }} Late</span>
-            </div>
-            <div class="flex items-center gap-2">
-                <span class="w-3 h-3 rounded-full bg-red-500"></span>
-                <span class="text-sm text-gray-700">{{ $notSubmittedCount }} Not Submitted</span>
+            {{-- Status Summary Pills --}}
+            <div class="flex items-center gap-5 mt-3">
+                <div class="flex items-center gap-2">
+                    <span class="w-3 h-3 rounded-full bg-green-400"></span>
+                    <span class="text-sm text-white">{{ $onTimeCount }} On Time</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="w-3 h-3 rounded-full bg-orange-400"></span>
+                    <span class="text-sm text-white">{{ $lateCount }} Late</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="w-3 h-3 rounded-full bg-red-400"></span>
+                    <span class="text-sm text-white">{{ $notSubmittedCount }} Not Submitted</span>
+                </div>
             </div>
         </div>
 
