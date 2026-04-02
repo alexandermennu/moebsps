@@ -104,18 +104,18 @@
 
     {{-- Content Section --}}
     <div class="bg-gray-50 border border-gray-200 rounded-lg p-5">
-        {{-- Section Header in Blue Box --}}
-        <div class="bg-blue-700 text-white px-5 py-4 rounded mb-4">
+        {{-- Section Header in Yellow Box --}}
+        <div class="bg-yellow-500 text-white px-5 py-4 rounded mb-4">
             <h2 class="text-lg font-semibold text-white">
                 Reporting Week: {{ $reportingWeekLabel }} 
-                <span class="font-normal text-blue-200">({{ $reportingWeekStart->format('M d') }} – {{ $reportingWeekEnd->format('M d') }})</span>
+                <span class="font-normal text-yellow-100">({{ $reportingWeekStart->format('M d') }} – {{ $reportingWeekEnd->format('M d') }})</span>
             </h2>
-            <p class="text-sm text-blue-100 mt-0.5">
+            <p class="text-sm text-yellow-50 mt-0.5">
                 {{ $submittedCount }}/{{ $allDivisions->count() }} divisions submitted
-                @if($lateCount > 0) | <span class="text-orange-300">{{ $lateCount }} late</span>@endif
-                @if($overdueCount > 0) | <span class="text-red-300">{{ $overdueCount }} not submitted</span>@endif
-                <span class="text-blue-300 ml-2">·</span>
-                <span class="text-blue-200 ml-2">Due: {{ $dueDate->format('l, M d') }}</span>
+                @if($lateCount > 0) | <span class="text-orange-200">{{ $lateCount }} late</span>@endif
+                @if($overdueCount > 0) | <span class="text-red-200">{{ $overdueCount }} not submitted</span>@endif
+                <span class="text-yellow-200 ml-2">·</span>
+                <span class="text-yellow-100 ml-2">Due: {{ $dueDate->format('l, M d') }}</span>
             </p>
             {{-- Status Summary Pills --}}
             <div class="flex items-center gap-5 mt-3">
