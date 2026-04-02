@@ -256,7 +256,7 @@ class WeeklyUpdateController extends Controller
             ->get();
 
         $notifiedCount = 0;
-        $submitUrl = route('weekly-updates.create');
+        $submitUrl = route('weekly-updates.create', ['week_start' => $reportingWeekStart->toDateString()]);
 
         foreach ($pendingDivisions as $division) {
             // Get division head (director or senior staff)
@@ -342,7 +342,7 @@ class WeeklyUpdateController extends Controller
             ->whereIn('role', ['director', 'division_head', 'senior_staff'])
             ->first();
 
-        $submitUrl = route('weekly-updates.create');
+        $submitUrl = route('weekly-updates.create', ['week_start' => $reportingWeekStart->toDateString()]);
 
         if ($divisionHead) {
             // Send a Message with overdue details
