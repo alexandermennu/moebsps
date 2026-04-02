@@ -126,6 +126,28 @@
         </table>
     </div>
 
+    {{-- Division Summary Cards --}}
+    <div class="grid grid-cols-5 gap-3">
+        @foreach($divisionStatuses as $divStatus)
+            <div class="bg-white border border-gray-200 p-3">
+                <div class="flex items-start justify-between">
+                    <h4 class="text-xs font-medium text-gray-900 leading-tight">{{ $divStatus->division->name }}</h4>
+                    @if($divStatus->status_color === 'green')
+                        <span class="w-2.5 h-2.5 rounded-full bg-green-500 flex-shrink-0 mt-0.5"></span>
+                    @elseif($divStatus->status_color === 'orange')
+                        <span class="w-2.5 h-2.5 rounded-full bg-orange-500 flex-shrink-0 mt-0.5"></span>
+                    @elseif($divStatus->status_color === 'red')
+                        <span class="w-2.5 h-2.5 rounded-full bg-red-500 flex-shrink-0 mt-0.5"></span>
+                    @else
+                        <span class="w-2.5 h-2.5 rounded-full bg-gray-400 flex-shrink-0 mt-0.5"></span>
+                    @endif
+                </div>
+                <p class="text-[11px] text-gray-500 mt-1">{{ $divStatus->status_label }}</p>
+                <p class="text-[11px] text-gray-400">{{ $divStatus->has_content ? $divStatus->activity_count . ' ' . Str::plural('activity', $divStatus->activity_count) : 'No data' }}</p>
+            </div>
+        @endforeach
+    </div>
+
     {{-- Past Reports Section --}}
     @if($previousWeeksGrouped->count() > 0)
     <div>
