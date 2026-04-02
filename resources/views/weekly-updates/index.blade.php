@@ -8,9 +8,9 @@
     {{-- Page Header with Title and Actions --}}
     <div class="flex items-start justify-between">
         <div>
-            <p class="text-sm text-gray-500 uppercase tracking-wide">Office of the Assistant Minister</p>
-            <p class="text-sm text-gray-500">Bureau of Student Personnel Services</p>
-            <h1 class="text-2xl font-bold text-gray-900 mt-1">Division Weekly Updates ({{ $reportingWeekStart->format('F Y') }})</h1>
+            <p class="text-xs text-gray-400 uppercase tracking-wide">Office of the Assistant Minister</p>
+            <p class="text-xs text-gray-400">Bureau of Student Personnel Services</p>
+            <h1 class="text-lg font-medium text-gray-700 mt-1">Division Weekly Updates ({{ $reportingWeekStart->format('F Y') }})</h1>
         </div>
         <div class="flex items-center gap-2">
             @if($user->canManageDivision())
@@ -221,7 +221,7 @@
                         <td class="px-4 py-3 text-center">
                             @if($divStatus->update)
                                 <a href="{{ route('weekly-updates.show', $divStatus->update) }}" class="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-600 text-white text-xs font-medium hover:bg-blue-700">
-                                    View
+                                    View Report
                                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                                 </a>
                             @elseif($user->hasFullAccess())
