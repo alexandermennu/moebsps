@@ -213,19 +213,18 @@
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                             </a>
                         @else
-                            <button type="button" onclick="showNoDataAlert('{{ $monthLabel }}')" class="inline-flex items-center gap-1 px-2.5 py-1 bg-gray-400 text-white text-xs font-medium hover:bg-gray-500 whitespace-nowrap cursor-pointer">
-                                View Details
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                            </button>
+                            <span class="inline-flex items-center px-2.5 py-1 bg-gray-100 text-gray-400 text-xs font-medium whitespace-nowrap">
+                                No Reports
+                            </span>
                         @endif
                     </div>
                     <div class="mt-2.5 flex items-center gap-1.5 text-sm text-gray-500">
                         @if($hasData)
                             <svg class="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
-                            <span>{{ $totalSubmissions }} submissions</span>
+                            <span>{{ $totalSubmissions }} {{ Str::plural('submission', $totalSubmissions) }}</span>
                         @else
-                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
-                            <span>No Data</span>
+                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/></svg>
+                            <span>No submissions yet</span>
                         @endif
                     </div>
                 </div>
@@ -241,51 +240,4 @@
     </div>
     @endif
 </div>
-
-{{-- No Data Alert Modal --}}
-<div id="noDataModal" class="fixed inset-0 z-50 hidden items-center justify-center">
-    <div class="bg-white rounded-lg shadow-2xl border border-gray-200 max-w-sm w-full mx-4 overflow-hidden">
-        <div class="bg-amber-50 px-5 py-3 border-b border-amber-200">
-            <div class="flex items-center gap-2">
-                <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-                </svg>
-                <h3 class="text-sm font-semibold text-amber-800">No Reports Available</h3>
-            </div>
-        </div>
-        <div class="px-5 py-4">
-            <p class="text-sm text-gray-600" id="noDataMessage"></p>
-        </div>
-        <div class="bg-gray-50 px-5 py-3 flex justify-end">
-            <button type="button" onclick="closeNoDataModal()" class="px-3 py-1.5 bg-gray-800 text-white text-xs font-medium rounded hover:bg-gray-700">
-                OK
-            </button>
-        </div>
-    </div>
-</div>
-
-<script>
-    function showNoDataAlert(monthLabel) {
-        const modal = document.getElementById('noDataModal');
-        const message = document.getElementById('noDataMessage');
-        
-        message.textContent = `No submissions found for ${monthLabel}.`;
-        
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
-    }
-    
-    function closeNoDataModal() {
-        const modal = document.getElementById('noDataModal');
-        modal.classList.add('hidden');
-        modal.classList.remove('flex');
-    }
-    
-    // Close modal on Escape key
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') {
-            closeNoDataModal();
-        }
-    });
-</script>
 @endsection
