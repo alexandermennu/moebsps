@@ -46,20 +46,16 @@
                             // Check if a specific week was requested via URL parameter
                             $requestedWeekStart = request('week_start');
                             
-                            // Find current week as fallback
+                            // Default to LAST week (reporting week) not current week
+                            // Weekly updates are for the previous week's activities
                             $today = now();
-                            $defaultWeek = null;
-                            foreach ($weeks as $week) {
-                                if ($today->between($week['start'], $week['end']->endOfDay())) {
-                                    $defaultWeek = $week;
-                                    break;
-                                }
-                            }
+                            $reportingWeekStart = $today->copy()->startOfWeek(\Carbon\Carbon::MONDAY)->subWeek();
+                            $defaultWeekStart = $reportingWeekStart->format('Y-m-d');
                         @endphp
                         <optgroup label="{{ $lastMonth->format('F Y') }}">
                             @foreach($lastMonthWeeks as $week)
                                 <option value="{{ $week['start_formatted'] }}|{{ $week['end_formatted'] }}"
-                                    {{ old('week_start') == $week['start_formatted'] || $requestedWeekStart == $week['start_formatted'] ? 'selected' : '' }}>
+                                    {{ old('week_start') == $week['start_formatted'] || $requestedWeekStart == $week['start_formatted'] || (!old('week_start') && !$requestedWeekStart && $week['start_formatted'] == $defaultWeekStart) ? 'selected' : '' }}>
                                     {{ $week['label'] }} ({{ $week['start']->format('M d') }} - {{ $week['end']->format('M d') }})
                                 </option>
                             @endforeach
@@ -67,7 +63,7 @@
                         <optgroup label="{{ now()->format('F Y') }} (Current Month)">
                             @foreach($weeks as $week)
                                 <option value="{{ $week['start_formatted'] }}|{{ $week['end_formatted'] }}"
-                                    {{ (old('week_start') == $week['start_formatted']) || ($requestedWeekStart == $week['start_formatted']) || (!old('week_start') && !$requestedWeekStart && $defaultWeek && $week['number'] == $defaultWeek['number']) ? 'selected' : '' }}>
+                                    {{ (old('week_start') == $week['start_formatted']) || ($requestedWeekStart == $week['start_formatted']) || (!old('week_start') && !$requestedWeekStart && $week['start_formatted'] == $defaultWeekStart) ? 'selected' : '' }}>
                                     {{ $week['label'] }} ({{ $week['start']->format('M d') }} - {{ $week['end']->format('M d') }})
                                 </option>
                             @endforeach
@@ -81,12 +77,12 @@
                             @endforeach
                         </optgroup>
                     </select>
-                    <p class="text-xs text-gray-500 mt-1">Working days: Monday to Friday</p>
+                    <p class="text-xs text-gray-500 mt-1">Working days: Monday to Friday. Weekly updates are for the previous week's activities.</p>
                 </div>
 
                 {{-- Hidden fields for actual dates --}}
-                <input type="hidden" name="week_start" id="week_start" value="{{ old('week_start', $requestedWeekStart ?? $defaultWeek['start_formatted'] ?? now()->startOfWeek(\Carbon\Carbon::MONDAY)->format('Y-m-d')) }}">
-                <input type="hidden" name="week_end" id="week_end" value="{{ old('week_end', $defaultWeek['end_formatted'] ?? now()->startOfWeek(\Carbon\Carbon::MONDAY)->addDays(4)->format('Y-m-d')) }}">
+                <input type="hidden" name="week_start" id="week_start" value="{{ old('week_start', $requestedWeekStart ?? $defaultWeekStart) }}">
+                <input type="hidden" name="week_end" id="week_end" value="{{ old('week_end', $reportingWeekStart->copy()->addDays(4)->format('Y-m-d')) }}">
             </div>
 
             <script>

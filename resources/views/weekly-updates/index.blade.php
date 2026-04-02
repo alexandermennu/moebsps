@@ -14,8 +14,8 @@
             </h2>
             <p class="text-sm text-gray-600 mt-0.5">
                 {{ $submittedCount }}/{{ $allDivisions->count() }} divisions submitted
-                @if($overdueCount > 0) | <span class="text-red-600">{{ $overdueCount }} overdue</span>@endif
-                @if($pendingCount > 0) | <span class="text-orange-600">{{ $pendingCount }} pending</span>@endif
+                @if($lateCount > 0) | <span class="text-orange-600">{{ $lateCount }} late</span>@endif
+                @if($overdueCount > 0) | <span class="text-red-600">{{ $overdueCount }} not submitted</span>@endif
                 <span class="text-gray-400 ml-2">·</span>
                 <span class="text-gray-500 ml-2">Due: {{ $dueDate->format('l, M d') }}</span>
             </p>
@@ -67,6 +67,7 @@
                     <th class="text-left px-4 py-3 text-xs text-gray-500 uppercase tracking-wide font-medium">Status</th>
                     <th class="text-left px-4 py-3 text-xs text-gray-500 uppercase tracking-wide font-medium">Submission Details</th>
                     <th class="text-left px-4 py-3 text-xs text-gray-500 uppercase tracking-wide font-medium">Content</th>
+                    <th class="text-center px-4 py-3 text-xs text-gray-500 uppercase tracking-wide font-medium">Report Status</th>
                     <th class="text-center px-4 py-3 text-xs text-gray-500 uppercase tracking-wide font-medium">Action</th>
                 </tr>
             </thead>
@@ -112,6 +113,32 @@
                         </td>
                         <td class="px-4 py-3 text-center">
                             @if($divStatus->update)
+                                @php
+                                    $reportStatus = $divStatus->update->status;
+                                    $statusStyles = match($reportStatus) {
+                                        'approved' => 'bg-green-100 text-green-700',
+                                        'submitted' => 'bg-blue-100 text-blue-700',
+                                        'rejected' => 'bg-red-100 text-red-700',
+                                        'draft' => 'bg-gray-100 text-gray-600',
+                                        default => 'bg-gray-100 text-gray-600',
+                                    };
+                                    $statusLabel = match($reportStatus) {
+                                        'approved' => 'Approved',
+                                        'submitted' => 'Under Review',
+                                        'rejected' => 'Rejected',
+                                        'draft' => 'Draft',
+                                        default => ucfirst($reportStatus),
+                                    };
+                                @endphp
+                                <span class="inline-flex px-2 py-1 text-xs font-medium rounded {{ $statusStyles }}">
+                                    {{ $statusLabel }}
+                                </span>
+                            @else
+                                <span class="text-gray-400">—</span>
+                            @endif
+                        </td>
+                        <td class="px-4 py-3 text-center">
+                            @if($divStatus->update)
                                 <a href="{{ route('weekly-updates.show', $divStatus->update) }}" class="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-600 text-white text-xs font-medium hover:bg-blue-700">
                                     View Report
                                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
@@ -136,7 +163,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="5" class="px-4 py-6 text-center text-gray-500">No divisions found.</td>
+                        <td colspan="6" class="px-4 py-6 text-center text-gray-500">No divisions found.</td>
                     </tr>
                 @endforelse
             </tbody>
