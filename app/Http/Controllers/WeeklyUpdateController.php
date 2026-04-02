@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\BureauNotification;
 use App\Models\Division;
+use App\Models\Message;
 use App\Models\UpdateActivity;
 use App\Models\UpdateActivityComment;
 use App\Models\WeeklyUpdate;
@@ -231,14 +232,16 @@ class WeeklyUpdateController extends Controller
             abort(403);
         }
 
-        // Get reporting week info
+        // Get the CURRENT reporting week (same logic as index)
         $today = now();
         $thisWeekStart = $today->copy()->startOfWeek(\Carbon\Carbon::MONDAY);
         $reportingWeekStart = $thisWeekStart->copy()->subWeek();
-        $reportingWeekEnd = $reportingWeekStart->copy()->addDays(4);
-        $weekLabel = $this->getWeekLabel($reportingWeekStart);
+        $reportingWeekEnd = $reportingWeekStart->copy()->addDays(4); // Friday
+        
+        // Get the week label from the reporting week start
+        $weekLabel = $reportingWeekStart->format('F') . ' Week ' . $this->getWeekNumber($reportingWeekStart) . ', ' . $reportingWeekStart->format('Y');
 
-        // Get divisions that haven't submitted
+        // Get divisions that haven't submitted for this reporting week
         $submittedDivisionIds = WeeklyUpdate::where('week_start', $reportingWeekStart->toDateString())
             ->pluck('division_id')
             ->toArray();
@@ -258,19 +261,41 @@ class WeeklyUpdateController extends Controller
                 ->first();
 
             if ($divisionHead) {
-                BureauNotification::send(
-                    $divisionHead->id,
-                    'weekly_update_reminder',
-                    'Weekly Update Reminder',
-                    "Please submit your weekly update for {$weekLabel} ({$reportingWeekStart->format('M d')} - {$reportingWeekEnd->format('M d')}). This is a reminder from the Bureau.",
-                    route('weekly-updates.create')
-                );
+                // Send a Message instead of BureauNotification
+                Message::create([
+                    'sender_id' => $user->id,
+                    'receiver_id' => $divisionHead->id,
+                    'subject' => "Weekly Update Reminder - {$weekLabel}",
+                    'body' => "Dear {$divisionHead->name},\n\nThis is a reminder to submit your weekly update for {$weekLabel} ({$reportingWeekStart->format('M d')} - {$reportingWeekEnd->format('M d')}).\n\nPlease submit your report as soon as possible.\n\nThank you,\n{$user->name}",
+                    'is_read' => false,
+                ]);
                 $notifiedCount++;
             }
         }
 
         return redirect()->route('weekly-updates.index')
-            ->with('success', "Reminder sent to {$notifiedCount} division(s) that haven't submitted their weekly update.");
+            ->with('success', "Reminder message sent to {$notifiedCount} division(s) that haven't submitted their weekly update.");
+    }
+
+    /**
+     * Get week number within the month
+     */
+    private function getWeekNumber($date): int
+    {
+        $firstOfMonth = $date->copy()->startOfMonth();
+        $firstMonday = $firstOfMonth->copy()->startOfWeek(\Carbon\Carbon::MONDAY);
+        if ($firstMonday->lt($firstOfMonth)) {
+            $firstMonday->addWeek();
+        }
+        
+        $weekNum = 1;
+        $cursor = $firstMonday->copy();
+        while ($cursor->lt($date->copy()->startOfWeek(\Carbon\Carbon::MONDAY))) {
+            $cursor->addWeek();
+            $weekNum++;
+        }
+        
+        return max(1, $weekNum);
     }
 
     /**
@@ -284,12 +309,13 @@ class WeeklyUpdateController extends Controller
             abort(403);
         }
 
-        // Get reporting week info
+        // Get the CURRENT reporting week (same logic as index)
         $today = now();
         $thisWeekStart = $today->copy()->startOfWeek(\Carbon\Carbon::MONDAY);
         $reportingWeekStart = $thisWeekStart->copy()->subWeek();
-        $reportingWeekEnd = $reportingWeekStart->copy()->addDays(4);
-        $weekLabel = $this->getWeekLabel($reportingWeekStart);
+        $reportingWeekEnd = $reportingWeekStart->copy()->addDays(4); // Friday
+        
+        $weekLabel = $reportingWeekStart->format('F') . ' Week ' . $this->getWeekNumber($reportingWeekStart) . ', ' . $reportingWeekStart->format('Y');
 
         // Check if already submitted
         $existingUpdate = WeeklyUpdate::where('week_start', $reportingWeekStart->toDateString())
@@ -308,16 +334,17 @@ class WeeklyUpdateController extends Controller
             ->first();
 
         if ($divisionHead) {
-            BureauNotification::send(
-                $divisionHead->id,
-                'weekly_update_request',
-                'Weekly Update Submission Requested',
-                "The Bureau has requested your weekly update for {$weekLabel} ({$reportingWeekStart->format('M d')} - {$reportingWeekEnd->format('M d')}). Please submit as soon as possible.",
-                route('weekly-updates.create')
-            );
+            // Send a Message instead of BureauNotification
+            Message::create([
+                'sender_id' => $user->id,
+                'receiver_id' => $divisionHead->id,
+                'subject' => "Weekly Update Submission Requested - {$weekLabel}",
+                'body' => "Dear {$divisionHead->name},\n\nThe Bureau has requested your weekly update for {$weekLabel} ({$reportingWeekStart->format('M d')} - {$reportingWeekEnd->format('M d')}).\n\nPlease submit your report as soon as possible.\n\nThank you,\n{$user->name}",
+                'is_read' => false,
+            ]);
 
             return redirect()->route('weekly-updates.index')
-                ->with('success', "Submission request sent to {$division->name}.");
+                ->with('success', "Submission request message sent to {$division->name}.");
         }
 
         return redirect()->route('weekly-updates.index')
