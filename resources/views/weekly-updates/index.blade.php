@@ -5,20 +5,55 @@
 
 @section('content')
 <div class="space-y-5">
-    {{-- Filter/Search Bar with Actions --}}
-    <div class="bg-white border border-gray-200 p-3">
-        <form method="GET" action="{{ route('weekly-updates.index') }}" class="flex items-end gap-3">
+    {{-- Page Header with Title and Actions --}}
+    <div class="flex items-start justify-between">
+        <div>
+            <p class="text-sm text-gray-500 uppercase tracking-wide">Office of the Assistant Minister</p>
+            <p class="text-sm text-gray-500">Bureau of Student Personnel Services</p>
+            <h1 class="text-2xl font-bold text-gray-900 mt-1">Division Weekly Updates ({{ $reportingWeekStart->format('F Y') }})</h1>
+        </div>
+        <div class="flex items-center gap-2">
+            @if($user->canManageDivision())
+                <a href="{{ route('weekly-updates.create', ['week_start' => $reportingWeekStart->toDateString()]) }}" class="inline-flex items-center gap-1.5 px-4 py-2 bg-green-600 text-white text-sm font-medium hover:bg-green-700">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    New Report
+                </a>
+            @endif
+            @if($user->hasFullAccess())
+                @if($notSubmittedCount > 0)
+                    <form action="{{ route('weekly-updates.send-reminder') }}" method="POST" class="inline">
+                        @csrf
+                        <button type="submit" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50" onclick="return confirm('Send reminder to {{ $notSubmittedCount }} division(s) that have not submitted?')">
+                            Send Reminder
+                        </button>
+                    </form>
+                @else
+                    <button type="button" class="px-4 py-2 bg-gray-100 border border-gray-200 text-gray-400 text-sm font-medium cursor-not-allowed" disabled>
+                        Send Reminder
+                    </button>
+                @endif
+                <a href="{{ route('weekly-updates.consolidated') }}" class="inline-flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white text-sm font-medium hover:bg-blue-700">
+                    View Consolidated Report
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </a>
+            @endif
+        </div>
+    </div>
+
+    {{-- Filter/Search Bar --}}
+    <div class="bg-white border border-gray-200 p-4">
+        <form method="GET" action="{{ route('weekly-updates.index') }}" class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
             {{-- Month Picker --}}
-            <div class="w-36">
+            <div>
                 <label class="block text-xs text-gray-500 uppercase tracking-wide mb-1">Month</label>
                 <input type="month" name="month" value="{{ request('month', $reportingWeekStart->format('Y-m')) }}" 
-                    class="w-full px-2.5 py-1.5 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-slate-500">
+                    class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-slate-500">
             </div>
 
             {{-- Week Dropdown --}}
-            <div class="w-64">
+            <div>
                 <label class="block text-xs text-gray-500 uppercase tracking-wide mb-1">Week</label>
-                <select name="week" class="w-full px-2.5 py-1.5 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-slate-500">
+                <select name="week" class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-slate-500">
                     @php
                         $selectedMonth = request('month', $reportingWeekStart->format('Y-m'));
                         $monthDate = \Carbon\Carbon::createFromFormat('Y-m', $selectedMonth)->startOfMonth();
@@ -31,13 +66,14 @@
                         </option>
                     @endforeach
                 </select>
+                <p class="text-xs text-gray-400 mt-1">Monday to Friday working days</p>
             </div>
 
             {{-- Division Filter --}}
             @if($user->hasFullAccess())
-            <div class="w-48">
+            <div>
                 <label class="block text-xs text-gray-500 uppercase tracking-wide mb-1">Division</label>
-                <select name="division" class="w-full px-2.5 py-1.5 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-slate-500">
+                <select name="division" class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-slate-500">
                     <option value="">All Divisions</option>
                     @foreach($allDivisionsForDropdown as $division)
                         <option value="{{ $division->id }}" {{ request('division') == $division->id ? 'selected' : '' }}>
@@ -49,103 +85,60 @@
             @endif
 
             {{-- Search --}}
-            <div class="flex-1">
+            <div class="{{ $user->hasFullAccess() ? '' : 'md:col-span-2' }}">
                 <label class="block text-xs text-gray-500 uppercase tracking-wide mb-1">Search</label>
-                <div class="relative">
-                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Search..."
-                        class="w-full px-2.5 py-1.5 pl-8 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-slate-500">
-                    <svg class="w-4 h-4 text-gray-400 absolute left-2 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                    </svg>
+                <div class="flex gap-2">
+                    <div class="relative flex-1">
+                        <input type="text" name="search" value="{{ request('search') }}" placeholder="Search by division or submitter..."
+                            class="w-full px-3 py-2 pl-9 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-slate-500">
+                        <svg class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
+                    </div>
+                    <button type="submit" class="px-4 py-2 bg-gray-800 text-white text-sm font-medium rounded hover:bg-gray-700">
+                        Search
+                    </button>
                 </div>
             </div>
+        </form>
+    </div>
 
-            {{-- Filter Actions --}}
+    {{-- Content Section --}}
+    <div class="bg-white border border-gray-200 p-5">
+        {{-- Section Header --}}
+        <div class="mb-4">
+            <h2 class="text-lg font-semibold text-gray-900">
+                Reporting Week: {{ $reportingWeekLabel }} 
+                <span class="font-normal text-gray-500">({{ $reportingWeekStart->format('M d') }} – {{ $reportingWeekEnd->format('M d') }})</span>
+            </h2>
+            <p class="text-sm text-gray-600 mt-0.5">
+                {{ $submittedCount }}/{{ $allDivisions->count() }} divisions submitted
+                @if($lateCount > 0) | <span class="text-orange-600">{{ $lateCount }} late</span>@endif
+                @if($overdueCount > 0) | <span class="text-red-600">{{ $overdueCount }} not submitted</span>@endif
+                <span class="text-gray-400 ml-2">·</span>
+                <span class="text-gray-500 ml-2">Due: {{ $dueDate->format('l, M d') }}</span>
+            </p>
+        </div>
+
+        {{-- Status Summary Pills --}}
+        <div class="flex items-center gap-5 mb-4">
             <div class="flex items-center gap-2">
-                <button type="submit" class="px-3 py-1.5 bg-gray-800 text-white text-sm font-medium rounded hover:bg-gray-700">
-                    Apply
-                </button>
-                @if(request('search') || request('week') || request('division') || (request('month') && request('month') != $reportingWeekStart->format('Y-m')))
-                <a href="{{ route('weekly-updates.index') }}" class="px-3 py-1.5 bg-white border border-gray-300 text-gray-600 text-sm font-medium rounded hover:bg-gray-50" title="Reset filters">
-                    Reset
-                </a>
-                @endif
+                <span class="w-3 h-3 rounded-full bg-green-500"></span>
+                <span class="text-sm text-gray-700">{{ $onTimeCount }} On Time</span>
             </div>
-
-            {{-- Separator --}}
-            <div class="w-px h-8 bg-gray-300"></div>
-
-            {{-- Action Buttons --}}
             <div class="flex items-center gap-2">
-                @if($user->canManageDivision() && !$user->hasFullAccess())
-                    <a href="{{ route('weekly-updates.create', ['week_start' => $reportingWeekStart->toDateString()]) }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-600 text-white text-sm font-medium rounded hover:bg-green-700">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                        New Report
-                    </a>
-                @endif
-                @if($user->hasFullAccess())
-                    <a href="{{ route('weekly-updates.create', ['week_start' => $reportingWeekStart->toDateString()]) }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-600 text-white text-sm font-medium rounded hover:bg-green-700">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                        New Report
-                    </a>
-                    @if($notSubmittedCount > 0)
-                        </form>
-                        <form action="{{ route('weekly-updates.send-reminder') }}" method="POST" class="inline">
-                            @csrf
-                            <button type="submit" class="px-3 py-1.5 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded hover:bg-gray-50" onclick="return confirm('Send reminder to {{ $notSubmittedCount }} division(s) that have not submitted?')">
-                                Send Reminder
-                            </button>
-                        </form>
-                    @else
-                        </form>
-                        <button type="button" class="px-3 py-1.5 bg-gray-100 border border-gray-200 text-gray-400 text-sm font-medium rounded cursor-not-allowed" disabled>
-                            Send Reminder
-                        </button>
-                    @endif
-                    <a href="{{ route('weekly-updates.consolidated') }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded hover:bg-blue-700">
-                        Consolidated Report
-                    </a>
-                @else
-                    </form>
-                @endif
+                <span class="w-3 h-3 rounded-full bg-orange-500"></span>
+                <span class="text-sm text-gray-700">{{ $lateCount }} Late</span>
             </div>
-    </div>
-
-    {{-- Header Section --}}
-    <div>
-        <h2 class="text-lg font-semibold text-gray-900">
-            Reporting Week: {{ $reportingWeekLabel }} 
-            <span class="font-normal text-gray-500">({{ $reportingWeekStart->format('M d') }} – {{ $reportingWeekEnd->format('M d') }})</span>
-        </h2>
-        <p class="text-sm text-gray-600 mt-0.5">
-            {{ $submittedCount }}/{{ $allDivisions->count() }} divisions submitted
-            @if($lateCount > 0) | <span class="text-orange-600">{{ $lateCount }} late</span>@endif
-            @if($overdueCount > 0) | <span class="text-red-600">{{ $overdueCount }} not submitted</span>@endif
-            <span class="text-gray-400 ml-2">·</span>
-            <span class="text-gray-500 ml-2">Due: {{ $dueDate->format('l, M d') }}</span>
-        </p>
-    </div>
-
-    {{-- Status Summary Pills --}}
-    <div class="flex items-center gap-5">
-        <div class="flex items-center gap-2">
-            <span class="w-3 h-3 rounded-full bg-green-500"></span>
-            <span class="text-sm text-gray-700">{{ $onTimeCount }} On Time</span>
+            <div class="flex items-center gap-2">
+                <span class="w-3 h-3 rounded-full bg-red-500"></span>
+                <span class="text-sm text-gray-700">{{ $notSubmittedCount }} Not Submitted</span>
+            </div>
         </div>
-        <div class="flex items-center gap-2">
-            <span class="w-3 h-3 rounded-full bg-orange-500"></span>
-            <span class="text-sm text-gray-700">{{ $lateCount }} Late</span>
-        </div>
-        <div class="flex items-center gap-2">
-            <span class="w-3 h-3 rounded-full bg-red-500"></span>
-            <span class="text-sm text-gray-700">{{ $notSubmittedCount }} Not Submitted</span>
-        </div>
-    </div>
 
-    {{-- Main Division Table --}}
-    <div class="bg-white border border-gray-200">
+        {{-- Main Division Table --}}
         <table class="w-full text-sm">
-            <thead class="bg-gray-50 border-b border-gray-200">
+            <thead class="bg-gray-50 border-y border-gray-200">
                 <tr>
                     <th class="text-left px-4 py-3 text-xs text-gray-500 uppercase tracking-wide font-medium">Division</th>
                     <th class="text-left px-4 py-3 text-xs text-gray-500 uppercase tracking-wide font-medium">Status</th>
