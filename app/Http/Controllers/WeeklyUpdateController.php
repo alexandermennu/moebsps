@@ -237,6 +237,10 @@ class WeeklyUpdateController extends Controller
         $thisWeekStart = $today->copy()->startOfWeek(\Carbon\Carbon::MONDAY);
         $reportingWeekStart = $thisWeekStart->copy()->subWeek();
         $reportingWeekEnd = $reportingWeekStart->copy()->addDays(4); // Friday
+        $dueDate = $reportingWeekEnd->copy()->endOfDay(); // Due Friday of reporting week
+        
+        // Calculate how many days overdue
+        $daysOverdue = (int) $today->startOfDay()->diffInDays($dueDate->copy()->startOfDay());
         
         // Get the week label from the reporting week start
         $weekLabel = $reportingWeekStart->format('F') . ' Week ' . $this->getWeekNumber($reportingWeekStart) . ', ' . $reportingWeekStart->format('Y');
@@ -252,6 +256,7 @@ class WeeklyUpdateController extends Controller
             ->get();
 
         $notifiedCount = 0;
+        $submitUrl = route('weekly-updates.create');
 
         foreach ($pendingDivisions as $division) {
             // Get division head (director or senior staff)
@@ -261,12 +266,12 @@ class WeeklyUpdateController extends Controller
                 ->first();
 
             if ($divisionHead) {
-                // Send a Message instead of BureauNotification
+                // Send a Message with overdue details
                 Message::create([
                     'sender_id' => $user->id,
                     'receiver_id' => $divisionHead->id,
-                    'subject' => "Weekly Update Reminder - {$weekLabel}",
-                    'body' => "Dear {$divisionHead->name},\n\nThis is a reminder to submit your weekly update for {$weekLabel} ({$reportingWeekStart->format('M d')} - {$reportingWeekEnd->format('M d')}).\n\nPlease submit your report as soon as possible.\n\nThank you,\n{$user->name}",
+                    'subject' => "OVERDUE: Weekly Update Submission - {$weekLabel}",
+                    'body' => "Dear {$divisionHead->name},\n\nYour weekly update for {$weekLabel} ({$reportingWeekStart->format('M d')} - {$reportingWeekEnd->format('M d')}) is OVERDUE.\n\n• Due Date: {$dueDate->format('l, F j, Y')}\n• Days Overdue: {$daysOverdue} " . ($daysOverdue == 1 ? 'day' : 'days') . "\n\nPlease submit your report immediately using the link below:\n{$submitUrl}\n\nThank you,\n{$user->name}",
                     'is_read' => false,
                 ]);
                 $notifiedCount++;
@@ -274,7 +279,7 @@ class WeeklyUpdateController extends Controller
         }
 
         return redirect()->route('weekly-updates.index')
-            ->with('success', "Reminder message sent to {$notifiedCount} division(s) that haven't submitted their weekly update.");
+            ->with('success', "Overdue notice sent to {$notifiedCount} division(s).");
     }
 
     /**
@@ -314,6 +319,10 @@ class WeeklyUpdateController extends Controller
         $thisWeekStart = $today->copy()->startOfWeek(\Carbon\Carbon::MONDAY);
         $reportingWeekStart = $thisWeekStart->copy()->subWeek();
         $reportingWeekEnd = $reportingWeekStart->copy()->addDays(4); // Friday
+        $dueDate = $reportingWeekEnd->copy()->endOfDay(); // Due Friday of reporting week
+        
+        // Calculate how many days overdue
+        $daysOverdue = (int) $today->startOfDay()->diffInDays($dueDate->copy()->startOfDay());
         
         $weekLabel = $reportingWeekStart->format('F') . ' Week ' . $this->getWeekNumber($reportingWeekStart) . ', ' . $reportingWeekStart->format('Y');
 
@@ -333,18 +342,20 @@ class WeeklyUpdateController extends Controller
             ->whereIn('role', ['director', 'division_head', 'senior_staff'])
             ->first();
 
+        $submitUrl = route('weekly-updates.create');
+
         if ($divisionHead) {
-            // Send a Message instead of BureauNotification
+            // Send a Message with overdue details
             Message::create([
                 'sender_id' => $user->id,
                 'receiver_id' => $divisionHead->id,
-                'subject' => "Weekly Update Submission Requested - {$weekLabel}",
-                'body' => "Dear {$divisionHead->name},\n\nThe Bureau has requested your weekly update for {$weekLabel} ({$reportingWeekStart->format('M d')} - {$reportingWeekEnd->format('M d')}).\n\nPlease submit your report as soon as possible.\n\nThank you,\n{$user->name}",
+                'subject' => "OVERDUE: Weekly Update Submission - {$weekLabel}",
+                'body' => "Dear {$divisionHead->name},\n\nYour weekly update for {$weekLabel} ({$reportingWeekStart->format('M d')} - {$reportingWeekEnd->format('M d')}) is OVERDUE.\n\n• Due Date: {$dueDate->format('l, F j, Y')}\n• Days Overdue: {$daysOverdue} " . ($daysOverdue == 1 ? 'day' : 'days') . "\n\nPlease submit your report immediately using the link below:\n{$submitUrl}\n\nThank you,\n{$user->name}",
                 'is_read' => false,
             ]);
 
             return redirect()->route('weekly-updates.index')
-                ->with('success', "Submission request message sent to {$division->name}.");
+                ->with('success', "Overdue notice sent to {$division->name}.");
         }
 
         return redirect()->route('weekly-updates.index')
