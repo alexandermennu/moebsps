@@ -7,9 +7,9 @@
 <div class="space-y-5">
     {{-- Page Header with Title and Actions --}}
     <div class="flex items-start justify-between">
-        <div class="bg-slate-700 text-white px-5 py-3 rounded">
-            <p class="text-xs text-slate-300 uppercase tracking-wide">Office of the Assistant Minister</p>
-            <p class="text-xs text-slate-300">Bureau of Student Personnel Services</p>
+        <div class="bg-blue-700 text-white px-5 py-3 rounded">
+            <p class="text-xs text-blue-200 uppercase tracking-wide">Office of the Assistant Minister</p>
+            <p class="text-xs text-blue-200">Bureau of Student Personnel Services</p>
             <h1 class="text-lg font-semibold text-white mt-1">Division Weekly Updates ({{ $reportingWeekStart->format('F Y') }})</h1>
         </div>
         <div class="flex items-center gap-2">
