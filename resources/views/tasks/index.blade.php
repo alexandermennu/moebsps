@@ -17,12 +17,16 @@
     /* Checkbox animation */
     .task-checkbox-wrapper {
         transition: transform 0.15s ease-out;
+        cursor: pointer;
     }
     .task-checkbox-wrapper:hover {
         transform: scale(1.1);
     }
     .task-checkbox-wrapper:active {
         transform: scale(0.95);
+    }
+    .task-checkbox {
+        pointer-events: none;
     }
     
     /* Action buttons */
@@ -636,15 +640,22 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // AJAX task toggle without page reload
-    document.querySelectorAll('.task-toggle').forEach(function(checkbox) {
-        checkbox.addEventListener('change', function(e) {
-            const taskId = this.dataset.taskId;
+    // Make checkbox wrapper clickable
+    document.querySelectorAll('.task-checkbox-wrapper').forEach(function(wrapper) {
+        wrapper.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const checkbox = this.querySelector('.task-toggle');
+            const taskId = checkbox.dataset.taskId;
             const taskItem = this.closest('.task-item');
-            const checkboxDiv = taskItem.querySelector('.task-checkbox');
+            const checkboxDiv = this.querySelector('.task-checkbox');
             const checkIcon = checkboxDiv.querySelector('svg');
             const taskTitle = taskItem.querySelector('.task-title');
-            const isCompleting = this.checked;
+            const isCompleting = !checkbox.checked;
+            
+            // Toggle checkbox state
+            checkbox.checked = isCompleting;
             
             // Instant visual feedback
             if (isCompleting) {
@@ -674,24 +685,25 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .then(response => response.json())
             .then(data => {
-                // Optionally update counters if returned
                 if (data.success) {
-                    console.log('Task updated');
+                    console.log('Task updated:', data.status);
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
                 // Revert on error
-                this.checked = !isCompleting;
+                checkbox.checked = !isCompleting;
                 if (!isCompleting) {
                     checkboxDiv.classList.add('bg-green-500', 'border-green-500', 'checked');
                     checkIcon.classList.remove('hidden');
                     taskTitle.classList.add('line-through', 'text-slate-400');
+                    taskTitle.classList.remove('text-slate-700');
                 } else {
                     checkboxDiv.classList.remove('bg-green-500', 'border-green-500', 'checked');
                     checkboxDiv.classList.add('border-slate-300');
                     checkIcon.classList.add('hidden');
                     taskTitle.classList.remove('line-through', 'text-slate-400');
+                    taskTitle.classList.add('text-slate-700');
                 }
             });
         });
