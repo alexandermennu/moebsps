@@ -4,249 +4,318 @@
 @section('page-title', 'My Tasks')
 
 @section('content')
-<div class="space-y-5">
-    {{-- Page Header --}}
-    <div class="flex items-center justify-between">
+<div class="p-6">
+    {{-- Header --}}
+    <div class="flex items-center justify-between mb-6">
         <div>
-            <h1 class="text-xl font-semibold text-gray-900">My Tasks</h1>
-            <p class="text-sm text-gray-500 mt-0.5">Manage your personal tasks and to-dos</p>
+            <h1 class="text-xl font-semibold text-slate-800">My Tasks</h1>
+            <p class="text-sm text-slate-500 mt-1">{{ now()->format('l, F j, Y') }}</p>
         </div>
-        <a href="{{ route('tasks.create') }}" class="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white text-sm font-medium hover:bg-green-700 rounded">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+        <a href="{{ route('tasks.create') }}" 
+           class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium inline-flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+            </svg>
             Add Task
         </a>
     </div>
 
-    {{-- Summary Cards --}}
-    <div class="grid grid-cols-4 gap-4">
-        <div class="bg-white border border-gray-200 rounded-lg p-4">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-2xl font-bold text-gray-900">{{ $pendingCount }}</p>
-                    <p class="text-sm text-gray-500">Pending Tasks</p>
-                </div>
-                <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                    <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-                </div>
-            </div>
-        </div>
-        <div class="bg-white border border-gray-200 rounded-lg p-4">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-2xl font-bold {{ $overdueCount > 0 ? 'text-red-600' : 'text-gray-900' }}">{{ $overdueCount }}</p>
-                    <p class="text-sm text-gray-500">Overdue</p>
-                </div>
-                <div class="w-10 h-10 {{ $overdueCount > 0 ? 'bg-red-100' : 'bg-gray-100' }} rounded-full flex items-center justify-center">
-                    <svg class="w-5 h-5 {{ $overdueCount > 0 ? 'text-red-600' : 'text-gray-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                </div>
-            </div>
-        </div>
-        <div class="bg-white border border-gray-200 rounded-lg p-4">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-2xl font-bold {{ $dueTodayCount > 0 ? 'text-orange-600' : 'text-gray-900' }}">{{ $dueTodayCount }}</p>
-                    <p class="text-sm text-gray-500">Due Today</p>
-                </div>
-                <div class="w-10 h-10 {{ $dueTodayCount > 0 ? 'bg-orange-100' : 'bg-gray-100' }} rounded-full flex items-center justify-center">
-                    <svg class="w-5 h-5 {{ $dueTodayCount > 0 ? 'text-orange-600' : 'text-gray-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                </div>
-            </div>
-        </div>
-        <div class="bg-white border border-gray-200 rounded-lg p-4">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-2xl font-bold text-green-600">{{ $completedCount }}</p>
-                    <p class="text-sm text-gray-500">Completed</p>
-                </div>
-                <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                    <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    {{-- Filter Bar --}}
-    <form method="GET" action="{{ route('tasks.index') }}" class="flex items-end gap-4">
-        <div class="w-40">
-            <label class="block text-xs text-gray-500 uppercase tracking-wide mb-1">Status</label>
-            <select name="status" class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-slate-500">
-                <option value="active" {{ request('status', 'active') == 'active' ? 'selected' : '' }}>Active</option>
-                <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
-                <option value="in_progress" {{ request('status') == 'in_progress' ? 'selected' : '' }}>In Progress</option>
-                <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>Completed</option>
-            </select>
-        </div>
-
-        <div class="w-44">
-            <label class="block text-xs text-gray-500 uppercase tracking-wide mb-1">Related To</label>
-            <select name="related_to" class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-slate-500">
-                <option value="">All Categories</option>
-                @foreach($relatedToOptions as $value => $label)
-                    <option value="{{ $value }}" {{ request('related_to') == $value ? 'selected' : '' }}>{{ $label }}</option>
-                @endforeach
-            </select>
-        </div>
-
-        <div class="w-36">
-            <label class="block text-xs text-gray-500 uppercase tracking-wide mb-1">Priority</label>
-            <select name="priority" class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-slate-500">
-                <option value="">All Priorities</option>
-                @foreach($priorityOptions as $value => $label)
-                    <option value="{{ $value }}" {{ request('priority') == $value ? 'selected' : '' }}>{{ $label }}</option>
-                @endforeach
-            </select>
-        </div>
-
-        <div class="flex-1">
-            <label class="block text-xs text-gray-500 uppercase tracking-wide mb-1">Search</label>
-            <div class="relative">
-                <input type="text" name="search" value="{{ request('search') }}" placeholder="Search tasks..."
-                    class="w-full px-3 py-2 pl-8 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-slate-500">
-                <svg class="w-4 h-4 text-gray-400 absolute left-2.5 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                </svg>
-            </div>
-        </div>
-
-        <button type="submit" class="px-4 py-2 bg-gray-800 text-white text-sm font-medium rounded hover:bg-gray-700">
-            Filter
-        </button>
+    {{-- Two Column Layout --}}
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         
-        @if(request()->hasAny(['status', 'related_to', 'priority', 'search']) && (request('status') != 'active' || request('related_to') || request('priority') || request('search')))
-        <a href="{{ route('tasks.index') }}" class="px-4 py-2 bg-white border border-gray-300 text-gray-600 text-sm font-medium rounded hover:bg-gray-50">
-            Reset
-        </a>
-        @endif
-    </form>
-
-    {{-- Quick Add Task --}}
-    <div class="bg-white border border-gray-200 rounded-lg p-4">
-        <form action="{{ route('tasks.quick-store') }}" method="POST" class="flex items-center gap-3">
-            @csrf
-            <div class="flex-1">
-                <input type="text" name="title" placeholder="Quick add a task... Press Enter to save" required
-                    class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-green-500">
-            </div>
-            <div class="w-36">
-                <select name="related_to" class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-slate-500">
-                    @foreach($relatedToOptions as $value => $label)
-                        <option value="{{ $value }}">{{ $label }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="w-32">
-                <input type="date" name="due_date" class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-slate-500">
-            </div>
-            <button type="submit" class="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded hover:bg-green-700">
-                Add
-            </button>
-        </form>
-    </div>
-
-    {{-- Tasks List --}}
-    <div class="bg-white border border-gray-200 rounded-lg shadow-sm">
-        @if($tasks->count() > 0)
-            <div class="divide-y divide-gray-100">
-                @foreach($tasks as $task)
-                    <div class="p-4 hover:bg-gray-50 {{ $task->status === 'completed' ? 'opacity-60' : '' }}">
-                        <div class="flex items-start gap-3">
-                            {{-- Checkbox --}}
-                            <form action="{{ route('tasks.toggle-complete', $task) }}" method="POST" class="mt-0.5">
-                                @csrf
-                                <button type="submit" class="w-5 h-5 rounded border-2 flex items-center justify-center transition-colors
-                                    {{ $task->status === 'completed' ? 'bg-green-500 border-green-500' : 'border-gray-300 hover:border-green-500' }}">
-                                    @if($task->status === 'completed')
-                                        <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
-                                    @endif
-                                </button>
-                            </form>
-
-                            {{-- Task Content --}}
-                            <div class="flex-1 min-w-0">
-                                <div class="flex items-center gap-2">
-                                    <h3 class="text-sm font-medium {{ $task->status === 'completed' ? 'text-gray-500 line-through' : 'text-gray-900' }}">
-                                        {{ $task->title }}
-                                    </h3>
-                                    
-                                    {{-- Priority Badge --}}
-                                    @if($task->priority === 'high')
-                                        <span class="inline-flex px-1.5 py-0.5 text-xs font-medium bg-red-100 text-red-700 rounded">High</span>
-                                    @elseif($task->priority === 'medium')
-                                        <span class="inline-flex px-1.5 py-0.5 text-xs font-medium bg-yellow-100 text-yellow-700 rounded">Medium</span>
-                                    @endif
-
-                                    {{-- Overdue Badge --}}
-                                    @if($task->is_overdue)
-                                        <span class="inline-flex px-1.5 py-0.5 text-xs font-medium bg-red-100 text-red-700 rounded">Overdue</span>
-                                    @elseif($task->is_due_today)
-                                        <span class="inline-flex px-1.5 py-0.5 text-xs font-medium bg-orange-100 text-orange-700 rounded">Due Today</span>
-                                    @endif
-                                </div>
-
-                                @if($task->description)
-                                    <p class="text-sm text-gray-500 mt-1 line-clamp-1">{{ $task->description }}</p>
-                                @endif
-
-                                <div class="flex items-center gap-3 mt-2 text-xs text-gray-500">
-                                    {{-- Related To --}}
-                                    <span class="inline-flex items-center gap-1">
-                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
-                                        {{ $task->related_to_label }}
-                                    </span>
-
-                                    {{-- Due Date --}}
-                                    @if($task->due_date)
-                                        <span class="inline-flex items-center gap-1 {{ $task->is_overdue ? 'text-red-600' : '' }}">
-                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                                            {{ $task->due_date->format('M d, Y') }}
-                                        </span>
-                                    @endif
-
-                                    {{-- Status --}}
-                                    @if($task->status === 'in_progress')
-                                        <span class="inline-flex items-center gap-1 text-blue-600">
-                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-                                            In Progress
-                                        </span>
-                                    @elseif($task->status === 'completed')
-                                        <span class="inline-flex items-center gap-1 text-green-600">
-                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                            Completed {{ $task->completed_at ? $task->completed_at->diffForHumans() : '' }}
-                                        </span>
-                                    @endif
-                                </div>
+        {{-- LEFT COLUMN: Today's Tasks --}}
+        <div>
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                {{-- Header --}}
+                <div class="bg-gradient-to-r from-blue-500 to-blue-600 px-5 py-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="bg-white/20 rounded-lg p-2">
+                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+                                </svg>
                             </div>
-
-                            {{-- Actions --}}
-                            <div class="flex items-center gap-2">
-                                <a href="{{ route('tasks.edit', $task) }}" class="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded" title="Edit">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                                </a>
-                                <form action="{{ route('tasks.destroy', $task) }}" method="POST" class="inline" onsubmit="return confirm('Delete this task?');">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded" title="Delete">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                                    </button>
-                                </form>
+                            <div>
+                                <h2 class="text-lg font-semibold text-white">Today's Tasks</h2>
+                                <p class="text-blue-100 text-sm">{{ now()->format('D, M j') }}</p>
                             </div>
                         </div>
+                        <div class="text-right">
+                            <span class="text-2xl font-bold text-white">{{ $todaysTasks->where('status', '!=', 'completed')->count() }}</span>
+                            <p class="text-blue-100 text-xs">remaining</p>
+                        </div>
                     </div>
-                @endforeach
+                </div>
+
+                {{-- Quick Add for Today --}}
+                <div class="px-5 py-3 border-b border-slate-100 bg-slate-50">
+                    <form action="{{ route('tasks.quick-store') }}" method="POST" class="flex gap-2">
+                        @csrf
+                        <input type="hidden" name="scheduled_date" value="{{ now()->toDateString() }}">
+                        <input type="text" 
+                               name="title" 
+                               placeholder="Add a task for today..." 
+                               class="flex-1 text-sm border-slate-200 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                               required>
+                        <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded-lg text-sm">
+                            Add
+                        </button>
+                    </form>
+                </div>
+
+                {{-- Today's Task List --}}
+                <div class="divide-y divide-slate-100">
+                    @forelse($todaysTasks as $task)
+                        <div class="task-item px-5 py-3 hover:bg-slate-50 transition-colors group {{ $task->status === 'completed' ? 'bg-slate-50' : '' }}" 
+                             data-task-id="{{ $task->id }}">
+                            <div class="flex items-start gap-3">
+                                {{-- Checkbox --}}
+                                <form action="{{ route('tasks.toggle-complete', $task) }}" method="POST" class="toggle-form mt-0.5">
+                                    @csrf
+                                    <label class="relative flex items-center cursor-pointer">
+                                        <input type="checkbox" 
+                                               class="task-checkbox peer sr-only"
+                                               {{ $task->status === 'completed' ? 'checked' : '' }}
+                                               onchange="this.form.submit()">
+                                        <div class="w-5 h-5 border-2 rounded {{ $task->status === 'completed' ? 'bg-blue-500 border-blue-500' : 'border-slate-300 hover:border-blue-400' }} flex items-center justify-center transition-all">
+                                            @if($task->status === 'completed')
+                                                <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+                                                </svg>
+                                            @endif
+                                        </div>
+                                    </label>
+                                </form>
+
+                                {{-- Task Content --}}
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm {{ $task->status === 'completed' ? 'line-through text-slate-400' : 'text-slate-700' }}">
+                                        {{ $task->title }}
+                                    </p>
+                                    @if($task->description)
+                                        <p class="text-xs text-slate-400 mt-0.5 truncate">{{ $task->description }}</p>
+                                    @endif
+                                </div>
+
+                                {{-- Priority Badge --}}
+                                @if($task->priority === 'high' && $task->status !== 'completed')
+                                    <span class="shrink-0 bg-red-100 text-red-600 text-xs px-2 py-0.5 rounded-full">High</span>
+                                @endif
+
+                                {{-- Actions --}}
+                                <div class="shrink-0 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <a href="{{ route('tasks.edit', $task) }}" class="text-slate-400 hover:text-slate-600 p-1">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                                        </svg>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    @empty
+                        <div class="px-5 py-8 text-center">
+                            <div class="text-slate-400 mb-2">
+                                <svg class="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                                </svg>
+                            </div>
+                            <p class="text-slate-500 text-sm">No tasks for today</p>
+                            <p class="text-slate-400 text-xs mt-1">Add a task above or move one from weekly targets</p>
+                        </div>
+                    @endforelse
+                </div>
+
+                {{-- Today's Progress --}}
+                @if($todaysTasks->count() > 0)
+                    <div class="px-5 py-3 bg-slate-50 border-t border-slate-100">
+                        <div class="flex items-center justify-between text-xs text-slate-500 mb-2">
+                            <span>Progress</span>
+                            <span>{{ $todaysTasks->where('status', 'completed')->count() }} / {{ $todaysTasks->count() }} completed</span>
+                        </div>
+                        <div class="w-full bg-slate-200 rounded-full h-2">
+                            @php
+                                $todayProgress = $todaysTasks->count() > 0 
+                                    ? ($todaysTasks->where('status', 'completed')->count() / $todaysTasks->count()) * 100 
+                                    : 0;
+                            @endphp
+                            <div class="bg-blue-500 h-2 rounded-full transition-all duration-300" style="width: {{ $todayProgress }}%"></div>
+                        </div>
+                    </div>
+                @endif
             </div>
-        @else
-            <div class="p-8 text-center">
-                <svg class="w-12 h-12 text-gray-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
-                <p class="text-gray-500">No tasks found</p>
-                <p class="text-sm text-gray-400 mt-1">
-                    @if(request('status') === 'completed')
-                        You haven't completed any tasks yet.
-                    @else
-                        Add your first task using the form above!
-                    @endif
-                </p>
+        </div>
+
+        {{-- RIGHT COLUMN: Weekly Targets --}}
+        <div>
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                {{-- Header --}}
+                <div class="bg-gradient-to-r from-purple-500 to-purple-600 px-5 py-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="bg-white/20 rounded-lg p-2">
+                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <h2 class="text-lg font-semibold text-white">Weekly Targets</h2>
+                                <p class="text-purple-100 text-sm">{{ now()->startOfWeek()->format('M j') }} - {{ now()->endOfWeek()->format('M j') }}</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-2xl font-bold text-white">{{ $weeklyCompletedCount }}</span>
+                            <p class="text-purple-100 text-xs">of {{ $weeklyTotalCount }} done</p>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Quick Add for Weekly --}}
+                <div class="px-5 py-3 border-b border-slate-100 bg-slate-50">
+                    <form action="{{ route('tasks.quick-store') }}" method="POST" class="flex gap-2">
+                        @csrf
+                        <input type="hidden" name="is_weekly_target" value="1">
+                        <input type="text" 
+                               name="title" 
+                               placeholder="Add a weekly target..." 
+                               class="flex-1 text-sm border-slate-200 rounded-lg focus:ring-purple-500 focus:border-purple-500"
+                               required>
+                        <button type="submit" class="bg-purple-500 hover:bg-purple-600 text-white px-3 py-2 rounded-lg text-sm">
+                            Add
+                        </button>
+                    </form>
+                </div>
+
+                {{-- Weekly Task List --}}
+                <div class="divide-y divide-slate-100 max-h-[500px] overflow-y-auto">
+                    @forelse($weeklyTasks as $task)
+                        <div class="task-item px-5 py-3 hover:bg-slate-50 transition-colors group {{ $task->status === 'completed' ? 'bg-slate-50' : '' }}" 
+                             data-task-id="{{ $task->id }}">
+                            <div class="flex items-start gap-3">
+                                {{-- Checkbox --}}
+                                <form action="{{ route('tasks.toggle-complete', $task) }}" method="POST" class="toggle-form mt-0.5">
+                                    @csrf
+                                    <label class="relative flex items-center cursor-pointer">
+                                        <input type="checkbox" 
+                                               class="task-checkbox peer sr-only"
+                                               {{ $task->status === 'completed' ? 'checked' : '' }}
+                                               onchange="this.form.submit()">
+                                        <div class="w-5 h-5 border-2 rounded {{ $task->status === 'completed' ? 'bg-purple-500 border-purple-500' : 'border-slate-300 hover:border-purple-400' }} flex items-center justify-center transition-all">
+                                            @if($task->status === 'completed')
+                                                <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+                                                </svg>
+                                            @endif
+                                        </div>
+                                    </label>
+                                </form>
+
+                                {{-- Task Content --}}
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm {{ $task->status === 'completed' ? 'line-through text-slate-400' : 'text-slate-700' }}">
+                                        {{ $task->title }}
+                                    </p>
+                                    <div class="flex items-center gap-2 mt-1">
+                                        @if($task->due_date)
+                                            <span class="text-xs {{ $task->is_overdue ? 'text-red-500' : 'text-slate-400' }}">
+                                                Due {{ $task->due_date->format('D, M j') }}
+                                            </span>
+                                        @endif
+                                        @if($task->related_to && $task->related_to !== 'personal')
+                                            <span class="text-xs text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded">
+                                                {{ $task->related_to_label }}
+                                            </span>
+                                        @endif
+                                    </div>
+                                </div>
+
+                                {{-- Priority & Actions --}}
+                                <div class="shrink-0 flex items-center gap-2">
+                                    @if($task->priority === 'high' && $task->status !== 'completed')
+                                        <span class="bg-red-100 text-red-600 text-xs px-2 py-0.5 rounded-full">High</span>
+                                    @endif
+
+                                    {{-- Move to Today Button --}}
+                                    @if($task->status !== 'completed' && !$task->is_scheduled_today)
+                                        <form action="{{ route('tasks.schedule-today', $task) }}" method="POST" class="inline">
+                                            @csrf
+                                            <button type="submit" 
+                                                    class="text-purple-500 hover:text-purple-700 p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                    title="Move to Today">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+                                                </svg>
+                                            </button>
+                                        </form>
+                                    @endif
+
+                                    <a href="{{ route('tasks.edit', $task) }}" 
+                                       class="text-slate-400 hover:text-slate-600 p-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                                        </svg>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    @empty
+                        <div class="px-5 py-8 text-center">
+                            <div class="text-slate-400 mb-2">
+                                <svg class="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                </svg>
+                            </div>
+                            <p class="text-slate-500 text-sm">No weekly targets set</p>
+                            <p class="text-slate-400 text-xs mt-1">Add your goals for this week above</p>
+                        </div>
+                    @endforelse
+                </div>
+
+                {{-- Weekly Progress --}}
+                @if($weeklyTotalCount > 0)
+                    <div class="px-5 py-3 bg-slate-50 border-t border-slate-100">
+                        <div class="flex items-center justify-between text-xs text-slate-500 mb-2">
+                            <span>Week Progress</span>
+                            <span>{{ $weeklyCompletedCount }} / {{ $weeklyTotalCount }} completed</span>
+                        </div>
+                        <div class="w-full bg-slate-200 rounded-full h-2">
+                            @php
+                                $weekProgress = $weeklyTotalCount > 0 
+                                    ? ($weeklyCompletedCount / $weeklyTotalCount) * 100 
+                                    : 0;
+                            @endphp
+                            <div class="bg-purple-500 h-2 rounded-full transition-all duration-300" style="width: {{ $weekProgress }}%"></div>
+                        </div>
+                    </div>
+                @endif
             </div>
-        @endif
+
+            {{-- Overdue Tasks Alert --}}
+            @if($overdueCount > 0)
+                <div class="mt-4 bg-red-50 border border-red-200 rounded-xl p-4">
+                    <div class="flex items-center gap-3">
+                        <div class="bg-red-100 rounded-lg p-2">
+                            <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-red-700">{{ $overdueCount }} overdue {{ Str::plural('task', $overdueCount) }}</p>
+                            <p class="text-xs text-red-500">Review and reschedule or complete</p>
+                        </div>
+                    </div>
+                </div>
+            @endif
+        </div>
     </div>
 </div>
+
+@if(session('success'))
+    <div x-data="{ show: true }" 
+         x-show="show" 
+         x-init="setTimeout(() => show = false, 3000)"
+         x-transition
+         class="fixed bottom-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg text-sm">
+        {{ session('success') }}
+    </div>
+@endif
 @endsection

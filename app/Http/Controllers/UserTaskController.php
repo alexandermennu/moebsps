@@ -8,72 +8,86 @@ use Illuminate\Http\Request;
 class UserTaskController extends Controller
 {
     /**
-     * Display a listing of user's tasks.
+     * Display a listing of user's tasks with daily/weekly layout.
      */
     public function index(Request $request)
     {
         $user = $request->user();
-        
-        $query = UserTask::where('user_id', $user->id);
+        $today = now()->toDateString();
+        $startOfWeek = now()->startOfWeek();
+        $endOfWeek = now()->endOfWeek();
 
-        // Filter by status
-        if ($request->has('status') && $request->status) {
-            if ($request->status === 'active') {
-                $query->where('status', '!=', 'completed');
-            } else {
-                $query->where('status', $request->status);
-            }
-        } else {
-            // Default: show active (non-completed) tasks
-            $query->where('status', '!=', 'completed');
-        }
+        // Get today's tasks (scheduled for today)
+        $todaysTasks = UserTask::where('user_id', $user->id)
+            ->where(function($q) use ($today) {
+                $q->whereDate('scheduled_date', $today)
+                  ->orWhereDate('due_date', $today);
+            })
+            ->orderByRaw("CASE WHEN status = 'completed' THEN 1 ELSE 0 END")
+            ->orderByRaw("FIELD(priority, 'high', 'medium', 'low')")
+            ->get();
 
-        // Filter by related_to
-        if ($request->has('related_to') && $request->related_to) {
-            $query->where('related_to', $request->related_to);
-        }
-
-        // Filter by priority
-        if ($request->has('priority') && $request->priority) {
-            $query->where('priority', $request->priority);
-        }
-
-        // Search
-        if ($request->has('search') && $request->search) {
-            $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('title', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%");
-            });
-        }
-
-        // Order: overdue first, then by due date, then by priority
-        $tasks = $query->orderByRaw("CASE WHEN due_date < CURDATE() AND status != 'completed' THEN 0 ELSE 1 END")
-                       ->orderByRaw("CASE WHEN due_date IS NULL THEN 1 ELSE 0 END")
-                       ->orderBy('due_date')
-                       ->orderByRaw("FIELD(priority, 'high', 'medium', 'low')")
-                       ->get();
+        // Get weekly targets (tasks marked as weekly targets or due this week)
+        $weeklyTasks = UserTask::where('user_id', $user->id)
+            ->where(function($q) use ($startOfWeek, $endOfWeek, $today) {
+                $q->where('is_weekly_target', true)
+                  ->orWhereBetween('due_date', [$startOfWeek, $endOfWeek]);
+            })
+            ->where(function($q) use ($today) {
+                // Exclude tasks already shown in today's list (unless they're weekly targets)
+                $q->where('is_weekly_target', true)
+                  ->orWhereNull('scheduled_date')
+                  ->orWhereDate('scheduled_date', '!=', $today);
+            })
+            ->orderByRaw("CASE WHEN status = 'completed' THEN 1 ELSE 0 END")
+            ->orderByRaw("CASE WHEN due_date IS NULL THEN 1 ELSE 0 END")
+            ->orderBy('due_date')
+            ->orderByRaw("FIELD(priority, 'high', 'medium', 'low')")
+            ->get();
 
         // Get counts for summary
         $pendingCount = UserTask::where('user_id', $user->id)->pending()->count();
         $overdueCount = UserTask::where('user_id', $user->id)->overdue()->count();
-        $dueTodayCount = UserTask::where('user_id', $user->id)->pending()->dueToday()->count();
-        $completedCount = UserTask::where('user_id', $user->id)->completed()->count();
+        $todayCompletedCount = UserTask::where('user_id', $user->id)
+            ->whereDate('scheduled_date', $today)
+            ->completed()
+            ->count();
+        $todayPendingCount = UserTask::where('user_id', $user->id)
+            ->where(function($q) use ($today) {
+                $q->whereDate('scheduled_date', $today)
+                  ->orWhereDate('due_date', $today);
+            })
+            ->pending()
+            ->count();
+        $weeklyCompletedCount = UserTask::where('user_id', $user->id)
+            ->where(function($q) use ($startOfWeek, $endOfWeek) {
+                $q->where('is_weekly_target', true)
+                  ->orWhereBetween('due_date', [$startOfWeek, $endOfWeek]);
+            })
+            ->completed()
+            ->count();
+        $weeklyTotalCount = UserTask::where('user_id', $user->id)
+            ->where(function($q) use ($startOfWeek, $endOfWeek) {
+                $q->where('is_weekly_target', true)
+                  ->orWhereBetween('due_date', [$startOfWeek, $endOfWeek]);
+            })
+            ->count();
 
         $relatedToOptions = UserTask::getRelatedToOptions();
         $priorityOptions = UserTask::getPriorityOptions();
-        $statusOptions = UserTask::getStatusOptions();
 
         return view('tasks.index', compact(
             'user',
-            'tasks',
+            'todaysTasks',
+            'weeklyTasks',
             'pendingCount',
             'overdueCount',
-            'dueTodayCount',
-            'completedCount',
+            'todayCompletedCount',
+            'todayPendingCount',
+            'weeklyCompletedCount',
+            'weeklyTotalCount',
             'relatedToOptions',
-            'priorityOptions',
-            'statusOptions'
+            'priorityOptions'
         ));
     }
 
@@ -97,12 +111,15 @@ class UserTaskController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'due_date' => 'nullable|date',
+            'scheduled_date' => 'nullable|date',
+            'is_weekly_target' => 'nullable|boolean',
             'priority' => 'required|in:low,medium,high',
             'related_to' => 'required|string',
         ]);
 
         $validated['user_id'] = $request->user()->id;
         $validated['status'] = 'pending';
+        $validated['is_weekly_target'] = $request->has('is_weekly_target');
 
         UserTask::create($validated);
 
@@ -140,10 +157,14 @@ class UserTaskController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'due_date' => 'nullable|date',
+            'scheduled_date' => 'nullable|date',
+            'is_weekly_target' => 'nullable|boolean',
             'priority' => 'required|in:low,medium,high',
             'status' => 'required|in:pending,in_progress,completed',
             'related_to' => 'required|string',
         ]);
+
+        $validated['is_weekly_target'] = $request->has('is_weekly_target');
 
         // Set completed_at if marking as completed
         if ($validated['status'] === 'completed' && $task->status !== 'completed') {
@@ -205,6 +226,8 @@ class UserTaskController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'due_date' => 'nullable|date',
+            'scheduled_date' => 'nullable|date',
+            'is_weekly_target' => 'nullable|boolean',
             'priority' => 'nullable|in:low,medium,high',
             'related_to' => 'nullable|string',
         ]);
@@ -213,6 +236,8 @@ class UserTaskController extends Controller
             'user_id' => $request->user()->id,
             'title' => $validated['title'],
             'due_date' => $validated['due_date'] ?? null,
+            'scheduled_date' => $validated['scheduled_date'] ?? null,
+            'is_weekly_target' => $request->has('is_weekly_target'),
             'priority' => $validated['priority'] ?? 'medium',
             'related_to' => $validated['related_to'] ?? 'personal',
             'status' => 'pending',
@@ -223,5 +248,43 @@ class UserTaskController extends Controller
         }
 
         return redirect()->route('tasks.index')->with('success', 'Task added successfully.');
+    }
+
+    /**
+     * Schedule a task for today (move from weekly to daily).
+     */
+    public function scheduleForToday(Request $request, UserTask $task)
+    {
+        // Ensure user owns this task
+        if ($task->user_id !== auth()->id()) {
+            abort(403);
+        }
+
+        $task->update(['scheduled_date' => now()->toDateString()]);
+
+        if ($request->ajax()) {
+            return response()->json(['success' => true, 'message' => 'Task scheduled for today.', 'task' => $task]);
+        }
+
+        return redirect()->back()->with('success', 'Task scheduled for today.');
+    }
+
+    /**
+     * Remove task from today's schedule.
+     */
+    public function unschedule(Request $request, UserTask $task)
+    {
+        // Ensure user owns this task
+        if ($task->user_id !== auth()->id()) {
+            abort(403);
+        }
+
+        $task->update(['scheduled_date' => null]);
+
+        if ($request->ajax()) {
+            return response()->json(['success' => true, 'message' => 'Task removed from today.', 'task' => $task]);
+        }
+
+        return redirect()->back()->with('success', 'Task removed from today\'s schedule.');
     }
 }

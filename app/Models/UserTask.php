@@ -15,6 +15,8 @@ class UserTask extends Model
         'title',
         'description',
         'due_date',
+        'scheduled_date',
+        'is_weekly_target',
         'priority',
         'status',
         'related_to',
@@ -24,6 +26,8 @@ class UserTask extends Model
 
     protected $casts = [
         'due_date' => 'date',
+        'scheduled_date' => 'date',
+        'is_weekly_target' => 'boolean',
         'completed_at' => 'datetime',
     ];
 
@@ -164,6 +168,56 @@ class UserTask extends Model
     public function scopeDueToday($query)
     {
         return $query->whereDate('due_date', now()->toDateString());
+    }
+
+    /**
+     * Scope for tasks scheduled for today
+     */
+    public function scopeScheduledForToday($query)
+    {
+        return $query->whereDate('scheduled_date', now()->toDateString());
+    }
+
+    /**
+     * Scope for tasks scheduled for a specific date
+     */
+    public function scopeScheduledFor($query, $date)
+    {
+        return $query->whereDate('scheduled_date', $date);
+    }
+
+    /**
+     * Scope for weekly targets
+     */
+    public function scopeWeeklyTargets($query)
+    {
+        return $query->where('is_weekly_target', true);
+    }
+
+    /**
+     * Scope for tasks in current week
+     */
+    public function scopeCurrentWeek($query)
+    {
+        $startOfWeek = now()->startOfWeek();
+        $endOfWeek = now()->endOfWeek();
+        
+        return $query->where(function($q) use ($startOfWeek, $endOfWeek) {
+            $q->whereBetween('due_date', [$startOfWeek, $endOfWeek])
+              ->orWhereBetween('scheduled_date', [$startOfWeek, $endOfWeek])
+              ->orWhere('is_weekly_target', true);
+        });
+    }
+
+    /**
+     * Check if task is scheduled for today
+     */
+    public function getIsScheduledTodayAttribute(): bool
+    {
+        if (!$this->scheduled_date) {
+            return false;
+        }
+        return $this->scheduled_date->isToday();
     }
 
     /**
