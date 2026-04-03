@@ -16,78 +16,124 @@ class UserTaskController extends Controller
         $today = now()->toDateString();
         $startOfWeek = now()->startOfWeek();
         $endOfWeek = now()->endOfWeek();
+        $view = $request->get('view', 'split'); // split, all, completed
 
-        // Get today's tasks (scheduled for today)
-        $todaysTasks = UserTask::where('user_id', $user->id)
-            ->where(function($q) use ($today) {
-                $q->whereDate('scheduled_date', $today)
-                  ->orWhereDate('due_date', $today);
-            })
-            ->orderByRaw("CASE WHEN status = 'completed' THEN 1 ELSE 0 END")
-            ->orderByRaw("FIELD(priority, 'high', 'medium', 'low')")
-            ->get();
+        // Check if new columns exist (for backwards compatibility)
+        $hasScheduledDate = \Schema::hasColumn('user_tasks', 'scheduled_date');
+        $hasWeeklyTarget = \Schema::hasColumn('user_tasks', 'is_weekly_target');
 
-        // Get weekly targets (tasks marked as weekly targets or due this week)
-        $weeklyTasks = UserTask::where('user_id', $user->id)
-            ->where(function($q) use ($startOfWeek, $endOfWeek, $today) {
-                $q->where('is_weekly_target', true)
-                  ->orWhereBetween('due_date', [$startOfWeek, $endOfWeek]);
-            })
-            ->where(function($q) use ($today) {
-                // Exclude tasks already shown in today's list (unless they're weekly targets)
-                $q->where('is_weekly_target', true)
-                  ->orWhereNull('scheduled_date')
-                  ->orWhereDate('scheduled_date', '!=', $today);
-            })
-            ->orderByRaw("CASE WHEN status = 'completed' THEN 1 ELSE 0 END")
-            ->orderByRaw("CASE WHEN due_date IS NULL THEN 1 ELSE 0 END")
-            ->orderBy('due_date')
-            ->orderByRaw("FIELD(priority, 'high', 'medium', 'low')")
-            ->get();
+        if ($view === 'all') {
+            // Show all active tasks
+            $allTasks = UserTask::where('user_id', $user->id)
+                ->pending()
+                ->orderByRaw("CASE WHEN due_date < CURDATE() THEN 0 ELSE 1 END")
+                ->orderByRaw("CASE WHEN due_date IS NULL THEN 1 ELSE 0 END")
+                ->orderBy('due_date')
+                ->orderByRaw("FIELD(priority, 'high', 'medium', 'low')")
+                ->get();
+            
+            $todaysTasks = collect();
+            $weeklyTasks = collect();
+        } elseif ($view === 'completed') {
+            // Show completed tasks
+            $allTasks = UserTask::where('user_id', $user->id)
+                ->completed()
+                ->orderBy('completed_at', 'desc')
+                ->get();
+            
+            $todaysTasks = collect();
+            $weeklyTasks = collect();
+        } else {
+            $allTasks = collect();
+            
+            // Get today's tasks (scheduled for today or due today)
+            $todaysQuery = UserTask::where('user_id', $user->id);
+            if ($hasScheduledDate) {
+                $todaysQuery->where(function($q) use ($today) {
+                    $q->whereDate('scheduled_date', $today)
+                      ->orWhereDate('due_date', $today);
+                });
+            } else {
+                $todaysQuery->whereDate('due_date', $today);
+            }
+            $todaysTasks = $todaysQuery
+                ->orderByRaw("CASE WHEN status = 'completed' THEN 1 ELSE 0 END")
+                ->orderByRaw("FIELD(priority, 'high', 'medium', 'low')")
+                ->get();
+
+            // Get weekly targets (tasks marked as weekly targets or due this week)
+            $weeklyQuery = UserTask::where('user_id', $user->id);
+            if ($hasWeeklyTarget) {
+                $weeklyQuery->where(function($q) use ($startOfWeek, $endOfWeek) {
+                    $q->where('is_weekly_target', true)
+                      ->orWhereBetween('due_date', [$startOfWeek, $endOfWeek]);
+                });
+                if ($hasScheduledDate) {
+                    $weeklyQuery->where(function($q) use ($today) {
+                        $q->where('is_weekly_target', true)
+                          ->orWhereNull('scheduled_date')
+                          ->orWhereDate('scheduled_date', '!=', $today);
+                    });
+                }
+            } else {
+                $weeklyQuery->whereBetween('due_date', [$startOfWeek, $endOfWeek])
+                           ->whereDate('due_date', '!=', $today);
+            }
+            $weeklyTasks = $weeklyQuery
+                ->orderByRaw("CASE WHEN status = 'completed' THEN 1 ELSE 0 END")
+                ->orderByRaw("CASE WHEN due_date IS NULL THEN 1 ELSE 0 END")
+                ->orderBy('due_date')
+                ->orderByRaw("FIELD(priority, 'high', 'medium', 'low')")
+                ->get();
+        }
 
         // Get counts for summary
         $pendingCount = UserTask::where('user_id', $user->id)->pending()->count();
         $overdueCount = UserTask::where('user_id', $user->id)->overdue()->count();
-        $todayCompletedCount = UserTask::where('user_id', $user->id)
-            ->whereDate('scheduled_date', $today)
-            ->completed()
-            ->count();
+        $completedCount = UserTask::where('user_id', $user->id)->completed()->count();
+        
         $todayPendingCount = UserTask::where('user_id', $user->id)
-            ->where(function($q) use ($today) {
-                $q->whereDate('scheduled_date', $today)
-                  ->orWhereDate('due_date', $today);
-            })
+            ->whereDate('due_date', $today)
             ->pending()
             ->count();
-        $weeklyCompletedCount = UserTask::where('user_id', $user->id)
-            ->where(function($q) use ($startOfWeek, $endOfWeek) {
-                $q->where('is_weekly_target', true)
-                  ->orWhereBetween('due_date', [$startOfWeek, $endOfWeek]);
-            })
-            ->completed()
-            ->count();
-        $weeklyTotalCount = UserTask::where('user_id', $user->id)
-            ->where(function($q) use ($startOfWeek, $endOfWeek) {
-                $q->where('is_weekly_target', true)
-                  ->orWhereBetween('due_date', [$startOfWeek, $endOfWeek]);
-            })
-            ->count();
+            
+        $weeklyCompletedCount = 0;
+        $weeklyTotalCount = 0;
+        if ($hasWeeklyTarget) {
+            $weeklyCompletedCount = UserTask::where('user_id', $user->id)
+                ->where(function($q) use ($startOfWeek, $endOfWeek) {
+                    $q->where('is_weekly_target', true)
+                      ->orWhereBetween('due_date', [$startOfWeek, $endOfWeek]);
+                })
+                ->completed()
+                ->count();
+            $weeklyTotalCount = UserTask::where('user_id', $user->id)
+                ->where(function($q) use ($startOfWeek, $endOfWeek) {
+                    $q->where('is_weekly_target', true)
+                      ->orWhereBetween('due_date', [$startOfWeek, $endOfWeek]);
+                })
+                ->count();
+        }
 
         $relatedToOptions = UserTask::getRelatedToOptions();
         $priorityOptions = UserTask::getPriorityOptions();
 
         return view('tasks.index', compact(
             'user',
+            'view',
             'todaysTasks',
             'weeklyTasks',
+            'allTasks',
             'pendingCount',
             'overdueCount',
-            'todayCompletedCount',
+            'completedCount',
             'todayPendingCount',
             'weeklyCompletedCount',
             'weeklyTotalCount',
             'relatedToOptions',
-            'priorityOptions'
+            'priorityOptions',
+            'hasScheduledDate',
+            'hasWeeklyTarget'
         ));
     }
 
