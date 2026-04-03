@@ -13,14 +13,6 @@
         transform: translateX(4px);
         background-color: rgb(248 250 252);
     }
-    .task-item.completed-animation {
-        animation: taskComplete 0.3s ease-out;
-    }
-    @keyframes taskComplete {
-        0% { transform: scale(1); }
-        50% { transform: scale(0.98); background-color: rgb(220 252 231); }
-        100% { transform: scale(1); }
-    }
     
     /* Checkbox animation */
     .task-checkbox-wrapper {
@@ -71,9 +63,20 @@
         transition: width 0.5s ease-out;
     }
     
-    /* Quick add input focus */
-    .quick-add-input:focus {
-        transform: scale(1.01);
+    /* Task completion styles */
+    .task-item.is-completed .task-title {
+        text-decoration: line-through;
+        color: rgb(148 163 184);
+    }
+    .task-item.is-completed {
+        background-color: rgb(248 250 252 / 0.5);
+    }
+    .task-checkbox.checked {
+        background-color: rgb(34 197 94);
+        border-color: rgb(34 197 94);
+    }
+    .task-checkbox.checked svg {
+        display: block;
     }
 </style>
 @endpush
@@ -210,29 +213,26 @@
                 {{-- Today's Task List --}}
                 <div class="divide-y divide-slate-100">
                     @forelse($todaysTasks as $task)
-                        <div class="task-item px-5 py-2.5 group {{ $task->status === 'completed' ? 'bg-slate-50/50' : '' }}">
+                        <div class="task-item px-5 py-2.5 group {{ $task->status === 'completed' ? 'is-completed' : '' }}" data-task-id="{{ $task->id }}">
                             <div class="flex items-center gap-3">
                                 {{-- Checkbox --}}
-                                <form action="{{ route('tasks.toggle-complete', $task) }}" method="POST" class="task-checkbox-wrapper">
-                                    @csrf
+                                <div class="task-checkbox-wrapper">
                                     <label class="relative flex items-center cursor-pointer">
                                         <input type="checkbox" 
-                                               class="sr-only"
-                                               {{ $task->status === 'completed' ? 'checked' : '' }}
-                                               onchange="this.closest('.task-item').classList.add('completed-animation'); this.form.submit()">
-                                        <div class="w-5 h-5 border-2 rounded-full {{ $task->status === 'completed' ? 'bg-blue-500 border-blue-500' : 'border-slate-300 hover:border-blue-400 hover:bg-blue-50' }} flex items-center justify-center transition-all duration-150">
-                                            @if($task->status === 'completed')
-                                                <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
-                                                </svg>
-                                            @endif
+                                               class="sr-only task-toggle"
+                                               data-task-id="{{ $task->id }}"
+                                               {{ $task->status === 'completed' ? 'checked' : '' }}>
+                                        <div class="task-checkbox w-5 h-5 border-2 {{ $task->status === 'completed' ? 'bg-green-500 border-green-500 checked' : 'border-slate-300 hover:border-blue-400 hover:bg-blue-50' }} flex items-center justify-center transition-all duration-150">
+                                            <svg class="w-3 h-3 text-white {{ $task->status === 'completed' ? '' : 'hidden' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+                                            </svg>
                                         </div>
                                     </label>
-                                </form>
+                                </div>
 
                                 {{-- Task Content --}}
                                 <div class="flex-1 min-w-0">
-                                    <p class="text-sm {{ $task->status === 'completed' ? 'line-through text-slate-400' : 'text-slate-700' }} transition-all duration-200">
+                                    <p class="task-title text-sm {{ $task->status === 'completed' ? 'line-through text-slate-400' : 'text-slate-700' }} transition-all duration-200">
                                         {{ $task->title }}
                                     </p>
                                     @if($task->related_to && $task->related_to !== 'personal')
@@ -311,22 +311,22 @@
         <div>
             <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
                 {{-- Header --}}
-                <div class="bg-gradient-to-r from-purple-500 to-purple-600 px-5 py-4">
+                <div class="px-5 py-4 border-b border-slate-100">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-3">
-                            <div class="bg-white/20 rounded-lg p-2">
-                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div class="bg-slate-100 rounded-lg p-2">
+                                <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                                 </svg>
                             </div>
                             <div>
-                                <h2 class="text-lg font-semibold text-white">Weekly Targets</h2>
-                                <p class="text-purple-100 text-sm">{{ now()->startOfWeek()->format('M j') }} - {{ now()->endOfWeek()->format('M j') }}</p>
+                                <h2 class="text-lg font-semibold text-slate-700">Weekly Targets</h2>
+                                <p class="text-slate-400 text-sm">{{ now()->startOfWeek()->format('M j') }} - {{ now()->endOfWeek()->format('M j') }}</p>
                             </div>
                         </div>
                         <div class="text-right">
-                            <span class="text-2xl font-bold text-white">{{ $weeklyCompletedCount }}</span>
-                            <p class="text-purple-100 text-xs">of {{ $weeklyTotalCount }} done</p>
+                            <span class="text-2xl font-bold text-slate-600">{{ $weeklyCompletedCount }}</span>
+                            <p class="text-slate-400 text-xs">of {{ $weeklyTotalCount }} done</p>
                         </div>
                     </div>
                 </div>
@@ -342,9 +342,9 @@
                         <input type="text" 
                                name="title" 
                                placeholder="Add a weekly target..." 
-                               class="flex-1 text-sm border-slate-200 rounded-lg focus:ring-purple-500 focus:border-purple-500"
+                               class="flex-1 text-sm border-slate-200 rounded-lg focus:ring-slate-400 focus:border-slate-400"
                                required>
-                        <button type="submit" class="bg-purple-500 hover:bg-purple-600 text-white px-3 py-2 rounded-lg text-sm">
+                        <button type="submit" class="bg-slate-500 hover:bg-slate-600 text-white px-3 py-2 rounded-lg text-sm">
                             Add
                         </button>
                     </form>
@@ -353,29 +353,26 @@
                 {{-- Weekly Task List --}}
                 <div class="divide-y divide-slate-100 max-h-[500px] overflow-y-auto">
                     @forelse($weeklyTasks as $task)
-                        <div class="task-item px-5 py-2.5 group {{ $task->status === 'completed' ? 'bg-slate-50/50' : '' }}">
+                        <div class="task-item px-5 py-2.5 group {{ $task->status === 'completed' ? 'is-completed' : '' }}" data-task-id="{{ $task->id }}">
                             <div class="flex items-center gap-3">
                                 {{-- Checkbox --}}
-                                <form action="{{ route('tasks.toggle-complete', $task) }}" method="POST" class="task-checkbox-wrapper">
-                                    @csrf
+                                <div class="task-checkbox-wrapper">
                                     <label class="relative flex items-center cursor-pointer">
                                         <input type="checkbox" 
-                                               class="sr-only"
-                                               {{ $task->status === 'completed' ? 'checked' : '' }}
-                                               onchange="this.closest('.task-item').classList.add('completed-animation'); this.form.submit()">
-                                        <div class="w-5 h-5 border-2 rounded-full {{ $task->status === 'completed' ? 'bg-purple-500 border-purple-500' : 'border-slate-300 hover:border-purple-400 hover:bg-purple-50' }} flex items-center justify-center transition-all duration-150">
-                                            @if($task->status === 'completed')
-                                                <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
-                                                </svg>
-                                            @endif
+                                               class="sr-only task-toggle"
+                                               data-task-id="{{ $task->id }}"
+                                               {{ $task->status === 'completed' ? 'checked' : '' }}>
+                                        <div class="task-checkbox w-5 h-5 border-2 {{ $task->status === 'completed' ? 'bg-green-500 border-green-500 checked' : 'border-slate-300 hover:border-slate-400 hover:bg-slate-50' }} flex items-center justify-center transition-all duration-150">
+                                            <svg class="w-3 h-3 text-white {{ $task->status === 'completed' ? '' : 'hidden' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+                                            </svg>
                                         </div>
                                     </label>
-                                </form>
+                                </div>
 
                                 {{-- Task Content --}}
                                 <div class="flex-1 min-w-0">
-                                    <p class="text-sm {{ $task->status === 'completed' ? 'line-through text-slate-400' : 'text-slate-700' }} transition-all duration-200">
+                                    <p class="task-title text-sm {{ $task->status === 'completed' ? 'line-through text-slate-400' : 'text-slate-700' }} transition-all duration-200">
                                         {{ $task->title }}
                                     </p>
                                     <div class="flex items-center gap-2 mt-0.5">
@@ -404,7 +401,7 @@
                                             <form action="{{ route('tasks.schedule-today', $task) }}" method="POST" class="inline">
                                                 @csrf
                                                 <button type="submit" 
-                                                        class="task-action-btn text-purple-500 hover:text-purple-700 p-1.5 rounded-full hover:bg-purple-50"
+                                                        class="task-action-btn text-blue-500 hover:text-blue-700 p-1.5 rounded-full hover:bg-blue-50"
                                                         title="Move to Today">
                                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
@@ -459,7 +456,7 @@
                                     ? ($weeklyCompletedCount / $weeklyTotalCount) * 100 
                                     : 0;
                             @endphp
-                            <div class="progress-fill bg-purple-500 h-1.5 rounded-full" style="width: {{ $weekProgress }}%"></div>
+                            <div class="progress-fill bg-slate-400 h-1.5 rounded-full" style="width: {{ $weekProgress }}%"></div>
                         </div>
                     </div>
                 @endif
@@ -514,29 +511,26 @@
         {{-- Task List --}}
         <div class="divide-y divide-slate-100">
             @forelse($allTasks as $task)
-                <div class="task-item px-5 py-2.5 group {{ $task->status === 'completed' ? 'bg-slate-50/50' : '' }}">
+                <div class="task-item px-5 py-2.5 group {{ $task->status === 'completed' ? 'is-completed' : '' }}" data-task-id="{{ $task->id }}">
                     <div class="flex items-center gap-3">
                         {{-- Checkbox --}}
-                        <form action="{{ route('tasks.toggle-complete', $task) }}" method="POST" class="task-checkbox-wrapper">
-                            @csrf
+                        <div class="task-checkbox-wrapper">
                             <label class="relative flex items-center cursor-pointer">
                                 <input type="checkbox" 
-                                       class="sr-only"
-                                       {{ $task->status === 'completed' ? 'checked' : '' }}
-                                       onchange="this.closest('.task-item').classList.add('completed-animation'); this.form.submit()">
-                                <div class="w-5 h-5 border-2 rounded-full {{ $task->status === 'completed' ? 'bg-green-500 border-green-500' : 'border-slate-300 hover:border-green-400 hover:bg-green-50' }} flex items-center justify-center transition-all duration-150">
-                                    @if($task->status === 'completed')
-                                        <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
-                                        </svg>
-                                    @endif
+                                       class="sr-only task-toggle"
+                                       data-task-id="{{ $task->id }}"
+                                       {{ $task->status === 'completed' ? 'checked' : '' }}>
+                                <div class="task-checkbox w-5 h-5 border-2 {{ $task->status === 'completed' ? 'bg-green-500 border-green-500 checked' : 'border-slate-300 hover:border-green-400 hover:bg-green-50' }} flex items-center justify-center transition-all duration-150">
+                                    <svg class="w-3 h-3 text-white {{ $task->status === 'completed' ? '' : 'hidden' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+                                    </svg>
                                 </div>
                             </label>
-                        </form>
+                        </div>
 
                         {{-- Task Content --}}
                         <div class="flex-1 min-w-0">
-                            <p class="text-sm {{ $task->status === 'completed' ? 'line-through text-slate-400' : 'text-slate-700' }} transition-all duration-200">
+                            <p class="task-title text-sm {{ $task->status === 'completed' ? 'line-through text-slate-400' : 'text-slate-700' }} transition-all duration-200">
                                 {{ $task->title }}
                             </p>
                             <div class="flex items-center gap-2 mt-0.5 flex-wrap">
@@ -638,4 +632,71 @@
         {{ session('success') }}
     </div>
 @endif
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // AJAX task toggle without page reload
+    document.querySelectorAll('.task-toggle').forEach(function(checkbox) {
+        checkbox.addEventListener('change', function(e) {
+            const taskId = this.dataset.taskId;
+            const taskItem = this.closest('.task-item');
+            const checkboxDiv = taskItem.querySelector('.task-checkbox');
+            const checkIcon = checkboxDiv.querySelector('svg');
+            const taskTitle = taskItem.querySelector('.task-title');
+            const isCompleting = this.checked;
+            
+            // Instant visual feedback
+            if (isCompleting) {
+                checkboxDiv.classList.add('bg-green-500', 'border-green-500', 'checked');
+                checkboxDiv.classList.remove('border-slate-300', 'hover:border-blue-400', 'hover:bg-blue-50', 'hover:border-slate-400', 'hover:bg-slate-50', 'hover:border-green-400', 'hover:bg-green-50');
+                checkIcon.classList.remove('hidden');
+                taskTitle.classList.add('line-through', 'text-slate-400');
+                taskTitle.classList.remove('text-slate-700');
+                taskItem.classList.add('is-completed');
+            } else {
+                checkboxDiv.classList.remove('bg-green-500', 'border-green-500', 'checked');
+                checkboxDiv.classList.add('border-slate-300');
+                checkIcon.classList.add('hidden');
+                taskTitle.classList.remove('line-through', 'text-slate-400');
+                taskTitle.classList.add('text-slate-700');
+                taskItem.classList.remove('is-completed');
+            }
+            
+            // Send AJAX request
+            fetch(`/my-tasks/${taskId}/toggle-complete`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Optionally update counters if returned
+                if (data.success) {
+                    console.log('Task updated');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                // Revert on error
+                this.checked = !isCompleting;
+                if (!isCompleting) {
+                    checkboxDiv.classList.add('bg-green-500', 'border-green-500', 'checked');
+                    checkIcon.classList.remove('hidden');
+                    taskTitle.classList.add('line-through', 'text-slate-400');
+                } else {
+                    checkboxDiv.classList.remove('bg-green-500', 'border-green-500', 'checked');
+                    checkboxDiv.classList.add('border-slate-300');
+                    checkIcon.classList.add('hidden');
+                    taskTitle.classList.remove('line-through', 'text-slate-400');
+                }
+            });
+        });
+    });
+});
+</script>
+@endpush
 @endsection

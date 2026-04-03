@@ -246,19 +246,29 @@ class UserTaskController extends Controller
     {
         // Ensure user owns this task
         if ($task->user_id !== auth()->id()) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+            }
             abort(403);
         }
 
         if ($task->status === 'completed') {
             $task->markAsPending();
             $message = 'Task marked as pending.';
+            $status = 'pending';
         } else {
             $task->markAsCompleted();
             $message = 'Task marked as completed.';
+            $status = 'completed';
         }
 
-        if ($request->ajax()) {
-            return response()->json(['success' => true, 'message' => $message, 'task' => $task]);
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true, 
+                'message' => $message, 
+                'status' => $status,
+                'task_id' => $task->id
+            ]);
         }
 
         return redirect()->back()->with('success', $message);
