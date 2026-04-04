@@ -361,87 +361,148 @@
                     </form>
                 </div>
 
-                {{-- Weekly Task List --}}
-                <div class="divide-y divide-slate-100 max-h-[500px] overflow-y-auto">
-                    @forelse($weeklyTasks as $task)
-                        <div class="task-item px-5 py-2.5 group {{ $task->status === 'completed' ? 'is-completed' : '' }}" data-task-id="{{ $task->id }}">
-                            <div class="flex items-center gap-3">
-                                {{-- Checkbox --}}
-                                <div class="task-checkbox-wrapper">
-                                    <label class="relative flex items-center cursor-pointer">
-                                        <input type="checkbox" 
-                                               class="sr-only task-toggle"
-                                               data-task-id="{{ $task->id }}"
-                                               {{ $task->status === 'completed' ? 'checked' : '' }}>
-                                        <div class="task-checkbox w-5 h-5 border-2 {{ $task->status === 'completed' ? 'bg-green-500 border-green-500 checked' : 'border-slate-300 hover:border-slate-400 hover:bg-slate-50' }} flex items-center justify-center transition-all duration-150">
-                                            <svg class="w-3 h-3 text-white {{ $task->status === 'completed' ? '' : 'hidden' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
-                                            </svg>
+                {{-- Weekly Task List - Categorized by Day --}}
+                <div class="max-h-[500px] overflow-y-auto">
+                    @php
+                        $today = now()->startOfDay();
+                        $weekDays = [];
+                        for ($i = 0; $i < 7; $i++) {
+                            $date = now()->startOfWeek()->addDays($i);
+                            $weekDays[$date->format('Y-m-d')] = [
+                                'label' => $date->isToday() ? 'Today' : ($date->isTomorrow() ? 'Tomorrow' : $date->format('l')),
+                                'date' => $date->format('M j'),
+                                'isToday' => $date->isToday(),
+                                'isPast' => $date->lt($today),
+                                'tasks' => $weeklyTasks->filter(function($task) use ($date) {
+                                    $taskDate = $task->scheduled_date ?? $task->due_date;
+                                    return $taskDate && $taskDate->format('Y-m-d') === $date->format('Y-m-d');
+                                })
+                            ];
+                        }
+                        // Tasks without a date
+                        $noDateTasks = $weeklyTasks->filter(function($task) {
+                            return !$task->scheduled_date && !$task->due_date;
+                        });
+                    @endphp
+
+                    @foreach($weekDays as $dayKey => $day)
+                        @if($day['tasks']->count() > 0)
+                            <div class="border-b border-slate-100 last:border-b-0">
+                                {{-- Day Header --}}
+                                <div class="px-4 py-2 bg-slate-50 flex items-center justify-between sticky top-0">
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-xs font-semibold {{ $day['isToday'] ? 'text-blue-600' : ($day['isPast'] ? 'text-slate-400' : 'text-slate-600') }}">
+                                            {{ $day['label'] }}
+                                        </span>
+                                        <span class="text-xs text-slate-400">{{ $day['date'] }}</span>
+                                    </div>
+                                    <span class="text-xs text-slate-400">
+                                        {{ $day['tasks']->where('status', 'completed')->count() }}/{{ $day['tasks']->count() }}
+                                    </span>
+                                </div>
+                                {{-- Tasks for this day --}}
+                                @foreach($day['tasks'] as $task)
+                                    <div class="task-item px-5 py-2 group {{ $task->status === 'completed' ? 'is-completed' : '' }}" data-task-id="{{ $task->id }}">
+                                        <div class="flex items-center gap-3">
+                                            {{-- Checkbox --}}
+                                            <div class="task-checkbox-wrapper">
+                                                <label class="relative flex items-center cursor-pointer">
+                                                    <input type="checkbox" 
+                                                           class="sr-only task-toggle"
+                                                           data-task-id="{{ $task->id }}"
+                                                           {{ $task->status === 'completed' ? 'checked' : '' }}>
+                                                    <div class="task-checkbox w-4 h-4 border-2 {{ $task->status === 'completed' ? 'bg-green-500 border-green-500 checked' : 'border-slate-300 hover:border-slate-400 hover:bg-slate-50' }} flex items-center justify-center transition-all duration-150">
+                                                        <svg class="w-2.5 h-2.5 text-white {{ $task->status === 'completed' ? '' : 'hidden' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+                                                        </svg>
+                                                    </div>
+                                                </label>
+                                            </div>
+
+                                            {{-- Task Content --}}
+                                            <div class="flex-1 min-w-0">
+                                                <p class="task-title text-sm {{ $task->status === 'completed' ? 'line-through text-slate-400' : 'text-slate-700' }} transition-all duration-200">
+                                                    {{ $task->title }}
+                                                </p>
+                                            </div>
+
+                                            {{-- Priority & Actions --}}
+                                            <div class="shrink-0 flex items-center gap-1">
+                                                @if($task->priority === 'high' && $task->status !== 'completed')
+                                                    <span class="bg-red-100 text-red-600 text-[10px] px-1.5 py-0.5 rounded font-medium">!</span>
+                                                @endif
+
+                                                <div class="task-actions flex items-center gap-0.5 opacity-0">
+                                                    @if($task->status !== 'completed' && ($hasScheduledDate ?? false) && !$day['isToday'])
+                                                        <form action="{{ route('tasks.schedule-today', $task) }}" method="POST" class="inline">
+                                                            @csrf
+                                                            <button type="submit" class="task-action-btn text-blue-500 hover:text-blue-700 p-1 rounded hover:bg-blue-50" title="Move to Today">
+                                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+                                                                </svg>
+                                                            </button>
+                                                        </form>
+                                                    @endif
+                                                    <a href="{{ route('tasks.edit', $task) }}" class="task-action-btn text-slate-400 hover:text-blue-500 p-1 rounded hover:bg-blue-50" title="Edit">
+                                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                                                        </svg>
+                                                    </a>
+                                                    <form action="{{ route('tasks.destroy', $task) }}" method="POST" class="inline" onsubmit="return confirm('Delete this task?')">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="task-action-btn text-slate-400 hover:text-red-500 p-1 rounded hover:bg-red-50" title="Delete">
+                                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                                            </svg>
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </div>
                                         </div>
-                                    </label>
-                                </div>
-
-                                {{-- Task Content --}}
-                                <div class="flex-1 min-w-0">
-                                    <p class="task-title text-sm {{ $task->status === 'completed' ? 'line-through text-slate-400' : 'text-slate-700' }} transition-all duration-200">
-                                        {{ $task->title }}
-                                    </p>
-                                    <div class="flex items-center gap-2 mt-0.5">
-                                        @if($task->due_date)
-                                            <span class="text-xs {{ $task->is_overdue ? 'text-red-500 font-medium' : 'text-slate-400' }}">
-                                                {{ $task->due_date->format('D, M j') }}
-                                            </span>
-                                        @endif
-                                        @if($task->related_to && $task->related_to !== 'personal')
-                                            <span class="text-xs text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded">
-                                                {{ $task->related_to_label }}
-                                            </span>
-                                        @endif
                                     </div>
-                                </div>
-
-                                {{-- Priority & Actions --}}
-                                <div class="shrink-0 flex items-center gap-1">
-                                    @if($task->priority === 'high' && $task->status !== 'completed')
-                                        <span class="bg-red-100 text-red-600 text-xs px-2 py-0.5 rounded-full font-medium mr-1">!</span>
-                                    @endif
-
-                                    <div class="task-actions flex items-center gap-0.5 opacity-0">
-                                        {{-- Move to Today Button --}}
-                                        @if($task->status !== 'completed' && ($hasScheduledDate ?? false))
-                                            <form action="{{ route('tasks.schedule-today', $task) }}" method="POST" class="inline">
-                                                @csrf
-                                                <button type="submit" 
-                                                        class="task-action-btn text-blue-500 hover:text-blue-700 p-1.5 rounded-full hover:bg-blue-50"
-                                                        title="Move to Today">
-                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
-                                                    </svg>
-                                                </button>
-                                            </form>
-                                        @endif
-
-                                        <a href="{{ route('tasks.edit', $task) }}" 
-                                           class="task-action-btn text-slate-400 hover:text-blue-500 p-1.5 rounded-full hover:bg-blue-50" title="Edit">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
-                                            </svg>
-                                        </a>
-                                        
-                                        <form action="{{ route('tasks.destroy', $task) }}" method="POST" class="inline" onsubmit="return confirm('Delete this task?')">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="task-action-btn text-slate-400 hover:text-red-500 p-1.5 rounded-full hover:bg-red-50" title="Delete">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                                </svg>
-                                            </button>
-                                        </form>
-                                    </div>
-                                </div>
+                                @endforeach
                             </div>
+                        @endif
+                    @endforeach
+
+                    {{-- Tasks without date --}}
+                    @if($noDateTasks->count() > 0)
+                        <div class="border-b border-slate-100 last:border-b-0">
+                            <div class="px-4 py-2 bg-slate-50 flex items-center justify-between sticky top-0">
+                                <span class="text-xs font-semibold text-slate-500">No Date Set</span>
+                                <span class="text-xs text-slate-400">{{ $noDateTasks->count() }}</span>
+                            </div>
+                            @foreach($noDateTasks as $task)
+                                <div class="task-item px-5 py-2 group {{ $task->status === 'completed' ? 'is-completed' : '' }}" data-task-id="{{ $task->id }}">
+                                    <div class="flex items-center gap-3">
+                                        <div class="task-checkbox-wrapper">
+                                            <label class="relative flex items-center cursor-pointer">
+                                                <input type="checkbox" class="sr-only task-toggle" data-task-id="{{ $task->id }}" {{ $task->status === 'completed' ? 'checked' : '' }}>
+                                                <div class="task-checkbox w-4 h-4 border-2 {{ $task->status === 'completed' ? 'bg-green-500 border-green-500 checked' : 'border-slate-300 hover:border-slate-400' }} flex items-center justify-center transition-all duration-150">
+                                                    <svg class="w-2.5 h-2.5 text-white {{ $task->status === 'completed' ? '' : 'hidden' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+                                                    </svg>
+                                                </div>
+                                            </label>
+                                        </div>
+                                        <div class="flex-1 min-w-0">
+                                            <p class="task-title text-sm {{ $task->status === 'completed' ? 'line-through text-slate-400' : 'text-slate-700' }}">{{ $task->title }}</p>
+                                        </div>
+                                        <div class="task-actions flex items-center gap-0.5 opacity-0">
+                                            <a href="{{ route('tasks.edit', $task) }}" class="task-action-btn text-slate-400 hover:text-blue-500 p-1 rounded hover:bg-blue-50" title="Edit">
+                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                                                </svg>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
                         </div>
-                    @empty
+                    @endif
+
+                    @if($weeklyTasks->count() === 0)
                         <div class="px-5 py-8 text-center">
                             <div class="text-slate-400 mb-2">
                                 <svg class="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -451,7 +512,7 @@
                             <p class="text-slate-500 text-sm">No weekly targets set</p>
                             <p class="text-slate-400 text-xs mt-1">Add your goals for this week above</p>
                         </div>
-                    @endforelse
+                    @endif
                 </div>
 
                 {{-- Weekly Progress --}}
