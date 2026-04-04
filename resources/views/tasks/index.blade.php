@@ -116,6 +116,14 @@
            class="px-4 py-2 text-sm font-medium border-b-2 {{ $view === 'completed' ? 'text-blue-600 border-blue-600' : 'text-slate-500 border-transparent hover:text-slate-700' }}">
             Completed
         </a>
+        <a href="{{ route('tasks.index', ['view' => 'settings']) }}" 
+           class="px-4 py-2 text-sm font-medium border-b-2 {{ $view === 'settings' ? 'text-blue-600 border-blue-600' : 'text-slate-500 border-transparent hover:text-slate-700' }}">
+            <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
+            Settings
+        </a>
     </div>
 
     @if($view === 'split')
@@ -681,6 +689,49 @@
                 </div>
             @endforelse
         </div>
+    </div>
+    @elseif($view === 'settings')
+    {{-- Settings View --}}
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden max-w-2xl">
+        <div class="px-5 py-4 border-b border-slate-200 bg-slate-50">
+            <h3 class="text-lg font-semibold text-slate-700">Task Preferences</h3>
+            <p class="text-sm text-slate-500 mt-1">Customize how your tasks are displayed</p>
+        </div>
+        
+        <form action="{{ route('tasks.settings.update') }}" method="POST" class="p-5 space-y-6">
+            @csrf
+            @method('PUT')
+            
+            {{-- Overdue Days Setting --}}
+            <div>
+                <label for="task_overdue_days" class="block text-sm font-medium text-slate-700 mb-2">
+                    Show Overdue Tasks in Today's List
+                </label>
+                <select name="task_overdue_days" id="task_overdue_days" 
+                        class="w-full border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                    <option value="0" {{ (auth()->user()->task_overdue_days ?? 3) == 0 ? 'selected' : '' }}>Don't show overdue tasks</option>
+                    <option value="1" {{ (auth()->user()->task_overdue_days ?? 3) == 1 ? 'selected' : '' }}>1 day</option>
+                    <option value="2" {{ (auth()->user()->task_overdue_days ?? 3) == 2 ? 'selected' : '' }}>2 days</option>
+                    <option value="3" {{ (auth()->user()->task_overdue_days ?? 3) == 3 ? 'selected' : '' }}>3 days (default)</option>
+                    <option value="5" {{ (auth()->user()->task_overdue_days ?? 3) == 5 ? 'selected' : '' }}>5 days</option>
+                    <option value="7" {{ (auth()->user()->task_overdue_days ?? 3) == 7 ? 'selected' : '' }}>1 week</option>
+                    <option value="14" {{ (auth()->user()->task_overdue_days ?? 3) == 14 ? 'selected' : '' }}>2 weeks</option>
+                    <option value="30" {{ (auth()->user()->task_overdue_days ?? 3) == 30 ? 'selected' : '' }}>1 month</option>
+                </select>
+                <p class="text-xs text-slate-500 mt-2">
+                    Overdue tasks from previous days will appear in your "Today's Tasks" list with an "Undone from [date]" label. 
+                    Choose how far back you want to see overdue tasks.
+                </p>
+            </div>
+
+            {{-- Save Button --}}
+            <div class="pt-4 border-t border-slate-200">
+                <button type="submit" 
+                        class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium transition-colors">
+                    Save Preferences
+                </button>
+            </div>
+        </form>
     </div>
     @endif
 

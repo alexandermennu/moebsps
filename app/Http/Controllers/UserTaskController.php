@@ -422,4 +422,21 @@ class UserTaskController extends Controller
 
         return redirect()->back()->with('success', 'Task removed from today\'s schedule.');
     }
+
+    /**
+     * Update user's task preferences/settings.
+     */
+    public function updateSettings(Request $request)
+    {
+        $validated = $request->validate([
+            'task_overdue_days' => ['required', 'integer', 'min:0', 'max:30'],
+        ]);
+
+        auth()->user()->update([
+            'task_overdue_days' => $validated['task_overdue_days'],
+        ]);
+
+        return redirect()->route('tasks.index', ['view' => 'settings'])
+            ->with('success', 'Task preferences saved successfully.');
+    }
 }

@@ -114,6 +114,7 @@ Route::middleware(['auth', 'active'])->group(function () {
     Route::post('/my-tasks/{task}/toggle', [UserTaskController::class, 'toggleComplete'])->name('tasks.toggle-complete');
     Route::post('/my-tasks/{task}/schedule-today', [UserTaskController::class, 'scheduleForToday'])->name('tasks.schedule-today');
     Route::post('/my-tasks/{task}/unschedule', [UserTaskController::class, 'unschedule'])->name('tasks.unschedule');
+    Route::put('/my-tasks/settings', [UserTaskController::class, 'updateSettings'])->name('tasks.settings.update');
 
     // Notifications
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
