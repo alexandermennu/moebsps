@@ -68,20 +68,25 @@ class UserTaskController extends Controller
                     return $task;
                 });
 
-            // Get today's COMPLETED tasks
+            // Get today's COMPLETED tasks (completed today OR due/scheduled for today)
             $todayCompletedQuery = UserTask::where('user_id', $user->id)
-                ->completed();
-            if ($hasScheduledDate) {
-                $todayCompletedQuery->where(function($q) use ($today) {
-                    $q->whereDate('scheduled_date', $today)
-                      ->orWhere(function($q2) use ($today) {
-                          $q2->whereNull('scheduled_date')
-                             ->whereDate('due_date', $today);
-                      });
+                ->completed()
+                ->where(function($q) use ($today, $hasScheduledDate) {
+                    // Tasks completed today (regardless of due date)
+                    $q->whereDate('completed_at', $today);
+                    
+                    // OR tasks due/scheduled for today that are completed
+                    if ($hasScheduledDate) {
+                        $q->orWhere(function($q2) use ($today) {
+                            $q2->whereDate('scheduled_date', $today);
+                        })->orWhere(function($q2) use ($today) {
+                            $q2->whereNull('scheduled_date')
+                               ->whereDate('due_date', $today);
+                        });
+                    } else {
+                        $q->orWhereDate('due_date', $today);
+                    }
                 });
-            } else {
-                $todayCompletedQuery->whereDate('due_date', $today);
-            }
             $todayCompletedTasks = $todayCompletedQuery
                 ->orderBy('completed_at', 'desc')
                 ->get()
