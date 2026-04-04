@@ -95,20 +95,28 @@ class UserTaskController extends Controller
                     return $task;
                 });
 
+            // Get user's preference for overdue days (default 3 if not set)
+            $overdueDaysLimit = $user->task_overdue_days ?? 3;
+            $overdueCutoffDate = $today->copy()->subDays($overdueDaysLimit);
+
             // Get overdue tasks from previous days (PENDING only - not completed)
+            // Only show tasks within the user's overdue days limit
             $overdueTasksQuery = UserTask::where('user_id', $user->id)
                 ->pending();
             if ($hasScheduledDate) {
-                $overdueTasksQuery->where(function($q) use ($today) {
-                    $q->where(function($q2) use ($today) {
-                        $q2->whereDate('scheduled_date', '<', $today);
-                    })->orWhere(function($q2) use ($today) {
+                $overdueTasksQuery->where(function($q) use ($today, $overdueCutoffDate) {
+                    $q->where(function($q2) use ($today, $overdueCutoffDate) {
+                        $q2->whereDate('scheduled_date', '<', $today)
+                           ->whereDate('scheduled_date', '>=', $overdueCutoffDate);
+                    })->orWhere(function($q2) use ($today, $overdueCutoffDate) {
                         $q2->whereNull('scheduled_date')
-                           ->whereDate('due_date', '<', $today);
+                           ->whereDate('due_date', '<', $today)
+                           ->whereDate('due_date', '>=', $overdueCutoffDate);
                     });
                 });
             } else {
-                $overdueTasksQuery->whereDate('due_date', '<', $today);
+                $overdueTasksQuery->whereDate('due_date', '<', $today)
+                                  ->whereDate('due_date', '>=', $overdueCutoffDate);
             }
             $overdueTasks = $overdueTasksQuery
                 ->orderBy('due_date', 'desc')

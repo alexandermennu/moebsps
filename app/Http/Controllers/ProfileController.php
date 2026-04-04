@@ -43,6 +43,7 @@ class ProfileController extends Controller
             'position' => ['nullable', 'string', 'max:255'],
             'current_password' => ['nullable', 'required_with:password', 'string'],
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
+            'task_overdue_days' => ['nullable', 'integer', 'min:0', 'max:30'],
         ]);
 
         // Verify current password if changing password

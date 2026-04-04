@@ -38,6 +38,7 @@ class User extends Authenticatable
         'counselor_school_address', 'counselor_school_principal',
         'counselor_profile_status', 'counselor_profile_reviewed_at',
         'counselor_profile_reviewed_by', 'counselor_profile_review_notes',
+        'task_overdue_days',
     ];
 
     // ── Full Access Roles ───────────────────────────────────
