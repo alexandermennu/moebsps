@@ -169,7 +169,7 @@
                 {{-- Today's Task List --}}
                 <div class="divide-y divide-slate-100">
                     @forelse($todaysTasks as $task)
-                        <div class="task-item px-5 py-2.5 group {{ $task->status === 'completed' ? 'is-completed' : '' }}" data-task-id="{{ $task->id }}">
+                        <div class="task-item px-5 py-2.5 group {{ $task->status === 'completed' ? 'is-completed' : '' }} {{ $task->is_overdue_from ? 'bg-red-50/50' : '' }}" data-task-id="{{ $task->id }}">
                             <div class="flex items-center gap-3">
                                 {{-- Checkbox --}}
                                 <div class="task-checkbox-wrapper">
@@ -191,9 +191,16 @@
                                     <p class="task-title text-sm {{ $task->status === 'completed' ? 'line-through text-slate-400' : 'text-slate-700' }} transition-all duration-200">
                                         {{ $task->title }}
                                     </p>
-                                    @if($task->related_to && $task->related_to !== 'personal')
-                                        <span class="text-xs text-slate-400">{{ $task->related_to_label }}</span>
-                                    @endif
+                                    <div class="flex items-center gap-2 flex-wrap">
+                                        @if($task->is_overdue_from)
+                                            <span class="text-xs text-red-500 font-medium">
+                                                ⚠ Undone from {{ $task->is_overdue_from->format('D, M j') }}
+                                            </span>
+                                        @endif
+                                        @if($task->related_to && $task->related_to !== 'personal')
+                                            <span class="text-xs text-slate-400">{{ $task->related_to_label }}</span>
+                                        @endif
+                                    </div>
                                 </div>
 
                                 {{-- Priority Badge --}}
@@ -675,7 +682,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             // Send AJAX request
-            fetch(`/my-tasks/${taskId}/toggle-complete`, {
+            fetch(`/my-tasks/${taskId}/toggle`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

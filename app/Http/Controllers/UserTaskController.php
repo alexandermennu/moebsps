@@ -46,38 +46,90 @@ class UserTaskController extends Controller
         } else {
             $allTasks = collect();
             
-            // Get today's tasks (scheduled for today or due today)
-            $todaysQuery = UserTask::where('user_id', $user->id);
+            // Get today's tasks: scheduled for today OR due today
+            $todayTasksQuery = UserTask::where('user_id', $user->id)
+                ->pending();
             if ($hasScheduledDate) {
-                $todaysQuery->where(function($q) use ($today) {
+                $todayTasksQuery->where(function($q) use ($today) {
                     $q->whereDate('scheduled_date', $today)
-                      ->orWhereDate('due_date', $today);
+                      ->orWhere(function($q2) use ($today) {
+                          $q2->whereNull('scheduled_date')
+                             ->whereDate('due_date', $today);
+                      });
                 });
             } else {
-                $todaysQuery->whereDate('due_date', $today);
+                $todayTasksQuery->whereDate('due_date', $today);
             }
-            $todaysTasks = $todaysQuery
-                ->orderByRaw("CASE WHEN status = 'completed' THEN 1 ELSE 0 END")
+            $todayOnlyTasks = $todayTasksQuery
                 ->orderByRaw("FIELD(priority, 'high', 'medium', 'low')")
-                ->get();
+                ->get()
+                ->map(function($task) {
+                    $task->is_overdue_from = null;
+                    return $task;
+                });
 
-            // Get weekly targets (tasks marked as weekly targets or due this week)
+            // Get overdue tasks from previous days (not completed, scheduled/due before today)
+            $overdueTasksQuery = UserTask::where('user_id', $user->id)
+                ->pending();
+            if ($hasScheduledDate) {
+                $overdueTasksQuery->where(function($q) use ($today) {
+                    $q->where(function($q2) use ($today) {
+                        $q2->whereDate('scheduled_date', '<', $today);
+                    })->orWhere(function($q2) use ($today) {
+                        $q2->whereNull('scheduled_date')
+                           ->whereDate('due_date', '<', $today);
+                    });
+                });
+            } else {
+                $overdueTasksQuery->whereDate('due_date', '<', $today);
+            }
+            $overdueTasks = $overdueTasksQuery
+                ->orderBy('due_date', 'desc')
+                ->get()
+                ->map(function($task) use ($hasScheduledDate) {
+                    // Mark the original date for display
+                    $originalDate = $hasScheduledDate && $task->scheduled_date 
+                        ? $task->scheduled_date 
+                        : $task->due_date;
+                    $task->is_overdue_from = $originalDate;
+                    return $task;
+                });
+
+            // Combine: today's tasks first, then overdue at bottom
+            $todaysTasks = $todayOnlyTasks->concat($overdueTasks);
+            
+            // Also get completed tasks for today to show them
+            $completedTodayTasks = UserTask::where('user_id', $user->id)
+                ->completed()
+                ->where(function($q) use ($today, $hasScheduledDate) {
+                    if ($hasScheduledDate) {
+                        $q->whereDate('scheduled_date', $today)
+                          ->orWhere(function($q2) use ($today) {
+                              $q2->whereNull('scheduled_date')
+                                 ->whereDate('due_date', $today);
+                          });
+                    } else {
+                        $q->whereDate('due_date', $today);
+                    }
+                })
+                ->orderBy('completed_at', 'desc')
+                ->get()
+                ->map(function($task) {
+                    $task->is_overdue_from = null;
+                    return $task;
+                });
+            
+            $todaysTasks = $todaysTasks->concat($completedTodayTasks);
+
+            // Get weekly targets: ALL tasks for this week (including today)
             $weeklyQuery = UserTask::where('user_id', $user->id);
             if ($hasWeeklyTarget) {
                 $weeklyQuery->where(function($q) use ($startOfWeek, $endOfWeek) {
                     $q->where('is_weekly_target', true)
                       ->orWhereBetween('due_date', [$startOfWeek, $endOfWeek]);
                 });
-                if ($hasScheduledDate) {
-                    $weeklyQuery->where(function($q) use ($today) {
-                        $q->where('is_weekly_target', true)
-                          ->orWhereNull('scheduled_date')
-                          ->orWhereDate('scheduled_date', '!=', $today);
-                    });
-                }
             } else {
-                $weeklyQuery->whereBetween('due_date', [$startOfWeek, $endOfWeek])
-                           ->whereDate('due_date', '!=', $today);
+                $weeklyQuery->whereBetween('due_date', [$startOfWeek, $endOfWeek]);
             }
             $weeklyTasks = $weeklyQuery
                 ->orderByRaw("CASE WHEN status = 'completed' THEN 1 ELSE 0 END")
