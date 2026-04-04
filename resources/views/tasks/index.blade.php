@@ -349,12 +349,19 @@
                         @if($hasWeeklyTarget ?? false)
                             <input type="hidden" name="is_weekly_target" value="1">
                         @endif
-                        <input type="hidden" name="due_date" value="{{ now()->endOfWeek()->toDateString() }}">
                         <input type="text" 
                                name="title" 
                                placeholder="Add a weekly target..." 
                                class="flex-1 text-sm border-slate-200 rounded-lg focus:ring-slate-400 focus:border-slate-400"
                                required>
+                        <select name="due_date" class="text-sm border-slate-200 rounded-lg focus:ring-slate-400 focus:border-slate-400 bg-white">
+                            @for($i = 0; $i < 7; $i++)
+                                @php $dayDate = now()->startOfWeek()->addDays($i); @endphp
+                                <option value="{{ $dayDate->toDateString() }}" {{ $dayDate->isToday() ? 'selected' : '' }}>
+                                    {{ $dayDate->isToday() ? 'Today' : ($dayDate->isTomorrow() ? 'Tomorrow' : $dayDate->format('D, M j')) }}
+                                </option>
+                            @endfor
+                        </select>
                         <button type="submit" class="bg-slate-500 hover:bg-slate-600 text-white px-3 py-2 rounded-lg text-sm">
                             Add
                         </button>
