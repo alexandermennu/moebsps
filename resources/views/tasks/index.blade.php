@@ -102,56 +102,8 @@
         </a>
     </div>
 
-    {{-- Summary Cards --}}
-    <div class="grid grid-cols-4 gap-3 mb-4">
-        <div class="stat-card bg-white border border-slate-200 rounded-lg px-3 py-2 cursor-default">
-            <div class="flex items-center gap-3">
-                <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center shrink-0">
-                    <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-                </div>
-                <div>
-                    <p class="text-lg font-bold text-slate-800 leading-none">{{ $pendingCount }}</p>
-                    <p class="text-xs text-slate-500">Active</p>
-                </div>
-            </div>
-        </div>
-        <div class="stat-card bg-white border border-slate-200 rounded-lg px-3 py-2 cursor-default">
-            <div class="flex items-center gap-3">
-                <div class="w-8 h-8 {{ $overdueCount > 0 ? 'bg-red-100' : 'bg-slate-100' }} rounded-full flex items-center justify-center shrink-0">
-                    <svg class="w-4 h-4 {{ $overdueCount > 0 ? 'text-red-600' : 'text-slate-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                </div>
-                <div>
-                    <p class="text-lg font-bold {{ $overdueCount > 0 ? 'text-red-600' : 'text-slate-800' }} leading-none">{{ $overdueCount }}</p>
-                    <p class="text-xs text-slate-500">Overdue</p>
-                </div>
-            </div>
-        </div>
-        <div class="stat-card bg-white border border-slate-200 rounded-lg px-3 py-2 cursor-default">
-            <div class="flex items-center gap-3">
-                <div class="w-8 h-8 {{ $todayPendingCount > 0 ? 'bg-orange-100' : 'bg-slate-100' }} rounded-full flex items-center justify-center shrink-0">
-                    <svg class="w-4 h-4 {{ $todayPendingCount > 0 ? 'text-orange-600' : 'text-slate-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
-                </div>
-                <div>
-                    <p class="text-lg font-bold {{ $todayPendingCount > 0 ? 'text-orange-600' : 'text-slate-800' }} leading-none">{{ $todayPendingCount }}</p>
-                    <p class="text-xs text-slate-500">Today</p>
-                </div>
-            </div>
-        </div>
-        <div class="stat-card bg-white border border-slate-200 rounded-lg px-3 py-2 cursor-default">
-            <div class="flex items-center gap-3">
-                <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center shrink-0">
-                    <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                </div>
-                <div>
-                    <p class="text-lg font-bold text-green-600 leading-none">{{ $completedCount }}</p>
-                    <p class="text-xs text-slate-500">Done</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
     {{-- View Tabs --}}
-    <div class="flex items-center gap-2 mb-4 border-b border-slate-200">
+    <div class="flex items-center gap-2 mb-3 border-b border-slate-200">
         <a href="{{ route('tasks.index', ['view' => 'split']) }}" 
            class="px-4 py-2 text-sm font-medium border-b-2 {{ $view === 'split' ? 'text-blue-600 border-blue-600' : 'text-slate-500 border-transparent hover:text-slate-700' }}">
             Today & Weekly
@@ -168,7 +120,7 @@
 
     @if($view === 'split')
     {{-- Two Column Layout for Today & Weekly --}}
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
         
         {{-- LEFT COLUMN: Today's Tasks --}}
         <div>
@@ -313,9 +265,57 @@
 
         {{-- RIGHT COLUMN: Weekly Targets --}}
         <div>
+            {{-- Summary Cards --}}
+            <div class="grid grid-cols-4 gap-2 mb-3">
+                <div class="stat-card bg-white border border-slate-200 rounded-lg px-2 py-1.5 cursor-default">
+                    <div class="flex items-center gap-2">
+                        <div class="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center shrink-0">
+                            <svg class="w-3 h-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                        </div>
+                        <div>
+                            <p class="text-sm font-bold text-slate-800 leading-none">{{ $pendingCount }}</p>
+                            <p class="text-[10px] text-slate-500">Active</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="stat-card bg-white border border-slate-200 rounded-lg px-2 py-1.5 cursor-default">
+                    <div class="flex items-center gap-2">
+                        <div class="w-6 h-6 {{ $overdueCount > 0 ? 'bg-red-100' : 'bg-slate-100' }} rounded-full flex items-center justify-center shrink-0">
+                            <svg class="w-3 h-3 {{ $overdueCount > 0 ? 'text-red-600' : 'text-slate-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        </div>
+                        <div>
+                            <p class="text-sm font-bold {{ $overdueCount > 0 ? 'text-red-600' : 'text-slate-800' }} leading-none">{{ $overdueCount }}</p>
+                            <p class="text-[10px] text-slate-500">Overdue</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="stat-card bg-white border border-slate-200 rounded-lg px-2 py-1.5 cursor-default">
+                    <div class="flex items-center gap-2">
+                        <div class="w-6 h-6 {{ $todayPendingCount > 0 ? 'bg-orange-100' : 'bg-slate-100' }} rounded-full flex items-center justify-center shrink-0">
+                            <svg class="w-3 h-3 {{ $todayPendingCount > 0 ? 'text-orange-600' : 'text-slate-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                        </div>
+                        <div>
+                            <p class="text-sm font-bold {{ $todayPendingCount > 0 ? 'text-orange-600' : 'text-slate-800' }} leading-none">{{ $todayPendingCount }}</p>
+                            <p class="text-[10px] text-slate-500">Today</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="stat-card bg-white border border-slate-200 rounded-lg px-2 py-1.5 cursor-default">
+                    <div class="flex items-center gap-2">
+                        <div class="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center shrink-0">
+                            <svg class="w-3 h-3 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        </div>
+                        <div>
+                            <p class="text-sm font-bold text-green-600 leading-none">{{ $completedCount }}</p>
+                            <p class="text-[10px] text-slate-500">Done</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
                 {{-- Header --}}
-                <div class="px-5 py-4 border-b border-slate-100">
+                <div class="px-5 py-3 border-b border-slate-100">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-3">
                             <div class="bg-slate-100 rounded-lg p-2">
