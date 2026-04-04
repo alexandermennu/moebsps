@@ -123,8 +123,20 @@ class UserTaskController extends Controller
                 ->concat($overdueTasks);
 
             // Get weekly targets: ALL tasks for this week (pending AND completed)
+            // Include tasks by due_date OR scheduled_date within this week
             $weeklyQuery = UserTask::where('user_id', $user->id);
-            if ($hasWeeklyTarget) {
+            if ($hasWeeklyTarget && $hasScheduledDate) {
+                $weeklyQuery->where(function($q) use ($startOfWeek, $endOfWeek) {
+                    $q->where('is_weekly_target', true)
+                      ->orWhereBetween('due_date', [$startOfWeek, $endOfWeek])
+                      ->orWhereBetween('scheduled_date', [$startOfWeek, $endOfWeek]);
+                });
+            } elseif ($hasScheduledDate) {
+                $weeklyQuery->where(function($q) use ($startOfWeek, $endOfWeek) {
+                    $q->whereBetween('due_date', [$startOfWeek, $endOfWeek])
+                      ->orWhereBetween('scheduled_date', [$startOfWeek, $endOfWeek]);
+                });
+            } elseif ($hasWeeklyTarget) {
                 $weeklyQuery->where(function($q) use ($startOfWeek, $endOfWeek) {
                     $q->where('is_weekly_target', true)
                       ->orWhereBetween('due_date', [$startOfWeek, $endOfWeek]);
