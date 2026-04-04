@@ -715,6 +715,33 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    
+    // Helper function to update task UI
+    function updateTaskUI(taskItem, isCompleting) {
+        const checkboxDiv = taskItem.querySelector('.task-checkbox');
+        const checkIcon = checkboxDiv.querySelector('svg');
+        const taskTitle = taskItem.querySelector('.task-title');
+        const checkbox = taskItem.querySelector('.task-toggle');
+        
+        checkbox.checked = isCompleting;
+        
+        if (isCompleting) {
+            checkboxDiv.classList.add('bg-green-500', 'border-green-500', 'checked');
+            checkboxDiv.classList.remove('border-slate-300', 'hover:border-blue-400', 'hover:bg-blue-50', 'hover:border-slate-400', 'hover:bg-slate-50', 'hover:border-green-400', 'hover:bg-green-50');
+            checkIcon.classList.remove('hidden');
+            taskTitle.classList.add('line-through', 'text-slate-400');
+            taskTitle.classList.remove('text-slate-700');
+            taskItem.classList.add('is-completed');
+        } else {
+            checkboxDiv.classList.remove('bg-green-500', 'border-green-500', 'checked');
+            checkboxDiv.classList.add('border-slate-300');
+            checkIcon.classList.add('hidden');
+            taskTitle.classList.remove('line-through', 'text-slate-400');
+            taskTitle.classList.add('text-slate-700');
+            taskItem.classList.remove('is-completed');
+        }
+    }
+    
     // Make checkbox wrapper clickable
     document.querySelectorAll('.task-checkbox-wrapper').forEach(function(wrapper) {
         wrapper.addEventListener('click', function(e) {
@@ -723,31 +750,12 @@ document.addEventListener('DOMContentLoaded', function() {
             
             const checkbox = this.querySelector('.task-toggle');
             const taskId = checkbox.dataset.taskId;
-            const taskItem = this.closest('.task-item');
-            const checkboxDiv = this.querySelector('.task-checkbox');
-            const checkIcon = checkboxDiv.querySelector('svg');
-            const taskTitle = taskItem.querySelector('.task-title');
             const isCompleting = !checkbox.checked;
             
-            // Toggle checkbox state
-            checkbox.checked = isCompleting;
-            
-            // Instant visual feedback
-            if (isCompleting) {
-                checkboxDiv.classList.add('bg-green-500', 'border-green-500', 'checked');
-                checkboxDiv.classList.remove('border-slate-300', 'hover:border-blue-400', 'hover:bg-blue-50', 'hover:border-slate-400', 'hover:bg-slate-50', 'hover:border-green-400', 'hover:bg-green-50');
-                checkIcon.classList.remove('hidden');
-                taskTitle.classList.add('line-through', 'text-slate-400');
-                taskTitle.classList.remove('text-slate-700');
-                taskItem.classList.add('is-completed');
-            } else {
-                checkboxDiv.classList.remove('bg-green-500', 'border-green-500', 'checked');
-                checkboxDiv.classList.add('border-slate-300');
-                checkIcon.classList.add('hidden');
-                taskTitle.classList.remove('line-through', 'text-slate-400');
-                taskTitle.classList.add('text-slate-700');
-                taskItem.classList.remove('is-completed');
-            }
+            // Update ALL task items with the same ID (syncs Today & Weekly)
+            document.querySelectorAll(`.task-item[data-task-id="${taskId}"]`).forEach(function(taskItem) {
+                updateTaskUI(taskItem, isCompleting);
+            });
             
             // Send AJAX request
             fetch(`/my-tasks/${taskId}/toggle`, {
@@ -766,20 +774,10 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .catch(error => {
                 console.error('Error:', error);
-                // Revert on error
-                checkbox.checked = !isCompleting;
-                if (!isCompleting) {
-                    checkboxDiv.classList.add('bg-green-500', 'border-green-500', 'checked');
-                    checkIcon.classList.remove('hidden');
-                    taskTitle.classList.add('line-through', 'text-slate-400');
-                    taskTitle.classList.remove('text-slate-700');
-                } else {
-                    checkboxDiv.classList.remove('bg-green-500', 'border-green-500', 'checked');
-                    checkboxDiv.classList.add('border-slate-300');
-                    checkIcon.classList.add('hidden');
-                    taskTitle.classList.remove('line-through', 'text-slate-400');
-                    taskTitle.classList.add('text-slate-700');
-                }
+                // Revert ALL on error
+                document.querySelectorAll(`.task-item[data-task-id="${taskId}"]`).forEach(function(taskItem) {
+                    updateTaskUI(taskItem, !isCompleting);
+                });
             });
         });
     });
