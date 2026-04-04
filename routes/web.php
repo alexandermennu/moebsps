@@ -108,13 +108,13 @@ Route::middleware(['auth', 'active'])->group(function () {
     Route::get('/my-tasks/create', [UserTaskController::class, 'create'])->name('tasks.create');
     Route::post('/my-tasks', [UserTaskController::class, 'store'])->name('tasks.store');
     Route::post('/my-tasks/quick', [UserTaskController::class, 'quickStore'])->name('tasks.quick-store');
+    Route::put('/my-tasks/settings', [UserTaskController::class, 'updateSettings'])->name('tasks.settings.update');
     Route::get('/my-tasks/{task}/edit', [UserTaskController::class, 'edit'])->name('tasks.edit');
     Route::put('/my-tasks/{task}', [UserTaskController::class, 'update'])->name('tasks.update');
     Route::delete('/my-tasks/{task}', [UserTaskController::class, 'destroy'])->name('tasks.destroy');
     Route::post('/my-tasks/{task}/toggle', [UserTaskController::class, 'toggleComplete'])->name('tasks.toggle-complete');
     Route::post('/my-tasks/{task}/schedule-today', [UserTaskController::class, 'scheduleForToday'])->name('tasks.schedule-today');
     Route::post('/my-tasks/{task}/unschedule', [UserTaskController::class, 'unschedule'])->name('tasks.unschedule');
-    Route::put('/my-tasks/settings', [UserTaskController::class, 'updateSettings'])->name('tasks.settings.update');
 
     // Notifications
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
