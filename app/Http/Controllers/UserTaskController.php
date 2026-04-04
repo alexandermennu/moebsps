@@ -13,7 +13,8 @@ class UserTaskController extends Controller
     public function index(Request $request)
     {
         $user = $request->user();
-        $today = now()->toDateString();
+        $todayCarbon = now()->startOfDay();
+        $today = $todayCarbon->toDateString();
         $startOfWeek = now()->startOfWeek();
         $endOfWeek = now()->endOfWeek();
         $view = $request->get('view', 'split'); // split, all, completed
@@ -97,7 +98,7 @@ class UserTaskController extends Controller
 
             // Get user's preference for overdue days (default 3 if not set)
             $overdueDaysLimit = $user->task_overdue_days ?? 3;
-            $overdueCutoffDate = $today->copy()->subDays($overdueDaysLimit);
+            $overdueCutoffDate = $todayCarbon->copy()->subDays($overdueDaysLimit)->toDateString();
 
             // Get overdue tasks from previous days (PENDING only - not completed)
             // Only show tasks within the user's overdue days limit
