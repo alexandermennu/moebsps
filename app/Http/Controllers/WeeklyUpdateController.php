@@ -248,33 +248,20 @@ class WeeklyUpdateController extends Controller
     /**
      * Get a friendly week label like "March Week 2, 2026"
      * 
-     * Working week is Monday-Friday. Uses Friday (submission day) to determine 
-     * which month the week belongs to. Reports are submitted on Friday, so the
-     * Friday date determines the reporting period's month and week number.
-     * 
-     * Week number is based on Friday's position in that month:
-     * Days 1-7 = Week 1, 8-14 = Week 2, 15-21 = Week 3, 22+ = Week 4
+     * Week starts on Monday and ends on Friday. Week number is based on
+     * which Monday of the month this is (1st Monday = Week 1, etc.)
+     * Some months will have 5 weeks.
      */
     private function getWeekLabel($date): string
     {
-        // Friday of the reporting week (submission day) determines the month
-        $friday = $date->copy()->addDays(4); // Monday + 4 = Friday
+        // Use Monday (week start) to determine month and week number
+        $month = $date->format('F');
+        $year = $date->format('Y');
         
-        $month = $friday->format('F');
-        $year = $friday->format('Y');
-        
-        // Calculate week number based on Friday's day of month
-        $fridayDay = $friday->day;
-        
-        if ($fridayDay <= 7) {
-            $weekOfMonth = 1;
-        } elseif ($fridayDay <= 14) {
-            $weekOfMonth = 2;
-        } elseif ($fridayDay <= 21) {
-            $weekOfMonth = 3;
-        } else {
-            $weekOfMonth = 4;
-        }
+        // Calculate which Monday of the month this is
+        // ceil(day / 7) gives the nth occurrence
+        $dayOfMonth = $date->day;
+        $weekOfMonth = (int) ceil($dayOfMonth / 7);
         
         return "{$month} Week {$weekOfMonth}, {$year}";
     }

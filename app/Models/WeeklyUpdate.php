@@ -123,50 +123,33 @@ class WeeklyUpdate extends Model
     public static function getWeeksInMonth(int $year, int $month): array
     {
         $weeks = [];
-        $targetMonth = Carbon::create($year, $month, 1);
+        $date = Carbon::create($year, $month, 1);
+        $endOfMonth = $date->copy()->endOfMonth();
         
-        // Find the first Monday where the Friday falls in this month
-        // Start from 4 days before the 1st to catch any week where Friday is on the 1st
-        $currentMonday = $targetMonth->copy()->subDays(4)->startOfWeek(Carbon::MONDAY);
+        // Start from the first Monday of the month
+        $currentMonday = $date->copy()->startOfWeek(Carbon::MONDAY);
+        
+        // If first Monday is in previous month, move to next Monday
+        if ($currentMonday->month < $month || ($currentMonday->month == 12 && $month == 1)) {
+            $currentMonday->addWeek();
+        }
         
         $weekNum = 1;
-        $maxIterations = 6; // Safety limit
-        
-        while ($maxIterations > 0) {
+        while ($currentMonday->month == $month && $currentMonday->lte($endOfMonth)) {
             $friday = $currentMonday->copy()->addDays(4);
             
-            // Week belongs to the month where Friday falls
-            if ($friday->month == $month && $friday->year == $year) {
-                // Calculate week number based on Friday's day (1-7=W1, 8-14=W2, 15-21=W3, 22+=W4)
-                $fridayDay = $friday->day;
-                if ($fridayDay <= 7) {
-                    $weekNum = 1;
-                } elseif ($fridayDay <= 14) {
-                    $weekNum = 2;
-                } elseif ($fridayDay <= 21) {
-                    $weekNum = 3;
-                } else {
-                    $weekNum = 4;
-                }
-                
-                $weeks[] = [
-                    'number' => $weekNum,
-                    'label' => $targetMonth->format('F') . " Week {$weekNum}, {$year}",
-                    'label_short' => $targetMonth->format('M') . " Week {$weekNum}",
-                    'start' => $currentMonday->copy(),
-                    'end' => $friday,
-                    'start_formatted' => $currentMonday->format('Y-m-d'),
-                    'end_formatted' => $friday->format('Y-m-d'),
-                ];
-            }
-            
-            // If Friday is already past the target month, stop
-            if ($friday->month > $month || ($friday->month == 1 && $month == 12) || $friday->year > $year) {
-                break;
-            }
+            $weeks[] = [
+                'number' => $weekNum,
+                'label' => $date->format('F') . " Week {$weekNum}, {$year}",
+                'label_short' => $date->format('M') . " Week {$weekNum}",
+                'start' => $currentMonday->copy(),
+                'end' => $friday,
+                'start_formatted' => $currentMonday->format('Y-m-d'),
+                'end_formatted' => $friday->format('Y-m-d'),
+            ];
             
             $currentMonday->addWeek();
-            $maxIterations--;
+            $weekNum++;
         }
         
         return $weeks;
