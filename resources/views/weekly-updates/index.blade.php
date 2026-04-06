@@ -102,21 +102,63 @@
     {{-- Section Divider --}}
     <div class="border-t border-gray-300 my-2"></div>
 
-    {{-- Content Section --}}
+    {{-- Content Section with Carousel Navigation --}}
     <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-5">
-        {{-- Section Header --}}
+        {{-- Section Header with Carousel Navigation --}}
         <div class="mb-4">
-            <h2 class="text-lg font-semibold text-gray-900">
-                Reporting Week: {{ $reportingWeekLabel }} 
-                <span class="font-normal text-gray-500">({{ $reportingWeekStart->format('M d') }} – {{ $reportingWeekEnd->format('M d') }})</span>
-            </h2>
-            <p class="text-sm text-gray-600 mt-0.5">
-                {{ $submittedCount }}/{{ $allDivisions->count() }} divisions submitted
-                @if($lateCount > 0) | <span class="text-orange-600">{{ $lateCount }} late</span>@endif
-                @if($overdueCount > 0) | <span class="text-red-600">{{ $overdueCount }} not submitted</span>@endif
-                <span class="text-gray-400 ml-2">·</span>
-                <span class="text-gray-500 ml-2">Due: {{ $dueDate->format('l, M d') }}</span>
-            </p>
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    {{-- Previous Week Button --}}
+                    @php
+                        $prevWeekStart = $reportingWeekStart->copy()->subWeek();
+                        $nextWeekStart = $reportingWeekStart->copy()->addWeek();
+                        $currentWeekStart = now()->startOfWeek(\Carbon\Carbon::MONDAY)->subWeek(); // Default reporting week
+                        $isCurrentWeek = $reportingWeekStart->eq($currentWeekStart);
+                        $canGoNext = $nextWeekStart->lte($currentWeekStart);
+                    @endphp
+                    <a href="{{ route('weekly-updates.index', ['week' => $prevWeekStart->toDateString()]) }}" 
+                       class="inline-flex items-center justify-center w-9 h-9 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-gray-800 transition-colors"
+                       title="Previous Week">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                    </a>
+                    
+                    {{-- Current Week Label --}}
+                    <div>
+                        <h2 class="text-lg font-semibold text-gray-900">
+                            Reporting Week: {{ $reportingWeekLabel }} 
+                            <span class="font-normal text-gray-500">({{ $reportingWeekStart->format('M d') }} – {{ $reportingWeekEnd->format('M d') }})</span>
+                        </h2>
+                        <p class="text-sm text-gray-600 mt-0.5">
+                            {{ $submittedCount }}/{{ $allDivisions->count() }} divisions submitted
+                            @if($lateCount > 0) | <span class="text-orange-600">{{ $lateCount }} late</span>@endif
+                            @if($overdueCount > 0) | <span class="text-red-600">{{ $overdueCount }} not submitted</span>@endif
+                            <span class="text-gray-400 ml-2">·</span>
+                            <span class="text-gray-500 ml-2">Due: {{ $dueDate->format('l, M d') }}</span>
+                        </p>
+                    </div>
+                    
+                    {{-- Next Week Button --}}
+                    @if($canGoNext)
+                        <a href="{{ route('weekly-updates.index', ['week' => $nextWeekStart->toDateString()]) }}" 
+                           class="inline-flex items-center justify-center w-9 h-9 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-gray-800 transition-colors"
+                           title="Next Week">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                        </a>
+                    @else
+                        <span class="inline-flex items-center justify-center w-9 h-9 rounded-full bg-gray-50 text-gray-300 cursor-not-allowed" title="This is the current reporting week">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                        </span>
+                    @endif
+                </div>
+                
+                {{-- Jump to Current Week Button --}}
+                @if(!$isCurrentWeek)
+                    <a href="{{ route('weekly-updates.index') }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 text-xs font-medium rounded hover:bg-blue-100 border border-blue-200">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                        Current Week
+                    </a>
+                @endif
+            </div>
         </div>
 
         {{-- Status Summary Pills --}}
@@ -310,13 +352,14 @@
                     $totalSubmissions = $weeks->sum('submitted_count');
                     $totalPossible = $weeks->sum('total_divisions');
                     $hasData = $totalSubmissions > 0;
-                    $firstWeek = $weeks->first();
+                    // Get the LAST week with submissions, or the last week of the month if none
+                    $weekWithData = $weeks->first(fn($w) => $w->submitted_count > 0) ?? $weeks->last();
                 @endphp
                 <div class="bg-white border border-gray-200 p-3.5 hover:shadow-sm transition-shadow">
                     <div class="flex items-center justify-between gap-2">
                         <h4 class="text-base font-semibold text-gray-900">{{ $monthLabel }}</h4>
                         @if($hasData)
-                            <a href="{{ route('weekly-updates.index', ['month' => $firstWeek->week_start->format('Y-m')]) }}" class="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-600 text-white text-xs font-medium hover:bg-blue-700 whitespace-nowrap">
+                            <a href="{{ route('weekly-updates.index', ['week' => $weekWithData->week_start->toDateString()]) }}" class="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-600 text-white text-xs font-medium hover:bg-blue-700 whitespace-nowrap">
                                 View Details
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                             </a>
