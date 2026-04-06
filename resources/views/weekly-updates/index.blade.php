@@ -3,6 +3,36 @@
 @section('title', 'Weekly Updates')
 @section('page-title', 'Weekly Updates')
 
+@push('styles')
+<style>
+    /* Slide animation for carousel content */
+    .carousel-content {
+        animation: slideIn 0.3s ease-out;
+    }
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+    /* Arrow hover effect */
+    .carousel-arrow {
+        transition: all 0.2s ease;
+    }
+    .carousel-arrow:hover:not(.disabled) {
+        transform: scale(1.1);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .carousel-arrow:active:not(.disabled) {
+        transform: scale(0.95);
+    }
+</style>
+@endpush
+
 @section('content')
 <div class="space-y-5">
     {{-- Page Header with Title and Actions --}}
@@ -117,7 +147,7 @@
                         $canGoNext = $nextWeekStart->lte($currentWeekStart);
                     @endphp
                     <a href="{{ route('weekly-updates.index', ['week' => $prevWeekStart->toDateString()]) }}" 
-                       class="inline-flex items-center justify-center w-9 h-9 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-gray-800 transition-colors"
+                       class="carousel-arrow inline-flex items-center justify-center w-9 h-9 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-gray-800 transition-colors"
                        title="Previous Week">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
                     </a>
@@ -140,12 +170,12 @@
                     {{-- Next Week Button --}}
                     @if($canGoNext)
                         <a href="{{ route('weekly-updates.index', ['week' => $nextWeekStart->toDateString()]) }}" 
-                           class="inline-flex items-center justify-center w-9 h-9 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-gray-800 transition-colors"
+                           class="carousel-arrow inline-flex items-center justify-center w-9 h-9 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-gray-800 transition-colors"
                            title="Next Week">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                         </a>
                     @else
-                        <span class="inline-flex items-center justify-center w-9 h-9 rounded-full bg-gray-50 text-gray-300 cursor-not-allowed" title="This is the current reporting week">
+                        <span class="carousel-arrow disabled inline-flex items-center justify-center w-9 h-9 rounded-full bg-gray-50 text-gray-300 cursor-not-allowed" title="This is the current reporting week">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                         </span>
                     @endif
@@ -161,24 +191,26 @@
             </div>
         </div>
 
-        {{-- Status Summary Pills --}}
-        <div class="flex items-center gap-5 mb-4">
-            <div class="flex items-center gap-2">
-                <span class="w-3 h-3 rounded-full bg-green-500"></span>
-                <span class="text-sm text-gray-700">{{ $onTimeCount }} On Time</span>
+        {{-- Carousel Content (animates on page load/navigation) --}}
+        <div class="carousel-content">
+            {{-- Status Summary Pills --}}
+            <div class="flex items-center gap-5 mb-4">
+                <div class="flex items-center gap-2">
+                    <span class="w-3 h-3 rounded-full bg-green-500"></span>
+                    <span class="text-sm text-gray-700">{{ $onTimeCount }} On Time</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="w-3 h-3 rounded-full bg-orange-500"></span>
+                    <span class="text-sm text-gray-700">{{ $lateCount }} Late</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="w-3 h-3 rounded-full bg-red-500"></span>
+                    <span class="text-sm text-gray-700">{{ $notSubmittedCount }} Not Submitted</span>
+                </div>
             </div>
-            <div class="flex items-center gap-2">
-                <span class="w-3 h-3 rounded-full bg-orange-500"></span>
-                <span class="text-sm text-gray-700">{{ $lateCount }} Late</span>
-            </div>
-            <div class="flex items-center gap-2">
-                <span class="w-3 h-3 rounded-full bg-red-500"></span>
-                <span class="text-sm text-gray-700">{{ $notSubmittedCount }} Not Submitted</span>
-            </div>
-        </div>
 
-        {{-- Main Division Table --}}
-        <table class="w-full text-sm">
+            {{-- Main Division Table --}}
+            <table class="w-full text-sm">
             <thead class="bg-gray-50 border-y border-gray-200">
                 <tr>
                     <th class="text-left px-4 py-3 text-xs text-gray-500 uppercase tracking-wide font-medium">Division</th>
@@ -291,10 +323,11 @@
                 @endforelse
             </tbody>
         </table>
+        </div>{{-- End carousel-content --}}
     </div>
 
     {{-- Division Summary Cards --}}
-    <div class="grid grid-cols-5 gap-3">
+    <div class="carousel-content grid grid-cols-5 gap-3">
         @foreach($divisionStatuses as $divStatus)
             @php
                 $bgColor = match($divStatus->status_color) {
