@@ -253,21 +253,19 @@ class WeeklyUpdateController extends Controller
         $month = $date->format('F');
         $year = $date->format('Y');
         
-        // Calculate which week of the month this is
-        // Find the first Monday of the month (or the Monday of the week containing the 1st)
-        $firstOfMonth = $date->copy()->startOfMonth();
-        
-        // Get the week number by counting how many Mondays have passed
+        // Determine week based on which part of the month the Monday falls into
+        // Days 1-7 = Week 1, Days 8-14 = Week 2, Days 15-21 = Week 3, Days 22+ = Week 4
         $dayOfMonth = $date->day;
-        $firstDayOfWeek = $firstOfMonth->dayOfWeek; // 0 = Sunday, 1 = Monday, etc.
         
-        // Adjust for Monday as start of week (Carbon uses 1 for Monday)
-        // Calculate week number based on day of month
-        $adjustedDay = $dayOfMonth + ($firstDayOfWeek == 0 ? 6 : $firstDayOfWeek - 1);
-        $weekOfMonth = (int) ceil($adjustedDay / 7);
-        
-        if ($weekOfMonth < 1) $weekOfMonth = 1;
-        if ($weekOfMonth > 5) $weekOfMonth = 5;
+        if ($dayOfMonth <= 7) {
+            $weekOfMonth = 1;
+        } elseif ($dayOfMonth <= 14) {
+            $weekOfMonth = 2;
+        } elseif ($dayOfMonth <= 21) {
+            $weekOfMonth = 3;
+        } else {
+            $weekOfMonth = 4;
+        }
         
         return "{$month} Week {$weekOfMonth}, {$year}";
     }
