@@ -82,6 +82,34 @@
     .task-checkbox.checked svg {
         display: block;
     }
+    
+    /* Day carousel navigation */
+    .day-carousel-content {
+        animation: daySlideIn 0.3s ease-out forwards;
+    }
+    @keyframes daySlideIn {
+        0% {
+            opacity: 0;
+            transform: translateX(20px);
+        }
+        100% {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+    .day-nav-btn {
+        transition: all 0.2s ease;
+    }
+    .day-nav-btn:hover:not(.disabled) {
+        background-color: rgba(255,255,255,0.3);
+    }
+    .day-nav-btn:active:not(.disabled) {
+        transform: scale(0.95);
+    }
+    .day-nav-btn.disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+    }
 </style>
 @endpush
 
@@ -161,28 +189,64 @@
         {{-- LEFT COLUMN: Today's Tasks --}}
         <div>
             <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                {{-- Header --}}
+                {{-- Header with Carousel Navigation --}}
                 <div class="bg-gradient-to-r from-blue-500 to-blue-600 px-5 py-4">
                     <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-3">
+                        <div class="flex items-center gap-2">
+                            {{-- Previous Day Button --}}
+                            <a href="{{ route('tasks.index', ['date' => $prevDate->toDateString()]) }}" 
+                               class="day-nav-btn inline-flex items-center justify-center w-8 h-8 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors"
+                               title="Previous Day">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                            </a>
+                            
                             <div class="bg-white/20 rounded-lg p-2">
                                 <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                                 </svg>
                             </div>
                             <div>
-                                <h2 class="text-lg font-semibold text-white">Today's Tasks</h2>
-                                <p class="text-blue-100 text-sm">{{ now()->format('D, M j') }}</p>
+                                <h2 class="text-lg font-semibold text-white">
+                                    @if($isToday)
+                                        Today's Tasks
+                                    @else
+                                        {{ $selectedDate->format('l') }}'s Tasks
+                                    @endif
+                                </h2>
+                                <p class="text-blue-100 text-sm">{{ $selectedDate->format('D, M j') }}</p>
                             </div>
+                            
+                            {{-- Next Day Button --}}
+                            @if($canGoNext)
+                                <a href="{{ route('tasks.index', ['date' => $nextDate->toDateString()]) }}" 
+                                   class="day-nav-btn inline-flex items-center justify-center w-8 h-8 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors"
+                                   title="Next Day">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                                </a>
+                            @else
+                                <span class="day-nav-btn disabled inline-flex items-center justify-center w-8 h-8 rounded-full bg-white/10 text-white/40" title="This is today">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                                </span>
+                            @endif
                         </div>
-                        <div class="text-right">
-                            <span class="text-2xl font-bold text-white">{{ $todaysTasks->where('status', '!=', 'completed')->count() }}</span>
-                            <p class="text-blue-100 text-xs">remaining</p>
+                        <div class="flex items-center gap-3">
+                            {{-- Go to Today button (when not viewing today) --}}
+                            @if(!$isToday)
+                                <a href="{{ route('tasks.index') }}" class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white/20 text-white text-xs font-medium rounded hover:bg-white/30 transition-colors">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                                    Today
+                                </a>
+                            @endif
+                            <div class="text-right">
+                                <span class="text-2xl font-bold text-white">{{ $todaysTasks->where('status', '!=', 'completed')->count() }}</span>
+                                <p class="text-blue-100 text-xs">remaining</p>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                {{-- Quick Add for Today --}}
+                {{-- Quick Add for selected day (only show for today) --}}
+                @if($isToday)
                 <div class="px-5 py-3 border-b border-slate-100 bg-slate-50">
                     <form action="{{ route('tasks.quick-store') }}" method="POST" class="flex gap-2">
                         @csrf
@@ -201,9 +265,10 @@
                         </button>
                     </form>
                 </div>
+                @endif
 
                 {{-- Today's Task List --}}
-                <div class="divide-y divide-slate-100">
+                <div class="day-carousel-content divide-y divide-slate-100">
                     @forelse($todaysTasks as $task)
                         <div class="task-item px-5 py-2.5 group {{ $task->status === 'completed' ? 'is-completed' : '' }} {{ $task->is_overdue_from ? 'bg-red-50/50' : '' }}" data-task-id="{{ $task->id }}">
                             <div class="flex items-center gap-3">
