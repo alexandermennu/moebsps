@@ -7,28 +7,34 @@
 <style>
     /* Slide animation for carousel content */
     .carousel-content {
-        animation: slideIn 0.3s ease-out;
+        animation: slideIn 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
     }
     @keyframes slideIn {
-        from {
+        0% {
             opacity: 0;
-            transform: translateX(20px);
+            transform: translateX(30px);
         }
-        to {
+        100% {
             opacity: 1;
             transform: translateX(0);
         }
     }
-    /* Arrow hover effect */
-    .carousel-arrow {
+    /* Navigation button styles */
+    .carousel-nav-btn {
         transition: all 0.2s ease;
     }
-    .carousel-arrow:hover:not(.disabled) {
-        transform: scale(1.1);
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    .carousel-nav-btn:hover:not(.disabled) {
+        background-color: #e5e7eb;
+        transform: translateX(-2px);
     }
-    .carousel-arrow:active:not(.disabled) {
-        transform: scale(0.95);
+    .carousel-nav-btn.next:hover:not(.disabled) {
+        transform: translateX(2px);
+    }
+    .carousel-nav-btn:active:not(.disabled) {
+        transform: scale(0.98);
+    }
+    .carousel-nav-btn.disabled {
+        opacity: 0.5;
     }
 </style>
 @endpush
@@ -137,7 +143,7 @@
         {{-- Section Header with Carousel Navigation --}}
         <div class="mb-4">
             <div class="flex items-center justify-between">
-                <div class="flex items-center gap-3">
+                <div class="flex items-center gap-4">
                     {{-- Previous Week Button --}}
                     @php
                         $prevWeekStart = $reportingWeekStart->copy()->subWeek();
@@ -147,9 +153,10 @@
                         $canGoNext = $nextWeekStart->lte($currentWeekStart);
                     @endphp
                     <a href="{{ route('weekly-updates.index', ['week' => $prevWeekStart->toDateString()]) }}" 
-                       class="carousel-arrow inline-flex items-center justify-center w-9 h-9 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-gray-800 transition-colors"
-                       title="Previous Week">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                       class="carousel-nav-btn inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded transition-colors"
+                       title="View Previous Week">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                        Previous
                     </a>
                     
                     {{-- Current Week Label --}}
@@ -170,22 +177,24 @@
                     {{-- Next Week Button --}}
                     @if($canGoNext)
                         <a href="{{ route('weekly-updates.index', ['week' => $nextWeekStart->toDateString()]) }}" 
-                           class="carousel-arrow inline-flex items-center justify-center w-9 h-9 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-gray-800 transition-colors"
-                           title="Next Week">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                           class="carousel-nav-btn next inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded transition-colors"
+                           title="View Next Week">
+                            Next
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                         </a>
                     @else
-                        <span class="carousel-arrow disabled inline-flex items-center justify-center w-9 h-9 rounded-full bg-gray-50 text-gray-300 cursor-not-allowed" title="This is the current reporting week">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                        <span class="carousel-nav-btn next disabled inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 text-gray-400 text-sm font-medium rounded cursor-not-allowed" title="This is the current reporting week">
+                            Next
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                         </span>
                     @endif
                 </div>
                 
                 {{-- Jump to Current Week Button --}}
                 @if(!$isCurrentWeek)
-                    <a href="{{ route('weekly-updates.index') }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 text-xs font-medium rounded hover:bg-blue-100 border border-blue-200">
+                    <a href="{{ route('weekly-updates.index') }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded hover:bg-blue-700 shadow-sm transition-colors">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
-                        Current Week
+                        View Current Week
                     </a>
                 @endif
             </div>
