@@ -133,7 +133,7 @@ class UserController extends Controller
             'position' => 'nullable|string|max:255',
             'phone' => 'nullable|string|max:20',
             'is_active' => 'boolean',
-            'sir_access' => 'nullable|in:srgbv,other_incidents,both',
+            'sir_access' => 'nullable|in:,srgbv,other_incidents,both',
             // Module access controls
             'access_assignments' => 'nullable',
             'access_weekly_updates' => 'nullable',
@@ -177,6 +177,11 @@ class UserController extends Controller
         $validated['approved_at'] = now();
         $validated['approved_by'] = auth()->id();
         unset($validated['profile_photo']);
+
+        // Normalize sir_access: empty string means null (use role defaults)
+        if (isset($validated['sir_access']) && $validated['sir_access'] === '') {
+            $validated['sir_access'] = null;
+        }
 
         // Process module access fields
         // Hidden field sends '' when unchecked, checkbox sends '1' when checked
@@ -252,7 +257,7 @@ class UserController extends Controller
             'position' => 'nullable|string|max:255',
             'phone' => 'nullable|string|max:20',
             'is_active' => 'boolean',
-            'sir_access' => 'nullable|in:srgbv,other_incidents,both',
+            'sir_access' => 'nullable|in:,srgbv,other_incidents,both',
             // Module access controls
             'access_assignments' => 'nullable',
             'access_weekly_updates' => 'nullable',
@@ -299,6 +304,11 @@ class UserController extends Controller
 
         $validated['is_active'] = $request->boolean('is_active');
         unset($validated['profile_photo'], $validated['remove_photo']);
+
+        // Normalize sir_access: empty string means null (use role defaults)
+        if (isset($validated['sir_access']) && $validated['sir_access'] === '') {
+            $validated['sir_access'] = null;
+        }
 
         // Process module access fields
         // Hidden field sends '' when unchecked, checkbox sends '1' when checked

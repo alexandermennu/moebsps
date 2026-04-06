@@ -69,7 +69,7 @@
                 <select name="sir_access" id="sir_access"
                         class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-slate-500">
                     @foreach(\App\Models\User::SIR_ACCESS_OPTIONS as $key => $label)
-                        <option value="{{ $key }}" {{ old('sir_access', $user->sir_access) === $key ? 'selected' : '' }}>{{ $label }}</option>
+                        <option value="{{ $key }}" {{ old('sir_access', $user->sir_access ?? '') === $key ? 'selected' : '' }}>{{ $label }}</option>
                     @endforeach
                 </select>
                 <p class="text-xs text-gray-400 mt-1">Admins, Minister & Counselors automatically have access. Use this to grant access to other staff.</p>
